@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ROLE {
+  ROOT
+  ADMIN
+  RESIDENT
+  OWNER
+  VISITANT
+  SECURITY
+}
+
+enum KIND {
+  PEDESTRIAN
+  DRIVER
+}
+
+enum STATUS {
+  ALLOWED
+  BLOCKED
+  PROCESSING
+}
+
+model Role {
+  id          String @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  deletedAt   DateTime?   
+  updatedAt   DateTime   @updatedAt
+  name        ROLE @unique
+  user        User[]
+}
+
+
+model User {
+  id          String @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  deletedAt   DateTime?
+  updatedAt   DateTime   @updatedAt
+  name        String
+  roleId      String
+  available   Boolean @default(false)
+  role        Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  adminId     String? @unique
+  admin       Admin?
+  ownerId     String? @unique
+  owner       Owner?
+  residentId  String? @unique
+  resident    Resident?
+}
+
+model Admin {
+  id          String      @id @default(uuid())
+  createdAt   DateTime    @default(now())
+  deletedAt   DateTime?   
+  updatedAt   DateTime    @updatedAt
+
+  photo       String?
+  phone       String?
+  userId      String      @unique
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Owner {
+  id          String @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  deletedAt   DateTime?
+  updatedAt   DateTime   @updatedAt
+
+  photo       String?
+  password    String
+  cpf         String      @unique
+  email       String      @unique
+  phone       String      @unique
+  square      String
+  house       String
+  residents   String
+
+  residentId  String?
+  resident    Resident[]
+
+  // Relation field on Owner model
+  visitants   Visitant[]
+  userId      String      @unique
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint for the combination of square and house
+  @@unique([square, house])
+}
+
+model Resident {
+  id          String @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  deletedAt   DateTime?
+  updatedAt   DateTime   @updatedAt
+
+  photo       String?
+  password    String
+  cpf         String      @unique
+  email       String?      
+  phone       String?
+
+  // Relation field on Resident model
+  visitants   Visitant[]
+  ownerId     String
+  owner       Owner       @relation(fields: [ownerId], references: [id], onDelete: Cascade) 
+  userId      String      @unique
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Available {
+  id            String @id @default(uuid())
+  createdAt     DateTime   @default(now())
+  deletedAt     DateTime?
+  updatedAt     DateTime   @updatedAt
+
+  status        STATUS
+  justification String?
+
+  visitantId    String    @unique
+  visitant      Visitant  @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+}
+
+model Visitant {
+  id          String @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  deletedAt   DateTime?
+  updatedAt   DateTime   @updatedAt
+
+  cpf         String      @unique
+  email       String?
+  photo       String?
+  documentUrl String?
+  code        String?
+  kind        KIND
+  cnh         String?
+
+  availableId String    @unique
+  available   Available?
+
+ // Required field and Union type for both Owner and Resident IDs
+  invitatedById String
+  owner         Owner?    @relation(fields: [invitatedById], references: [id], onDelete: Cascade, map: "visitant_owner_fkey")
+  resident      Resident? @relation(fields: [invitatedById], references: [id], onDelete: Cascade, map: "visitant_resident_fkey")
+
+  @@index([invitatedById])
+}
