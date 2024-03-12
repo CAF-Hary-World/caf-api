@@ -43,6 +43,7 @@ model Role {
 }
 
 
+
 model User {
   id          String @id @default(uuid())
   createdAt   DateTime   @default(now())
@@ -68,6 +69,7 @@ model Admin {
 
   photo       String?
   phone       String?
+  email       String      @unique
   userId      String      @unique
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -85,10 +87,8 @@ model Owner {
   phone       String      @unique
   square      String
   house       String
-  residents   String
 
-  residentId  String?
-  resident    Resident[]
+  residents    Resident[]
 
   // Relation field on Owner model
   visitants   Visitant[]
@@ -142,11 +142,11 @@ model Visitant {
   email       String?
   photo       String?
   documentUrl String?
-  code        String?
+  code        String?     @unique
   kind        KIND
   cnh         String?
 
-  availableId String    @unique
+  availableId String      @unique
   available   Available?
 
  // Required field and Union type for both Owner and Resident IDs
