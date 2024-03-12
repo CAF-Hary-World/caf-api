@@ -3,10 +3,20 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SignupService } from './signup/signup.service';
 import { SignupController } from './signup/signup.controller';
+import { PrismaService } from './prisma/prisma.service';
+import { Seed } from './utils/seed';
 
 @Module({
   imports: [],
   controllers: [AppController, SignupController],
-  providers: [AppService, SignupService],
+  providers: [AppService, SignupService, PrismaService],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private readonly prismaService: PrismaService) {
+    this.runSeeds();
+  }
+  async runSeeds() {
+    const seed = new Seed(this.prismaService);
+    await seed.createDefaultRoles();
+  }
+}

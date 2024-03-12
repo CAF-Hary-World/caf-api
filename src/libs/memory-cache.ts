@@ -35,7 +35,7 @@ export const usersInMemory = new MemoryCache<
   100, // number of items
 );
 
-type SelectAdmin = {
+export type SelectAdmin = {
   select: {
     name: true;
     available: true;
@@ -61,7 +61,7 @@ export const adminsInMemory = new MemoryCache<
   100, // number of items
 );
 
-type SelectOwner = {
+export type SelectOwner = {
   select: {
     name: true;
     available: true;
