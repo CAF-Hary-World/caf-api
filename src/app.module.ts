@@ -8,9 +8,11 @@ import { Seed } from './utils/seed';
 import { MailModule } from './mail/mail.module';
 import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
-  imports: [MailModule, UserModule],
+  imports: [UserModule, AuthModule, MailModule, RoleModule],
   controllers: [AppController, SignupController, UserController],
   providers: [AppService, SignupService, PrismaService],
 })

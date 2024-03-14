@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { MemoryCache } from 'memory-cache-node';
 
 const TIMETOEXPIRECACHE = process.env.NODE_ENV === 'test' ? 5 : 60 * 60; // 1 hour to expire items
@@ -15,7 +15,7 @@ export const userInMemory = new MemoryCache<
   }> | null
 >(
   TIMETOEXPIRECACHE,
-  100, // number of items
+  1, // number of items
 );
 
 export const usersInMemory = new MemoryCache<
@@ -32,7 +32,7 @@ export const usersInMemory = new MemoryCache<
   >
 >(
   TIMETOEXPIRECACHE,
-  100, // number of items
+  1, // number of items
 );
 
 export type SelectAdmin = {
@@ -50,7 +50,7 @@ export const adminInMemory = new MemoryCache<
   Prisma.UserGetPayload<SelectAdmin> | null
 >(
   TIMETOEXPIRECACHE,
-  100, // number of items
+  1, // number of items
 );
 
 export const adminsInMemory = new MemoryCache<
@@ -58,7 +58,7 @@ export const adminsInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectAdmin>>
 >(
   TIMETOEXPIRECACHE,
-  100, // number of items
+  1, // number of items
 );
 
 export type SelectOwner = {
@@ -106,7 +106,7 @@ export const ownerInMemory = new MemoryCache<
   Prisma.UserGetPayload<SelectOwner> | null
 >(
   TIMETOEXPIRECACHE,
-  100, // number of items
+  1, // number of items
 );
 
 export const ownersInMemory = new MemoryCache<
@@ -114,5 +114,54 @@ export const ownersInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectOwner>>
 >(
   TIMETOEXPIRECACHE,
-  100, // number of items
+  1, // number of items
 );
+
+export type SelectResident = {
+  select: {
+    name: true;
+    available: true;
+    id: true;
+    role: { select: { name: true; id: true } };
+    resident: {
+      select: {
+        id: true;
+        cpf: true;
+        email: true;
+        phone: true;
+        photo: true;
+        visitants: true;
+        owner: {
+          select: {
+            id: true;
+            house: true;
+            square: true;
+          };
+        };
+      };
+    };
+  };
+};
+
+export const residentInMemory = new MemoryCache<
+  string,
+  Prisma.UserGetPayload<SelectResident> | null
+>(
+  TIMETOEXPIRECACHE,
+  1, // number of items
+);
+
+export const residentsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.UserGetPayload<SelectResident>>
+>(
+  TIMETOEXPIRECACHE,
+  1, // number of items
+);
+
+export const rolesInMemory = new MemoryCache<string, Array<Role>>(
+  TIMETOEXPIRECACHE,
+  1,
+);
+
+export const roleInMemory = new MemoryCache<string, Role>(TIMETOEXPIRECACHE, 6);

@@ -108,7 +108,7 @@ model Resident {
   photo       String?
   password    String
   cpf         String      @unique
-  email       String?      
+  email       String?     @unique
   phone       String?
 
   // Relation field on Resident model
