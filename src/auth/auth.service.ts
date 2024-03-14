@@ -68,7 +68,7 @@ export class AuthService {
 
       if (!!owner && compare(pass, owner.password)) {
         return await this.prisma.user.findUniqueOrThrow({
-          where: { id: owner.userId },
+          where: { id: owner.userId, available: true },
           select: {
             name: true,
             available: true,
@@ -91,7 +91,7 @@ export class AuthService {
 
       if (!!resident && compare(pass, resident.password)) {
         return await this.prisma.user.findUniqueOrThrow({
-          where: { id: owner.userId },
+          where: { id: owner.userId, available: true },
           select: {
             name: true,
             available: true,
