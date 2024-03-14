@@ -6,10 +6,12 @@ import { SignupController } from './signup/signup.controller';
 import { PrismaService } from './prisma/prisma.service';
 import { Seed } from './utils/seed';
 import { MailModule } from './mail/mail.module';
+import { UserController } from './user/user.controller';
+import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [MailModule],
-  controllers: [AppController, SignupController],
+  imports: [MailModule, UserModule],
+  controllers: [AppController, SignupController, UserController],
   providers: [AppService, SignupService, PrismaService],
 })
 export class AppModule {
