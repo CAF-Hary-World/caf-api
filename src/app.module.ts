@@ -5,9 +5,10 @@ import { SignupService } from './signup/signup.service';
 import { SignupController } from './signup/signup.controller';
 import { PrismaService } from './prisma/prisma.service';
 import { Seed } from './utils/seed';
+import { MailModule } from './mail/mail.module';
 
 @Module({
-  imports: [],
+  imports: [MailModule],
   controllers: [AppController, SignupController],
   providers: [AppService, SignupService, PrismaService],
 })
