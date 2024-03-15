@@ -8,6 +8,8 @@ async function bootstrap() {
   }); /* to make it throw an error instead of exit with the code 1 */
   app.setGlobalPrefix('api/v1');
   app.enableCors({ origin: [String(process.env.PLATAFORM_URL)] });
-  await app.listen(Number(process.env.PORT) || 3000);
+  await app.listen(Number(process.env.PORT) || 3000, () => {
+    console.log('RUNNING IN PORT = ', Number(process.env.PORT) || 3000);
+  });
 }
 bootstrap();

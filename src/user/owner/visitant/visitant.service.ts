@@ -10,6 +10,7 @@ export class OwnerVisitantService {
         visitants: {
           select: {
             available: true,
+            name: true,
             cnh: true,
             code: true,
             cpf: true,
@@ -18,6 +19,7 @@ export class OwnerVisitantService {
             id: true,
             kind: true,
             photo: true,
+            phone: true,
           },
         },
       },

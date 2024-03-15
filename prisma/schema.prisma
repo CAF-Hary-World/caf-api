@@ -138,6 +138,8 @@ model Visitant {
   deletedAt   DateTime?
   updatedAt   DateTime   @updatedAt
 
+  name        String
+  phone       String
   cpf         String      @unique
   email       String?
   photo       String?

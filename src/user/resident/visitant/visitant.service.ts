@@ -11,6 +11,7 @@ export class ResidentVisitantService {
           select: {
             available: true,
             cnh: true,
+            name: true,
             code: true,
             cpf: true,
             documentUrl: true,
@@ -18,6 +19,7 @@ export class ResidentVisitantService {
             id: true,
             kind: true,
             photo: true,
+            phone: true,
           },
         },
       },

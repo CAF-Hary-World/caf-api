@@ -19,7 +19,14 @@ export class OwnerVisitantController {
     @Param() { id, ownerId }: { id: string; ownerId: string },
   ) {
     try {
-      return await this.visitantService.listVisitants({ id, ownerId });
+      const ownerVisitants = await this.visitantService.listVisitants({
+        id,
+        ownerId,
+      });
+
+      return ownerVisitants
+        .map((ownerVisitant) => ownerVisitant.owner.visitants)
+        .flat();
     } catch (error) {
       throw new HttpException(
         {
