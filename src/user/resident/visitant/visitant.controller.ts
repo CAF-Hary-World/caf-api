@@ -6,12 +6,12 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { VisitantService } from './visitant.service';
+import { ResidentVisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('users/:id/residents/:residentId/visitants')
-export class VisitantController {
-  constructor(private readonly visitantService: VisitantService) {}
+export class ResidentVisitantController {
+  constructor(private readonly visitantService: ResidentVisitantService) {}
 
   @UseGuards(AuthGuard)
   @Get()

@@ -3,12 +3,25 @@ import { residentVisitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class VisitantService {
+export class ResidentVisitantService {
   private readonly selectScope = {
-    name: true,
-    id: true,
-    email: true,
-    resident: { select: { id: true, phone: true, visitant: true } },
+    resident: {
+      select: {
+        visitants: {
+          select: {
+            available: true,
+            cnh: true,
+            code: true,
+            cpf: true,
+            documentUrl: true,
+            email: true,
+            id: true,
+            kind: true,
+            photo: true,
+          },
+        },
+      },
+    },
   };
 
   constructor(private readonly prisma: PrismaService) {}
@@ -24,25 +37,7 @@ export class VisitantService {
               id,
               resident: { id: residentId },
             },
-            select: {
-              resident: {
-                select: {
-                  visitants: {
-                    select: {
-                      available: true,
-                      cnh: true,
-                      code: true,
-                      cpf: true,
-                      documentUrl: true,
-                      email: true,
-                      id: true,
-                      kind: true,
-                      photo: true,
-                    },
-                  },
-                },
-              },
-            },
+            select: this.selectScope,
           }),
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
         );

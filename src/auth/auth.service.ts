@@ -39,6 +39,8 @@ export class AuthService {
           photo: user.owner ? user.owner.photo : user.resident.photo,
           house: user.owner ? user.owner.house : user.resident.owner.house,
           square: user.owner ? user.owner.square : user.resident.owner.square,
+          residentId: user.resident?.id,
+          ownerId: user.owner?.id,
         },
       };
     } catch (error) {
