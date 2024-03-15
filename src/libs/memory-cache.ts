@@ -197,6 +197,44 @@ export const residentVisitantsInMemory = new MemoryCache<
   1, // number of items
 );
 
+export type SelectOwnerVisitant = {
+  select: {
+    owner: {
+      select: {
+        visitants: {
+          select: {
+            available: true;
+            cnh: true;
+            code: true;
+            cpf: true;
+            documentUrl: true;
+            email: true;
+            id: true;
+            kind: true;
+            photo: true;
+          };
+        };
+      };
+    };
+  };
+};
+
+export const ownerVisitantInMemory = new MemoryCache<
+  string,
+  Prisma.UserGetPayload<SelectOwnerVisitant> | null
+>(
+  TIMETOEXPIRECACHE,
+  1, // number of items
+);
+
+export const ownerVisitantsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.UserGetPayload<SelectOwnerVisitant>> | null
+>(
+  TIMETOEXPIRECACHE,
+  1, // number of items
+);
+
 export const rolesInMemory = new MemoryCache<string, Array<Role>>(
   TIMETOEXPIRECACHE,
   1,
