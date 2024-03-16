@@ -125,8 +125,8 @@ model Available {
   deletedAt     DateTime?
   updatedAt     DateTime   @updatedAt
 
-  status        STATUS
-  justification String?
+  status         STATUS
+  justifications Json?
 
   visitantId    String    @unique
   visitant      Visitant  @relation(fields: [visitantId], references: [id], onDelete: Cascade)
@@ -141,20 +141,20 @@ model Visitant {
   name        String
   phone       String
   cpf         String      @unique
+  kind        KIND
   email       String?
   photo       String?
   documentUrl String?
   code        String?     @unique
-  kind        KIND
   cnh         String?
 
-  availableId String      @unique
+  availableId String?      @unique
   available   Available?
 
  // Required field and Union type for both Owner and Resident IDs
-  invitatedById String
-  owner         Owner?    @relation(fields: [invitatedById], references: [id], onDelete: Cascade, map: "visitant_owner_fkey")
-  resident      Resident? @relation(fields: [invitatedById], references: [id], onDelete: Cascade, map: "visitant_resident_fkey")
+  invitedBy   String
+  owner       Owner?    @relation(fields: [invitedBy], references: [id], onDelete: Cascade, map: "visitant_owner_fkey")
+  resident    Resident? @relation(fields: [invitedBy], references: [id],  onDelete: Cascade, map: "visitant_resident_fkey")
 
-  @@index([invitatedById])
+  @@index([invitedBy])
 }

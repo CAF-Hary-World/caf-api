@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ownerVisitantsInMemory } from 'src/libs/memory-cache';
+import { Prisma } from '@prisma/client';
+import {
+  ownerInMemory,
+  ownerVisitantInMemory,
+  ownerVisitantsInMemory,
+  ownersInMemory,
+  userInMemory,
+  usersInMemory,
+} from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -46,6 +54,42 @@ export class OwnerVisitantService {
       }
       return ownerVisitantsInMemory.retrieveItemValue(reference);
     } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async createVisitant({
+    visitant,
+  }: {
+    visitant: Prisma.VisitantCreateInput & { invitedBy: string };
+  }) {
+    userInMemory.clear();
+    usersInMemory.clear();
+    ownerInMemory.clear();
+    ownersInMemory.clear();
+    ownerVisitantInMemory.clear();
+    ownerVisitantsInMemory.clear();
+
+    try {
+      return await this.prisma.visitant.create({
+        data: {
+          cpf: visitant.cpf,
+          kind: visitant.kind,
+          name: visitant.name,
+          phone: visitant.phone,
+          owner: {
+            connect: { id: visitant.invitedBy },
+          },
+          available: {
+            create: {
+              status: 'PROCESSING',
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
       throw new Error(error);
     }
   }

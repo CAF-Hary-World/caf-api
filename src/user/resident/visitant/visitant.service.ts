@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { residentVisitantsInMemory } from 'src/libs/memory-cache';
+import { Prisma } from '@prisma/client';
+import {
+  residentInMemory,
+  residentVisitantInMemory,
+  residentVisitantsInMemory,
+  residentsInMemory,
+  userInMemory,
+  usersInMemory,
+} from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -10,8 +18,8 @@ export class ResidentVisitantService {
         visitants: {
           select: {
             available: true,
-            cnh: true,
             name: true,
+            cnh: true,
             code: true,
             cpf: true,
             documentUrl: true,
@@ -45,6 +53,40 @@ export class ResidentVisitantService {
         );
       }
       return residentVisitantsInMemory.retrieveItemValue(reference);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async createVisitant({
+    visitant,
+  }: {
+    visitant: Prisma.VisitantCreateInput & { invitedBy: string };
+  }) {
+    userInMemory.clear();
+    usersInMemory.clear();
+    residentInMemory.clear();
+    residentsInMemory.clear();
+    residentVisitantInMemory.clear();
+    residentVisitantsInMemory.clear();
+
+    try {
+      return await this.prisma.visitant.create({
+        data: {
+          cpf: visitant.cpf,
+          kind: visitant.kind,
+          name: visitant.name,
+          phone: visitant.phone,
+          resident: {
+            connect: { id: visitant.invitedBy },
+          },
+          available: {
+            create: {
+              status: 'PROCESSING',
+            },
+          },
+        },
+      });
     } catch (error) {
       throw new Error(error);
     }
