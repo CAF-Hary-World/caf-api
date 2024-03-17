@@ -1,3 +1,4 @@
+import { visitantsInMemory } from './../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
@@ -7,6 +8,7 @@ import {
   ownersInMemory,
   userInMemory,
   usersInMemory,
+  visitantInMemory,
 } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -20,7 +22,6 @@ export class OwnerVisitantService {
             available: true,
             name: true,
             cnh: true,
-            code: true,
             cpf: true,
             documentUrl: true,
             email: true,
@@ -54,6 +55,8 @@ export class OwnerVisitantService {
       }
       return ownerVisitantsInMemory.retrieveItemValue(reference);
     } catch (error) {
+      console.log('Visitante List Service =', error);
+
       throw new Error(error);
     }
   }
@@ -69,6 +72,8 @@ export class OwnerVisitantService {
     ownersInMemory.clear();
     ownerVisitantInMemory.clear();
     ownerVisitantsInMemory.clear();
+    visitantInMemory.clear();
+    visitantsInMemory.clear();
 
     try {
       return await this.prisma.visitant.create({
@@ -88,7 +93,7 @@ export class OwnerVisitantService {
         },
       });
     } catch (error) {
-      console.log(error);
+      console.log('Visitante Create Service = ', error);
 
       throw new Error(error);
     }

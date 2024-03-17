@@ -3,6 +3,13 @@ import { MemoryCache } from 'memory-cache-node';
 
 const TIMETOEXPIRECACHE = process.env.NODE_ENV === 'test' ? 5 : 60 * 60; // 1 hour to expire items
 
+export const rolesInMemory = new MemoryCache<string, Array<Role>>(
+  TIMETOEXPIRECACHE,
+  1,
+);
+
+export const roleInMemory = new MemoryCache<string, Role>(TIMETOEXPIRECACHE, 6);
+
 export const userInMemory = new MemoryCache<
   string,
   Prisma.UserGetPayload<{
@@ -166,14 +173,15 @@ export type SelectResidentVisitant = {
         visitants: {
           select: {
             available: true;
+            name: true;
             cnh: true;
-            code: true;
             cpf: true;
             documentUrl: true;
             email: true;
             id: true;
             kind: true;
             photo: true;
+            phone: true;
           };
         };
       };
@@ -204,14 +212,15 @@ export type SelectOwnerVisitant = {
         visitants: {
           select: {
             available: true;
+            name: true;
             cnh: true;
-            code: true;
             cpf: true;
             documentUrl: true;
             email: true;
             id: true;
             kind: true;
             photo: true;
+            phone: true;
           };
         };
       };
@@ -235,9 +244,27 @@ export const ownerVisitantsInMemory = new MemoryCache<
   1, // number of items
 );
 
-export const rolesInMemory = new MemoryCache<string, Array<Role>>(
-  TIMETOEXPIRECACHE,
-  1,
-);
+export type SelectVisitant = {
+  select: {
+    available: true;
+    name: true;
+    cnh: true;
+    cpf: true;
+    documentUrl: true;
+    email: true;
+    id: true;
+    kind: true;
+    photo: true;
+    phone: true;
+  };
+};
 
-export const roleInMemory = new MemoryCache<string, Role>(TIMETOEXPIRECACHE, 6);
+export const visitantInMemory = new MemoryCache<
+  string,
+  Prisma.VisitantGetPayload<SelectVisitant> | null
+>(TIMETOEXPIRECACHE, 1);
+
+export const visitantsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.VisitantGetPayload<SelectOwnerVisitant> | null>
+>(TIMETOEXPIRECACHE, 1);
