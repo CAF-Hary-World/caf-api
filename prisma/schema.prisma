@@ -74,6 +74,19 @@ model Admin {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Available {
+  id            String @id @default(uuid())
+  createdAt     DateTime   @default(now())
+  deletedAt     DateTime?
+  updatedAt     DateTime   @updatedAt
+
+  status         STATUS
+  justifications String[] @default(["Documentação pendente"])
+
+  visitantId    String    @unique
+  visitant      Visitant  @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+}
+
 model Owner {
   id          String @id @default(uuid())
   createdAt   DateTime   @default(now())
@@ -88,15 +101,41 @@ model Owner {
   square      String
   house       String
 
-  residents    Resident[]
-
   // Relation field on Owner model
+  residents   Resident[]
   visitants   Visitant[]
+
+  invitations InvitationByOwner[]
+
   userId      String      @unique
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Unique constraint for the combination of square and house
   @@unique([square, house])
+}
+
+model InvitationByOwner {
+  id          String @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  deletedAt   DateTime?
+  updatedAt   DateTime   @updatedAt
+
+  ownerId     String     
+  owner       Owner      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  visitantId  String
+  visitant    Visitant   @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+}
+
+model InvitationByResident {
+  id              String @id @default(uuid())
+  createdAt       DateTime   @default(now())
+  deletedAt       DateTime?
+  updatedAt       DateTime   @updatedAt
+
+  residentId      String     
+  resident        Resident      @relation(fields: [residentId], references: [id], onDelete: Cascade)
+  visitantId      String
+  visitant        Visitant   @relation(fields: [visitantId], references: [id], onDelete: Cascade)
 }
 
 model Resident {
@@ -111,6 +150,8 @@ model Resident {
   email       String?     @unique
   phone       String?
 
+  invitations InvitationByResident[]
+
   // Relation field on Resident model
   visitants   Visitant[]
   ownerId     String
@@ -119,42 +160,33 @@ model Resident {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Available {
-  id            String @id @default(uuid())
-  createdAt     DateTime   @default(now())
-  deletedAt     DateTime?
-  updatedAt     DateTime   @updatedAt
-
-  status         STATUS
-  justifications Json?
-
-  visitantId    String    @unique
-  visitant      Visitant  @relation(fields: [visitantId], references: [id], onDelete: Cascade)
-}
-
 model Visitant {
-  id          String @id @default(uuid())
-  createdAt   DateTime   @default(now())
-  deletedAt   DateTime?
-  updatedAt   DateTime   @updatedAt
+  id                    String        @id @default(uuid())
+  createdAt             DateTime      @default(now())
+  deletedAt             DateTime?
+  updatedAt             DateTime      @updatedAt
 
-  name        String
-  phone       String
-  cpf         String      @unique
-  kind        KIND
-  email       String?
-  photo       String?
-  documentUrl String?
-  code        String?     @unique
-  cnh         String?
+  name                  String
+  phone                 String
+  cpf                   String        @unique
+  kind                  KIND
+  email                 String?       @unique
+  photo                 String?
+  documentUrl           String?
+  cnh                   String?       @unique
+  invited               Boolean       @default(false)
 
-  availableId String?      @unique
-  available   Available?
+  availableId           String?       @unique
+  available             Available?
 
- // Required field and Union type for both Owner and Resident IDs
-  invitedBy   String
-  owner       Owner?    @relation(fields: [invitedBy], references: [id], onDelete: Cascade, map: "visitant_owner_fkey")
-  resident    Resident? @relation(fields: [invitedBy], references: [id],  onDelete: Cascade, map: "visitant_resident_fkey")
+  invitationByOwner     String?       @unique
+  inviteByOwner         InvitationByOwner[]
 
-  @@index([invitedBy])
+  invitationByResident  String?       @unique
+  inviteByResident      InvitationByResident[]
+
+  ownerId               String?
+  owner                 Owner?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  residentId            String?
+  resident              Resident?      @relation(fields: [residentId], references: [id], onDelete: Cascade)
 }
