@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Post,
   Body,
+  Patch,
 } from '@nestjs/common';
 import { OwnerVisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -52,6 +53,33 @@ export class OwnerVisitantController {
     try {
       await this.visitantService.createVisitant({ visitant });
     } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNAUTHORIZED,
+          error: error.message,
+        },
+        HttpStatus.UNAUTHORIZED,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch()
+  async removeVisitant(
+    @Body() data: { cpf: string },
+    @Param() { id, ownerId }: { id: string; ownerId: string },
+  ) {
+    try {
+      return await this.visitantService.removeVisitant({
+        cpf: data.cpf,
+        id,
+        ownerId,
+      });
+    } catch (error) {
+      console.log(error);
       throw new HttpException(
         {
           status: HttpStatus.UNAUTHORIZED,

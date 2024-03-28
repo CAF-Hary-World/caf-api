@@ -19,8 +19,19 @@ export class VisitantService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getVisitantByCPF({ cpf }: { cpf: string }) {
+    console.log('getVisitantByCPF = ', cpf);
+
     const reference = `visitant-${cpf}`;
     try {
+      console.log(
+        await this.prisma.visitant.findUniqueOrThrow({
+          where: {
+            cpf,
+          },
+          select: this.selectScope,
+        }),
+      );
+
       if (!visitantInMemory.hasItem(reference)) {
         visitantInMemory.storeExpiringItem(
           reference,

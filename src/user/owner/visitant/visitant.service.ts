@@ -35,6 +35,17 @@ export class OwnerVisitantService {
     },
   };
 
+  private resetCache() {
+    userInMemory.clear();
+    usersInMemory.clear();
+    ownerInMemory.clear();
+    ownersInMemory.clear();
+    ownerVisitantInMemory.clear();
+    ownerVisitantsInMemory.clear();
+    visitantInMemory.clear();
+    visitantsInMemory.clear();
+  }
+
   constructor(private readonly prisma: PrismaService) {}
 
   async listVisitants({ id, ownerId }: { id: string; ownerId: string }) {
@@ -66,14 +77,7 @@ export class OwnerVisitantService {
   }: {
     visitant: Prisma.VisitantCreateInput & { invitedBy: string };
   }) {
-    userInMemory.clear();
-    usersInMemory.clear();
-    ownerInMemory.clear();
-    ownersInMemory.clear();
-    ownerVisitantInMemory.clear();
-    ownerVisitantsInMemory.clear();
-    visitantInMemory.clear();
-    visitantsInMemory.clear();
+    this.resetCache();
 
     try {
       return await this.prisma.visitant.create({
@@ -97,5 +101,35 @@ export class OwnerVisitantService {
 
       throw new Error(error);
     }
+  }
+
+  async removeVisitant({
+    cpf,
+    id,
+    ownerId,
+  }: {
+    id: string;
+    ownerId: string;
+    cpf: string;
+  }) {
+    this.resetCache();
+    return await this.prisma.user.update({
+      where: {
+        id,
+        owner: {
+          id: ownerId,
+        },
+      },
+      data: {
+        owner: {
+          update: {
+            visitants: {
+              disconnect: { cpf },
+            },
+          },
+        },
+      },
+      select: this.selectScope,
+    });
   }
 }
