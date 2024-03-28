@@ -3,9 +3,12 @@ import { MemoryCache } from 'memory-cache-node';
 
 const TIMETOEXPIRECACHE = process.env.NODE_ENV === 'test' ? 5 : 60 * 60; // 1 hour to expire items
 
+const AMOUNTSINGLERESOURCE = 100000;
+const AMOUNTARRAYRESOURCE = 1;
+
 export const rolesInMemory = new MemoryCache<string, Array<Role>>(
   TIMETOEXPIRECACHE,
-  1,
+  AMOUNTARRAYRESOURCE,
 );
 
 export const roleInMemory = new MemoryCache<string, Role>(TIMETOEXPIRECACHE, 6);
@@ -22,7 +25,7 @@ export const userInMemory = new MemoryCache<
   }> | null
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export const usersInMemory = new MemoryCache<
@@ -39,7 +42,7 @@ export const usersInMemory = new MemoryCache<
   >
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTARRAYRESOURCE, // number of items
 );
 
 export type SelectAdmin = {
@@ -57,7 +60,7 @@ export const adminInMemory = new MemoryCache<
   Prisma.UserGetPayload<SelectAdmin> | null
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export const adminsInMemory = new MemoryCache<
@@ -65,7 +68,7 @@ export const adminsInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectAdmin>>
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTARRAYRESOURCE, // number of items
 );
 
 export type SelectOwner = {
@@ -113,7 +116,7 @@ export const ownerInMemory = new MemoryCache<
   Prisma.UserGetPayload<SelectOwner> | null
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export const ownersInMemory = new MemoryCache<
@@ -121,7 +124,7 @@ export const ownersInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectOwner>>
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTARRAYRESOURCE, // number of items
 );
 
 export type SelectResident = {
@@ -155,7 +158,7 @@ export const residentInMemory = new MemoryCache<
   Prisma.UserGetPayload<SelectResident> | null
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export const residentsInMemory = new MemoryCache<
@@ -163,7 +166,7 @@ export const residentsInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectResident>>
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTARRAYRESOURCE, // number of items
 );
 
 export type SelectResidentVisitant = {
@@ -194,7 +197,7 @@ export const residentVisitantInMemory = new MemoryCache<
   Prisma.UserGetPayload<SelectResidentVisitant> | null
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export const residentVisitantsInMemory = new MemoryCache<
@@ -202,7 +205,7 @@ export const residentVisitantsInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectResidentVisitant>> | null
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTARRAYRESOURCE, // number of items
 );
 
 export type SelectOwnerVisitant = {
@@ -233,7 +236,7 @@ export const ownerVisitantInMemory = new MemoryCache<
   Prisma.UserGetPayload<SelectOwnerVisitant> | null
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export const ownerVisitantsInMemory = new MemoryCache<
@@ -241,7 +244,7 @@ export const ownerVisitantsInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectOwnerVisitant>> | null
 >(
   TIMETOEXPIRECACHE,
-  1, // number of items
+  AMOUNTARRAYRESOURCE, // number of items
 );
 
 export type SelectVisitant = {
@@ -262,9 +265,9 @@ export type SelectVisitant = {
 export const visitantInMemory = new MemoryCache<
   string,
   Prisma.VisitantGetPayload<SelectVisitant> | null
->(TIMETOEXPIRECACHE, 1);
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
 
 export const visitantsInMemory = new MemoryCache<
   string,
   Array<Prisma.VisitantGetPayload<SelectOwnerVisitant> | null>
->(TIMETOEXPIRECACHE, 1);
+>(TIMETOEXPIRECACHE, AMOUNTARRAYRESOURCE);

@@ -19,31 +19,20 @@ export class VisitantService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getVisitantByCPF({ cpf }: { cpf: string }) {
-    console.log('getVisitantByCPF = ', cpf);
-
     const reference = `visitant-${cpf}`;
     try {
-      console.log(
-        await this.prisma.visitant.findUniqueOrThrow({
+      if (!visitantInMemory.hasItem(reference)) {
+        const visitant = await this.prisma.visitant.findUnique({
           where: {
             cpf,
           },
           select: this.selectScope,
-        }),
-      );
-
-      if (!visitantInMemory.hasItem(reference)) {
-        visitantInMemory.storeExpiringItem(
-          reference,
-          await this.prisma.visitant.findUniqueOrThrow({
-            where: {
-              cpf,
-            },
-            select: this.selectScope,
-          }),
-          process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
-        );
+        });
+        console.log('visitant = ', visitant);
+        console.log(`not-in-cache-visitant-${cpf}`);
+        visitantInMemory.storePermanentItem(reference, visitant);
       }
+      console.log(visitantInMemory.retrieveItemValue(reference));
       return visitantInMemory.retrieveItemValue(reference);
     } catch (error) {
       throw new Error(error);

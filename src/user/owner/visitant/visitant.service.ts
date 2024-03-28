@@ -132,4 +132,33 @@ export class OwnerVisitantService {
       select: this.selectScope,
     });
   }
+
+  async addVisitant({
+    cpf,
+    id,
+    ownerId,
+  }: {
+    id: string;
+    ownerId: string;
+    cpf: string;
+  }) {
+    this.resetCache();
+    return await this.prisma.user.update({
+      where: {
+        id,
+        owner: {
+          id: ownerId,
+        },
+      },
+      data: {
+        owner: {
+          update: {
+            visitants: {
+              connect: { cpf },
+            },
+          },
+        },
+      },
+    });
+  }
 }

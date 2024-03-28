@@ -67,13 +67,40 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch()
+  @Patch('/remove')
   async removeVisitant(
     @Body() data: { cpf: string },
     @Param() { id, ownerId }: { id: string; ownerId: string },
   ) {
     try {
       return await this.visitantService.removeVisitant({
+        cpf: data.cpf,
+        id,
+        ownerId,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        {
+          status: HttpStatus.UNAUTHORIZED,
+          error: error.message,
+        },
+        HttpStatus.UNAUTHORIZED,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/add')
+  async addVisitant(
+    @Body() data: { cpf: string },
+    @Param() { id, ownerId }: { id: string; ownerId: string },
+  ) {
+    try {
+      return await this.visitantService.addVisitant({
         cpf: data.cpf,
         id,
         ownerId,
