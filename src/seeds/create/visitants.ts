@@ -4,9 +4,10 @@ import { prisma } from '../prismaClient';
 async function createVisitant() {
   console.log('creating visitants...');
 
-  return await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       name: mockedUser.name,
+      available: true,
       role: { connect: { name: 'OWNER' } },
       owner: {
         create: {
@@ -19,7 +20,22 @@ async function createVisitant() {
         },
       },
     },
+    select: {
+      owner: {
+        select: { visitants: true },
+      },
+    },
   });
+
+  await prisma.available.createMany({
+    data: user.owner.visitants.map((visitant) => ({
+      status: 'PROCESSING',
+      justifications: ['Documentação pendente'],
+      visitantId: visitant.id,
+    })),
+  });
+
+  return user;
 }
 
 createVisitant()
