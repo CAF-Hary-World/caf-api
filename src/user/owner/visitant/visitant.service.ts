@@ -17,18 +17,22 @@ export class OwnerVisitantService {
   private readonly selectScope = {
     owner: {
       select: {
-        visitants: {
+        visitantsOnOwner: {
           select: {
-            available: true,
-            name: true,
-            cnh: true,
-            cpf: true,
-            documentUrl: true,
-            email: true,
-            id: true,
-            kind: true,
-            photo: true,
-            phone: true,
+            visitant: {
+              select: {
+                available: true,
+                name: true,
+                cnh: true,
+                cpf: true,
+                documentUrl: true,
+                email: true,
+                id: true,
+                kind: true,
+                photo: true,
+                phone: true,
+              },
+            },
           },
         },
       },
@@ -49,7 +53,8 @@ export class OwnerVisitantService {
   constructor(private readonly prisma: PrismaService) {}
 
   async listVisitants({ id, ownerId }: { id: string; ownerId: string }) {
-    const reference = JSON.stringify(this.selectScope) + '-owner-visitant';
+    const reference = `user${id}-owner-${ownerId}-visitant`;
+
     try {
       if (!ownerVisitantsInMemory.hasItem(reference)) {
         ownerVisitantsInMemory.storeExpiringItem(
@@ -59,6 +64,7 @@ export class OwnerVisitantService {
               id,
               owner: { id: ownerId },
             },
+            orderBy: { name: 'desc' },
             select: this.selectScope,
           }),
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
@@ -89,6 +95,11 @@ export class OwnerVisitantService {
           owner: {
             connect: { id: visitant.invitedBy },
           },
+          ownersOnVisitants: {
+            create: {
+              ownerId: visitant.invitedBy,
+            },
+          },
           available: {
             create: {
               status: 'PROCESSING',
@@ -113,6 +124,13 @@ export class OwnerVisitantService {
     cpf: string;
   }) {
     this.resetCache();
+
+    const visitant = await this.prisma.visitant.findUniqueOrThrow({
+      where: {
+        cpf,
+      },
+    });
+
     return await this.prisma.user.update({
       where: {
         id,
@@ -123,8 +141,10 @@ export class OwnerVisitantService {
       data: {
         owner: {
           update: {
-            visitants: {
-              disconnect: { cpf },
+            visitantsOnOwner: {
+              delete: {
+                ownerId_visitantId: { ownerId, visitantId: visitant.id },
+              },
             },
           },
         },
@@ -153,8 +173,10 @@ export class OwnerVisitantService {
       data: {
         owner: {
           update: {
-            visitants: {
-              connect: { cpf },
+            visitantsOnOwner: {
+              create: {
+                visitant: { connect: { cpf } },
+              },
             },
           },
         },

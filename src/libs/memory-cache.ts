@@ -212,18 +212,22 @@ export type SelectOwnerVisitant = {
   select: {
     owner: {
       select: {
-        visitants: {
+        visitantsOnOwner: {
           select: {
-            available: true;
-            name: true;
-            cnh: true;
-            cpf: true;
-            documentUrl: true;
-            email: true;
-            id: true;
-            kind: true;
-            photo: true;
-            phone: true;
+            visitant: {
+              select: {
+                available: true;
+                name: true;
+                cnh: true;
+                cpf: true;
+                documentUrl: true;
+                email: true;
+                id: true;
+                kind: true;
+                photo: true;
+                phone: true;
+              };
+            };
           };
         };
       };

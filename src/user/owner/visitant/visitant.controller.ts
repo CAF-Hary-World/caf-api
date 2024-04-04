@@ -29,9 +29,16 @@ export class OwnerVisitantController {
       });
 
       return ownerVisitants
-        .map((ownerVisitant) => ownerVisitant.owner.visitants)
+        .map((ownerVisitant) =>
+          ownerVisitant.owner.visitantsOnOwner.map(
+            (visitant) => visitant.visitant,
+          ),
+        )
+        .flat()
         .flat();
     } catch (error) {
+      console.log('Controller error = ', error);
+
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,

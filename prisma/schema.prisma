@@ -88,30 +88,48 @@ model Available {
 }
 
 model Owner {
-  id          String @id @default(uuid())
-  createdAt   DateTime   @default(now())
-  deletedAt   DateTime?
-  updatedAt   DateTime   @updatedAt
+  id                 String @id @default(uuid())
+  createdAt          DateTime   @default(now())
+  deletedAt          DateTime?
+  updatedAt          DateTime   @updatedAt
 
-  photo       String?
-  password    String
-  cpf         String      @unique
-  email       String      @unique
-  phone       String      @unique
-  square      String
-  house       String
+  photo              String?
+  password           String
+  cpf                String      @unique
+  email              String      @unique
+  phone              String      @unique
+  square             String
+  house              String
 
   // Relation field on Owner model
-  residents   Resident[]
-  visitants   Visitant[]
+  residents          Resident[]
+  visitantsCreated   Visitant[]
 
-  invitations InvitationByOwner[]
+  visitantsOnOwner   VisitantsOnOwner[]
 
-  userId      String      @unique
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitations        InvitationByOwner[]
+
+  userId             String      @unique
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Unique constraint for the combination of square and house
   @@unique([square, house])
+}
+
+model VisitantsOnOwner {
+  createdAt                 DateTime      @default(now())
+  deletedAt                 DateTime?
+  updatedAt                 DateTime      @updatedAt
+
+  // Relation Visitant
+  visitantId                String
+  visitant                  Visitant         @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+
+  // Relation Owner
+  ownerId                   String
+  owner                     Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@id([ownerId, visitantId])
 }
 
 model InvitationByOwner {
@@ -161,32 +179,35 @@ model Resident {
 }
 
 model Visitant {
-  id                    String        @id @default(uuid())
-  createdAt             DateTime      @default(now())
-  deletedAt             DateTime?
-  updatedAt             DateTime      @updatedAt
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(now())
+  deletedAt               DateTime?
+  updatedAt               DateTime      @updatedAt
 
-  name                  String
-  phone                 String
-  cpf                   String        @unique
-  kind                  KIND
-  email                 String?       @unique
-  photo                 String?
-  documentUrl           String?
-  cnh                   String?       @unique
-  invited               Boolean       @default(false)
+  name                    String
+  phone                   String
+  cpf                     String        @unique
+  kind                    KIND
+  email                   String?       @unique
+  photo                   String?
+  documentUrl             String?
+  cnh                     String?       @unique
+  invited                 Boolean       @default(false)
 
-  availableId           String?       @unique
-  available             Available?
+  availableId             String?       @unique
+  available               Available?
 
-  invitationByOwner     String?       @unique
-  inviteByOwner         InvitationByOwner[]
+  invitationByOwner       String?       @unique
+  inviteByOwner           InvitationByOwner[]
 
-  invitationByResident  String?       @unique
-  inviteByResident      InvitationByResident[]
+  ownersOnVisitants       VisitantsOnOwner[]
 
-  ownerId               String?
-  owner                 Owner?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  residentId            String?
-  resident              Resident?      @relation(fields: [residentId], references: [id], onDelete: Cascade)
+
+  invitationByResident    String?       @unique
+  inviteByResident        InvitationByResident[]
+
+  ownerId                 String?
+  owner                   Owner?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  residentId              String?
+  resident                Resident?      @relation(fields: [residentId], references: [id], onDelete: Cascade)
 }

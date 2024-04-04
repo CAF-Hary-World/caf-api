@@ -12,7 +12,7 @@ async function createVisitant() {
       owner: {
         create: {
           ...mockedOwner,
-          visitants: {
+          visitantsCreated: {
             createMany: {
               data: mockedVisitants,
             },
@@ -22,13 +22,16 @@ async function createVisitant() {
     },
     select: {
       owner: {
-        select: { visitants: true },
+        select: {
+          visitantsCreated: true,
+          visitantsOnOwner: { select: { visitant: true } },
+        },
       },
     },
   });
 
   await prisma.available.createMany({
-    data: user.owner.visitants.map((visitant) => ({
+    data: user.owner.visitantsCreated.map((visitant) => ({
       status: 'PROCESSING',
       justifications: ['Documentação pendente'],
       visitantId: visitant.id,

@@ -8,7 +8,7 @@ function encodeSha256(text: string) {
 }
 
 export const mockedUser = {
-  name: 'User Owner Test',
+  name: 'User Owner Seeded',
 };
 
 export const mockedOwner = {
@@ -26,6 +26,6 @@ export const mockedVisitants: Array<Prisma.VisitantCreateManyOwnerInput> =
     .map((_, index) => ({
       cpf: generate({ format: true }),
       kind: 'PEDESTRIAN',
-      name: `Visitant Test ${index}`,
+      name: `Visitant Seeded ${index}`,
       phone: '(84) 99819-0309',
     }));
