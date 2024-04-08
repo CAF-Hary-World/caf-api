@@ -113,10 +113,45 @@ export class OwnerVisitantController {
         ownerId,
       });
     } catch (error) {
+      console.log(error.code);
+      throw new HttpException(
+        {
+          status:
+            error.code !== 'P2002'
+              ? HttpStatus.UNAUTHORIZED
+              : HttpStatus.CONFLICT,
+          error: error.message,
+        },
+        error.code !== 'P2002' ? HttpStatus.UNAUTHORIZED : HttpStatus.CONFLICT,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/available')
+  async updateAvailableStatus(
+    @Body() data: { cpf: string; justifications: Array<string> },
+    @Param() { id, ownerId }: { id: string; ownerId: string },
+  ) {
+    const { cpf, justifications } = data;
+    try {
+      return await this.visitantService.updateAvailableStatus({
+        cpf,
+        id,
+        justifications,
+        ownerId,
+      });
+    } catch (error) {
       console.log(error);
       throw new HttpException(
         {
-          status: HttpStatus.UNAUTHORIZED,
+          status:
+            error.code !== 'P2002'
+              ? HttpStatus.UNAUTHORIZED
+              : HttpStatus.CONFLICT,
           error: error.message,
         },
         HttpStatus.UNAUTHORIZED,

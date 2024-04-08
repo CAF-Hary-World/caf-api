@@ -183,4 +183,52 @@ export class OwnerVisitantService {
       },
     });
   }
+
+  async updateAvailableStatus({
+    cpf,
+    id,
+    ownerId,
+    justifications,
+  }: {
+    id: string;
+    ownerId: string;
+    cpf: string;
+    justifications: Array<string>;
+  }) {
+    this.resetCache();
+    console.log('update available status');
+
+    //  IF visitant belongs to owner
+    await this.prisma.user.findUniqueOrThrow({
+      where: {
+        id,
+        owner: {
+          id: ownerId,
+          visitantsOnOwner: {
+            some: {
+              visitant: {
+                cpf,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const visitant = await this.prisma.visitant.findUniqueOrThrow({
+      where: {
+        cpf,
+      },
+    });
+
+    await this.prisma.available.update({
+      where: {
+        visitantId: visitant.id,
+      },
+      data: {
+        justifications,
+        status: 'PROCESSING',
+      },
+    });
+  }
 }
