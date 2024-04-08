@@ -17,6 +17,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "start:seed:visitants": "ts-node src/seeds/create/visitants.ts",
+    "start:seed:update:visitants:available:status:allowed": "ts-node src/seeds/update/visitant/changeAvailable/statusAllow.ts",
     "start:cut:user": "ts-node src/seeds/delete/user.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
