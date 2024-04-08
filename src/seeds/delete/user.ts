@@ -7,7 +7,11 @@ async function deleteVisitants() {
   console.log('users before = ', usersBefore);
 
   const { count } = await prisma.user.deleteMany({
-    where: { name: mockedUser.name },
+    where: {
+      name: {
+        contains: 'Seeded',
+      },
+    },
   });
   const usersAfter = await prisma.user.findMany();
   console.log('Total deleted = ', count);

@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { generate } from 'gerador-validador-cpf';
+import { faker } from '@faker-js/faker';
 import * as bcrypto from 'bcrypt';
 
 function encodeSha256(text: string) {
@@ -8,14 +9,14 @@ function encodeSha256(text: string) {
 }
 
 export const mockedUser = {
-  name: 'User Owner Seeded',
+  name: `${faker.person.fullName()} Seeded`,
 };
 
 export const mockedOwner = {
   cpf: generate({ format: true }),
   email: 'secoh19398@evimzo.com',
-  house: '1000',
-  square: '1000',
+  house: faker.number.int({ min: 1, max: 1000 }).toString(),
+  square: faker.number.int({ min: 1, max: 1000 }).toString(),
   password: encodeSha256('123123123'),
   phone: '(84) 99819-0309',
 };
@@ -26,6 +27,6 @@ export const mockedVisitants: Array<Prisma.VisitantCreateManyOwnerInput> =
     .map((_, index) => ({
       cpf: generate({ format: true }),
       kind: 'PEDESTRIAN',
-      name: `Visitant Seeded ${index}`,
+      name: `Visitant ${faker.person.fullName()} Seeded ${index}`,
       phone: '(84) 99819-0309',
     }));
