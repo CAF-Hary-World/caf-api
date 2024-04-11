@@ -8,6 +8,7 @@ import {
   Post,
   Body,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { OwnerVisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -21,15 +22,18 @@ export class OwnerVisitantController {
   @Get()
   async listVisitants(
     @Param() { id, ownerId }: { id: string; ownerId: string },
+    @Query() { page, name }: { page: number; name?: string },
   ) {
     try {
       const ownerVisitants = await this.visitantService.listVisitants({
         id,
         ownerId,
+        page,
+        name,
       });
 
       return ownerVisitants
-        .map((ownerVisitant) =>
+        ?.map((ownerVisitant) =>
           ownerVisitant.owner.visitantsOnOwner.map(
             (visitant) => visitant.visitant,
           ),

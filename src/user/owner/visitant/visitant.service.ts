@@ -52,8 +52,22 @@ export class OwnerVisitantService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async listVisitants({ id, ownerId }: { id: string; ownerId: string }) {
-    const reference = `user${id}-owner-${ownerId}-visitant`;
+  async listVisitants({
+    id,
+    ownerId,
+    page = 1,
+    name,
+  }: {
+    id: string;
+    ownerId: string;
+    page: number;
+    name?: string;
+  }) {
+    const reference = `user${id}-owner-${ownerId}-visitant-${page}-${name}`;
+
+    const perPage = 10;
+
+    console.log('name = ', name);
 
     try {
       if (!ownerVisitantsInMemory.hasItem(reference)) {
@@ -62,9 +76,22 @@ export class OwnerVisitantService {
           await this.prisma.user.findMany({
             where: {
               id,
-              owner: { id: ownerId },
+              owner: {
+                id: ownerId,
+                ...(name && {
+                  visitantsOnOwner: {
+                    some: {
+                      visitant: {
+                        name: { contains: name },
+                      },
+                    },
+                  },
+                }),
+              },
             },
             orderBy: { name: 'desc' },
+            skip: (page - 1) * perPage,
+            take: perPage,
             select: this.selectScope,
           }),
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
