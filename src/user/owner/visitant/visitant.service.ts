@@ -3,8 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
   ownerInMemory,
-  ownerVisitantInMemory,
-  ownerVisitantsInMemory,
   ownersInMemory,
   userInMemory,
   usersInMemory,
@@ -15,28 +13,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class OwnerVisitantService {
   private readonly selectScope = {
-    owner: {
-      select: {
-        visitantsOnOwner: {
-          select: {
-            visitant: {
-              select: {
-                available: true,
-                name: true,
-                cnh: true,
-                cpf: true,
-                documentUrl: true,
-                email: true,
-                id: true,
-                kind: true,
-                photo: true,
-                phone: true,
-              },
-            },
-          },
-        },
-      },
-    },
+    available: true,
+    name: true,
+    cnh: true,
+    cpf: true,
+    documentUrl: true,
+    email: true,
+    id: true,
+    kind: true,
+    photo: true,
+    phone: true,
   };
 
   private resetCache() {
@@ -44,8 +30,6 @@ export class OwnerVisitantService {
     usersInMemory.clear();
     ownerInMemory.clear();
     ownersInMemory.clear();
-    ownerVisitantInMemory.clear();
-    ownerVisitantsInMemory.clear();
     visitantInMemory.clear();
     visitantsInMemory.clear();
   }
@@ -67,37 +51,34 @@ export class OwnerVisitantService {
 
     const perPage = 10;
 
-    console.log('name = ', name);
-
     try {
-      if (!ownerVisitantsInMemory.hasItem(reference)) {
-        ownerVisitantsInMemory.storeExpiringItem(
-          reference,
-          await this.prisma.user.findMany({
-            where: {
-              id,
-              owner: {
-                id: ownerId,
-                ...(name && {
-                  visitantsOnOwner: {
-                    some: {
-                      visitant: {
-                        name: { contains: name },
-                      },
-                    },
-                  },
-                }),
+      if (!visitantsInMemory.hasItem(reference)) {
+        const visitants = await this.prisma.visitant.findMany({
+          where: {
+            ownersOnVisitants: {
+              some: {
+                owner: {
+                  id: ownerId,
+                  userId: id,
+                },
               },
             },
-            orderBy: { name: 'desc' },
-            skip: (page - 1) * perPage,
-            take: perPage,
-            select: this.selectScope,
-          }),
+            ...(name && { name: { contains: name } }),
+          },
+          orderBy: { name: 'desc' },
+          skip: (page - 1) * perPage,
+          take: perPage,
+          select: this.selectScope,
+        });
+        console.log('visitants (no-cache) ', visitants);
+
+        visitantsInMemory.storeExpiringItem(
+          reference,
+          visitants,
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
         );
       }
-      return ownerVisitantsInMemory.retrieveItemValue(reference);
+      return visitantsInMemory.retrieveItemValue(reference);
     } catch (error) {
       console.log('Visitante List Service =', error);
 

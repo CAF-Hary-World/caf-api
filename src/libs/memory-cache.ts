@@ -4,11 +4,10 @@ import { MemoryCache } from 'memory-cache-node';
 const TIMETOEXPIRECACHE = process.env.NODE_ENV === 'test' ? 5 : 60 * 60; // 1 hour to expire items
 
 const AMOUNTSINGLERESOURCE = 100000;
-const AMOUNTARRAYRESOURCE = 1;
 
 export const rolesInMemory = new MemoryCache<string, Array<Role>>(
   TIMETOEXPIRECACHE,
-  AMOUNTARRAYRESOURCE,
+  AMOUNTSINGLERESOURCE,
 );
 
 export const roleInMemory = new MemoryCache<string, Role>(TIMETOEXPIRECACHE, 6);
@@ -42,7 +41,7 @@ export const usersInMemory = new MemoryCache<
   >
 >(
   TIMETOEXPIRECACHE,
-  AMOUNTARRAYRESOURCE, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export type SelectAdmin = {
@@ -68,7 +67,7 @@ export const adminsInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectAdmin>>
 >(
   TIMETOEXPIRECACHE,
-  AMOUNTARRAYRESOURCE, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export type SelectOwner = {
@@ -124,7 +123,7 @@ export const ownersInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectOwner>>
 >(
   TIMETOEXPIRECACHE,
-  AMOUNTARRAYRESOURCE, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export type SelectResident = {
@@ -166,7 +165,7 @@ export const residentsInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectResident>>
 >(
   TIMETOEXPIRECACHE,
-  AMOUNTARRAYRESOURCE, // number of items
+  AMOUNTSINGLERESOURCE, // number of items
 );
 
 export type SelectResidentVisitant = {
@@ -205,50 +204,7 @@ export const residentVisitantsInMemory = new MemoryCache<
   Array<Prisma.UserGetPayload<SelectResidentVisitant>> | null
 >(
   TIMETOEXPIRECACHE,
-  AMOUNTARRAYRESOURCE, // number of items
-);
-
-export type SelectOwnerVisitant = {
-  select: {
-    owner: {
-      select: {
-        visitantsOnOwner: {
-          select: {
-            visitant: {
-              select: {
-                available: true;
-                name: true;
-                cnh: true;
-                cpf: true;
-                documentUrl: true;
-                email: true;
-                id: true;
-                kind: true;
-                photo: true;
-                phone: true;
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-};
-
-export const ownerVisitantInMemory = new MemoryCache<
-  string,
-  Prisma.UserGetPayload<SelectOwnerVisitant> | null
->(
-  TIMETOEXPIRECACHE,
   AMOUNTSINGLERESOURCE, // number of items
-);
-
-export const ownerVisitantsInMemory = new MemoryCache<
-  string,
-  Array<Prisma.UserGetPayload<SelectOwnerVisitant>> | null
->(
-  TIMETOEXPIRECACHE,
-  AMOUNTARRAYRESOURCE, // number of items
 );
 
 export type SelectVisitant = {
@@ -273,5 +229,5 @@ export const visitantInMemory = new MemoryCache<
 
 export const visitantsInMemory = new MemoryCache<
   string,
-  Array<Prisma.VisitantGetPayload<SelectOwnerVisitant> | null>
->(TIMETOEXPIRECACHE, AMOUNTARRAYRESOURCE);
+  Array<Prisma.VisitantGetPayload<SelectVisitant> | null>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);

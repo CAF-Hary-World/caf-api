@@ -25,21 +25,15 @@ export class OwnerVisitantController {
     @Query() { page, name }: { page: number; name?: string },
   ) {
     try {
-      const ownerVisitants = await this.visitantService.listVisitants({
+      const visitants = await this.visitantService.listVisitants({
         id,
         ownerId,
         page,
         name,
       });
+      console.log(visitants);
 
-      return ownerVisitants
-        ?.map((ownerVisitant) =>
-          ownerVisitant.owner.visitantsOnOwner.map(
-            (visitant) => visitant.visitant,
-          ),
-        )
-        .flat()
-        .flat();
+      return visitants;
     } catch (error) {
       console.log('Controller error = ', error);
 
