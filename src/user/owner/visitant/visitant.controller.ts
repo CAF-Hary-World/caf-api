@@ -22,7 +22,7 @@ export class OwnerVisitantController {
   @Get()
   async listVisitants(
     @Param() { id, ownerId }: { id: string; ownerId: string },
-    @Query() { page, name }: { page: number; name?: string },
+    @Query() { page, name, cpf }: { page: number; name?: string; cpf?: string },
   ) {
     try {
       const visitants = await this.visitantService.listVisitants({
@@ -30,6 +30,7 @@ export class OwnerVisitantController {
         ownerId,
         page,
         name,
+        cpf,
       });
       console.log(visitants);
 

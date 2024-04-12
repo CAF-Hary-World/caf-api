@@ -41,13 +41,15 @@ export class OwnerVisitantService {
     ownerId,
     page = 1,
     name,
+    cpf,
   }: {
     id: string;
     ownerId: string;
     page: number;
     name?: string;
+    cpf?: string;
   }) {
-    const reference = `user${id}-owner-${ownerId}-visitant-${page}-${name}`;
+    const reference = `user${id}-owner-${ownerId}-visitant-${page}-${name}-${cpf}`;
 
     const perPage = 10;
 
@@ -64,6 +66,7 @@ export class OwnerVisitantService {
               },
             },
             ...(name && { name: { contains: name } }),
+            ...(cpf && { cpf: { contains: cpf } }),
           },
           orderBy: { name: 'desc' },
           skip: (page - 1) * perPage,
