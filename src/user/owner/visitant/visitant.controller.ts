@@ -32,7 +32,6 @@ export class OwnerVisitantController {
         name,
         cpf,
       });
-      console.log(visitants);
 
       return visitants;
     } catch (error) {

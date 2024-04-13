@@ -51,7 +51,24 @@ export class OwnerVisitantService {
   }) {
     const reference = `user${id}-owner-${ownerId}-visitant-${page}-${name}-${cpf}`;
 
-    const perPage = 10;
+    const perPage = 2;
+
+    const visitantsCount = await this.prisma.visitant.count({
+      where: {
+        ownersOnVisitants: {
+          some: {
+            owner: {
+              id: ownerId,
+              userId: id,
+            },
+          },
+        },
+        ...(name && { name: { contains: name } }),
+        ...(cpf && { cpf: { contains: cpf } }),
+      },
+    });
+
+    const totalPages = Math.ceil(visitantsCount / perPage);
 
     try {
       if (!visitantsInMemory.hasItem(reference)) {
@@ -73,6 +90,7 @@ export class OwnerVisitantService {
           take: perPage,
           select: this.selectScope,
         });
+
         console.log('visitants (no-cache) ', visitants);
 
         visitantsInMemory.storeExpiringItem(
@@ -81,7 +99,10 @@ export class OwnerVisitantService {
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
         );
       }
-      return visitantsInMemory.retrieveItemValue(reference);
+      return {
+        resource: visitantsInMemory.retrieveItemValue(reference),
+        totalPages,
+      };
     } catch (error) {
       console.log('Visitante List Service =', error);
 
