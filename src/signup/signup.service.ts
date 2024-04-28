@@ -17,15 +17,14 @@ export class SignupService {
     ownersInMemory.clear();
     let ownerId: string;
     try {
-      const ownerRoleId = (
-        await this.prismaService.role.findUniqueOrThrow({
-          where: { name: 'OWNER' },
-        })
-      ).id;
       const owner = await this.prismaService.user.create({
         data: {
           name: data.name,
-          roleId: ownerRoleId,
+          role: {
+            connect: {
+              name: 'OWNER',
+            },
+          },
           owner: {
             create: {
               cpf: data.cpf,

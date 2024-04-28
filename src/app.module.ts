@@ -15,7 +15,12 @@ import { VisitantController } from './visitant/visitant.controller';
 
 @Module({
   imports: [UserModule, AuthModule, MailModule, RoleModule],
-  controllers: [AppController, SignupController, UserController, VisitantController],
+  controllers: [
+    AppController,
+    SignupController,
+    UserController,
+    VisitantController,
+  ],
   providers: [AppService, SignupService, PrismaService, VisitantService],
 })
 export class AppModule {

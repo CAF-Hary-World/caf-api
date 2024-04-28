@@ -54,8 +54,13 @@ export class OwnerResidentController {
   @Post()
   async createResident(
     @Body()
-    user: Prisma.UserCreateInput & { resident: Prisma.ResidentCreateInput },
-    ownerId: string,
+    {
+      user,
+      ownerId,
+    }: {
+      user: Prisma.UserCreateInput & { resident: Prisma.ResidentCreateInput };
+      ownerId: string;
+    },
   ) {
     try {
       await this.residentService.createResident({ user, ownerId });

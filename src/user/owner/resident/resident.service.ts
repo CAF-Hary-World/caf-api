@@ -5,7 +5,6 @@ import {
 } from '../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { encodeSha256 } from 'src/libs/bcrypt';
 import {
   ownerInMemory,
   ownersInMemory,
@@ -13,6 +12,7 @@ import {
   usersInMemory,
   visitantInMemory,
 } from 'src/libs/memory-cache';
+import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -52,7 +52,10 @@ export class OwnerResidentService {
     residentInMemory.clear();
   }
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async listResidents({
     id,
@@ -122,9 +125,23 @@ export class OwnerResidentService {
     ownerId: string;
   }) {
     this.resetCache();
+    let residentId: string;
 
     try {
-      return await this.prisma.user.create({
+      const owner = await this.prisma.owner.findUnique({
+        where: {
+          id: ownerId,
+        },
+        select: {
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      const resident = await this.prisma.user.create({
         data: {
           name: user.name,
           role: {
@@ -132,11 +149,10 @@ export class OwnerResidentService {
               name: 'RESIDENT',
             },
           },
-          available: true,
           resident: {
             create: {
               ...user.resident,
-              password: encodeSha256(user.resident.password),
+              password: '123123123',
               owner: {
                 connect: {
                   id: ownerId,
@@ -146,9 +162,23 @@ export class OwnerResidentService {
           },
         },
       });
+      residentId = resident.id;
+      await this.mailService.sendResidentConfirmation({
+        recipient: {
+          email: user.resident.email,
+          name: user.name,
+          id: residentId,
+        },
+        sender: {
+          name: owner.user.name,
+        },
+      });
+      return resident;
     } catch (error) {
       console.log('Residente Create Service = ', error);
-
+      await this.prisma.user.delete({
+        where: { id: residentId },
+      });
       throw new Error(error);
     }
   }

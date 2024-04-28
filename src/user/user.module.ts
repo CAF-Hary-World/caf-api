@@ -12,6 +12,7 @@ import { OwnerVisitantController } from './owner/visitant/visitant.controller';
 import { OwnerVisitantService } from './owner/visitant/visitant.service';
 import { OwnerResidentController } from './owner/resident/resident.controller';
 import { OwnerResidentService } from './owner/resident/resident.service';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   controllers: [
@@ -31,6 +32,7 @@ import { OwnerResidentService } from './owner/resident/resident.service';
     ResidentService,
     OwnerService,
   ],
+  imports: [MailModule],
   exports: [UserService],
 })
 export class UserModule {}
