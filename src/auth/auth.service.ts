@@ -20,6 +20,9 @@ export class AuthService {
   ) {}
 
   async signIn({ email, password }: { email: string; password: string }) {
+    console.log('Login (email) = ', email);
+    console.log('Login (password) = ', password);
+
     try {
       const user: ISignIn = await this.findOwnerOrResident({
         email,

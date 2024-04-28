@@ -51,7 +51,9 @@ export class OwnerVisitantService {
   }) {
     const reference = `user${id}-owner-${ownerId}-visitant-${page}-${name}-${cpf}`;
 
-    const perPage = 2;
+    const perPage = process.env.DEFAULT_PER_PAGE
+      ? Number(process.env.DEFAULT_PER_PAGE)
+      : 10;
 
     const visitantsCount = await this.prisma.visitant.count({
       where: {
@@ -90,8 +92,6 @@ export class OwnerVisitantService {
           take: perPage,
           select: this.selectScope,
         });
-
-        console.log('visitants (no-cache) ', visitants);
 
         visitantsInMemory.storeExpiringItem(
           reference,

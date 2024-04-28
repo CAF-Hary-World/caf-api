@@ -10,30 +10,30 @@ import {
   Patch,
   Query,
 } from '@nestjs/common';
-import { OwnerVisitantService } from './visitant.service';
+import { OwnerResidentService } from './resident.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Prisma } from '@prisma/client';
 
-@Controller('users/:id/owners/:ownerId/visitants')
-export class OwnerVisitantController {
-  constructor(private readonly visitantService: OwnerVisitantService) {}
+@Controller('users/:id/owners/:ownerId/residents')
+export class OwnerResidentController {
+  constructor(private readonly residentService: OwnerResidentService) {}
 
   @UseGuards(AuthGuard)
   @Get()
-  async listVisitants(
+  async listResidents(
     @Param() { id, ownerId }: { id: string; ownerId: string },
     @Query() { page, name, cpf }: { page: number; name?: string; cpf?: string },
   ) {
     try {
-      const visitants = await this.visitantService.listVisitants({
+      const residents = await this.residentService.listResidents({
         id,
         ownerId,
         page,
         name,
         cpf,
       });
-      console.log('List visitants');
-      return visitants;
+      console.log('List residents');
+      return residents;
     } catch (error) {
       console.log('Controller error = ', error);
 
@@ -52,11 +52,13 @@ export class OwnerVisitantController {
 
   @UseGuards(AuthGuard)
   @Post()
-  async createVisitant(
-    @Body() visitant: Prisma.VisitantCreateInput & { invitedBy: string },
+  async createResident(
+    @Body()
+    user: Prisma.UserCreateInput & { resident: Prisma.ResidentCreateInput },
+    ownerId: string,
   ) {
     try {
-      await this.visitantService.createVisitant({ visitant });
+      await this.residentService.createResident({ user, ownerId });
     } catch (error) {
       throw new HttpException(
         {
@@ -73,12 +75,12 @@ export class OwnerVisitantController {
 
   @UseGuards(AuthGuard)
   @Patch('/remove')
-  async removeVisitant(
+  async removeResident(
     @Body() data: { cpf: string },
     @Param() { id, ownerId }: { id: string; ownerId: string },
   ) {
     try {
-      return await this.visitantService.removeVisitant({
+      return await this.residentService.removeResident({
         cpf: data.cpf,
         id,
         ownerId,
@@ -99,48 +101,18 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/add')
-  async addVisitant(
-    @Body() data: { cpf: string },
+  @Patch('/update')
+  async updateResident(
+    @Body()
+    user: Prisma.UserCreateInput & { resident: Prisma.ResidentCreateInput },
     @Param() { id, ownerId }: { id: string; ownerId: string },
   ) {
     try {
-      return await this.visitantService.addVisitant({
-        cpf: data.cpf,
+      return await this.residentService.updateResident({
         id,
         ownerId,
-      });
-    } catch (error) {
-      console.log(error.code);
-      throw new HttpException(
-        {
-          status:
-            error.code !== 'P2002'
-              ? HttpStatus.UNAUTHORIZED
-              : HttpStatus.CONFLICT,
-          error: error.message,
-        },
-        error.code !== 'P2002' ? HttpStatus.UNAUTHORIZED : HttpStatus.CONFLICT,
-        {
-          cause: error,
-        },
-      );
-    }
-  }
-
-  @UseGuards(AuthGuard)
-  @Patch('/available')
-  async updateAvailableStatus(
-    @Body() data: { cpf: string; justifications: Array<string> },
-    @Param() { id, ownerId }: { id: string; ownerId: string },
-  ) {
-    const { cpf, justifications } = data;
-    try {
-      return await this.visitantService.updateAvailableStatus({
-        cpf,
-        id,
-        justifications,
-        ownerId,
+        residentId: user.resident.id,
+        user,
       });
     } catch (error) {
       console.log(error);

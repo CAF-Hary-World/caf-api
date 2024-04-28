@@ -22,17 +22,15 @@ export class VisitantService {
     const reference = `visitant-${cpf}`;
     try {
       if (!visitantInMemory.hasItem(reference)) {
+        console.log('no visitant cpf in cache');
         const visitant = await this.prisma.visitant.findUnique({
           where: {
             cpf,
           },
           select: this.selectScope,
         });
-        console.log('visitant = ', visitant);
-        console.log(`not-in-cache-visitant-${cpf}`);
         visitantInMemory.storePermanentItem(reference, visitant);
       }
-      console.log(visitantInMemory.retrieveItemValue(reference));
       return visitantInMemory.retrieveItemValue(reference);
     } catch (error) {
       throw new Error(error);

@@ -42,8 +42,6 @@ model Role {
   user        User[]
 }
 
-
-
 model User {
   id          String @id @default(uuid())
   createdAt   DateTime   @default(now())
@@ -132,6 +130,22 @@ model VisitantsOnOwner {
   @@id([ownerId, visitantId])
 }
 
+model VisitantsOnResident {
+  createdAt                 DateTime      @default(now())
+  deletedAt                 DateTime?
+  updatedAt                 DateTime      @updatedAt
+
+  // Relation Visitant
+  visitantId                String
+  visitant                  Visitant         @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+
+  // Relation Owner
+  residentId                String
+  resident                  Resident         @relation(fields: [residentId], references: [id], onDelete: Cascade)
+
+  @@id([residentId, visitantId])
+}
+
 model InvitationByOwner {
   id          String @id @default(uuid())
   createdAt   DateTime   @default(now())
@@ -157,25 +171,27 @@ model InvitationByResident {
 }
 
 model Resident {
-  id          String @id @default(uuid())
-  createdAt   DateTime   @default(now())
-  deletedAt   DateTime?
-  updatedAt   DateTime   @updatedAt
+  id                    String @id @default(uuid())
+  createdAt             DateTime   @default(now())
+  deletedAt             DateTime?
+  updatedAt             DateTime   @updatedAt
 
-  photo       String?
-  password    String
-  cpf         String      @unique
-  email       String?     @unique
-  phone       String?
+  photo                 String?
+  password              String
+  cpf                   String      @unique
+  email                 String?     @unique
+  phone                 String?
 
-  invitations InvitationByResident[]
+  invitations           InvitationByResident[]
+
+  visitantsOnResident   VisitantsOnResident[]
 
   // Relation field on Resident model
-  visitants   Visitant[]
-  ownerId     String
-  owner       Owner       @relation(fields: [ownerId], references: [id], onDelete: Cascade) 
-  userId      String      @unique
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visitants             Visitant[]
+  ownerId               String
+  owner                 Owner       @relation(fields: [ownerId], references: [id], onDelete: Cascade) 
+  userId                String      @unique
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Visitant {
@@ -202,9 +218,10 @@ model Visitant {
 
   ownersOnVisitants       VisitantsOnOwner[]
 
-
   invitationByResident    String?       @unique
   inviteByResident        InvitationByResident[]
+  
+  residentsOnVisitants    VisitantsOnResident[]
 
   ownerId                 String?
   owner                   Owner?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)

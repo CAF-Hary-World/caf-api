@@ -10,12 +10,15 @@ import { OwnerService } from './owner/owner.service';
 import { OwnerController } from './owner/owner.controller';
 import { OwnerVisitantController } from './owner/visitant/visitant.controller';
 import { OwnerVisitantService } from './owner/visitant/visitant.service';
+import { OwnerResidentController } from './owner/resident/resident.controller';
+import { OwnerResidentService } from './owner/resident/resident.service';
 
 @Module({
   controllers: [
     UserController,
     ResidentVisitantController,
     OwnerVisitantController,
+    OwnerResidentController,
     ResidentController,
     OwnerController,
   ],
@@ -24,6 +27,7 @@ import { OwnerVisitantService } from './owner/visitant/visitant.service';
     UserService,
     ResidentVisitantService,
     OwnerVisitantService,
+    OwnerResidentService,
     ResidentService,
     OwnerService,
   ],
