@@ -181,7 +181,6 @@ export class OwnerVisitantService {
           },
         },
       },
-      select: this.selectScope,
     });
   }
 
