@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { encodeSha256 } from 'src/libs/bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -11,6 +12,26 @@ export class ResidentService {
       await this.prisma.resident.findFirstOrThrow({
         where: {
           userId: id,
+        },
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async confirmation({ id, password }: { id: string; password: string }) {
+    try {
+      const user = await this.prisma.user.findFirstOrThrow({ where: { id } });
+      if (user.available) throw new Error('User already available');
+      return await this.prisma.user.update({
+        where: { id },
+        data: {
+          available: true,
+          resident: {
+            update: {
+              password: encodeSha256(password),
+            },
+          },
         },
       });
     } catch (error) {
