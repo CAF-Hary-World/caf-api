@@ -1,6 +1,7 @@
 import {
   residentInMemory,
   residentsInMemory,
+  SelectResident,
   visitantsInMemory,
 } from '../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
@@ -88,21 +89,48 @@ export class OwnerResidentService {
 
     try {
       if (!residentsInMemory.hasItem(reference)) {
-        const residents = await this.prisma.user.findMany({
+        const residents = await this.prisma.resident.findMany({
           where: {
             ownerId,
-            ...(name && { name: { contains: name } }),
-            ...(cpf && { resident: { cpf: { contains: cpf } } }),
+            ...(name && { user: { name: { contains: name } } }),
+            ...(cpf && { cpf: { contains: cpf } }),
           },
-          orderBy: { name: 'desc' },
+          orderBy: { user: { name: 'desc' } },
           skip: (page - 1) * perPage,
           take: perPage,
-          select: this.selectScope,
+          select: {
+            id: true,
+            cpf: true,
+            email: true,
+            phone: true,
+            photo: true,
+            visitants: true,
+            owner: { select: { id: true, house: true, square: true } },
+            user: {
+              select: {
+                name: true,
+                available: true,
+                id: true,
+                role: true,
+              },
+            },
+          },
         });
+
+        console.log(residents);
+
+        const residentSerialized: Array<Prisma.UserGetPayload<SelectResident>> =
+          residents.map((resident) => ({
+            name: resident.user.name,
+            available: resident.user.available,
+            id: resident.user.id,
+            role: resident.user.role,
+            resident: { ...resident },
+          }));
 
         residentsInMemory.storeExpiringItem(
           reference,
-          residents,
+          residentSerialized,
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
         );
       }

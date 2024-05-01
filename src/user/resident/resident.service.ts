@@ -1,9 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { encodeSha256 } from 'src/libs/bcrypt';
+import {
+  ownerInMemory,
+  ownersInMemory,
+  residentInMemory,
+  residentsInMemory,
+  userInMemory,
+  usersInMemory,
+  visitantInMemory,
+  visitantsInMemory,
+} from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ResidentService {
+  private resetCache() {
+    userInMemory.clear();
+    usersInMemory.clear();
+    ownerInMemory.clear();
+    ownersInMemory.clear();
+    visitantInMemory.clear();
+    visitantsInMemory.clear();
+    residentsInMemory.clear();
+    residentInMemory.clear();
+  }
+
   constructor(private readonly prisma: PrismaService) {}
 
   async belongsToOwner(id: string) {
@@ -20,6 +41,7 @@ export class ResidentService {
   }
 
   async confirmation({ id, password }: { id: string; password: string }) {
+    this.resetCache();
     try {
       const user = await this.prisma.user.findFirstOrThrow({ where: { id } });
       if (user.available) throw new Error('User already available');
