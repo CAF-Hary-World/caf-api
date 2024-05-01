@@ -20,6 +20,12 @@ export class SignupService {
       const owner = await this.prismaService.user.create({
         data: {
           name: data.name,
+          available: {
+            create: {
+              status: 'PROCESSING',
+              justifications: ['Aguardando confirmação do email'],
+            },
+          },
           role: {
             connect: {
               name: 'OWNER',

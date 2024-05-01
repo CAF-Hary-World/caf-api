@@ -172,6 +172,12 @@ export class OwnerResidentService {
       const resident = await this.prisma.user.create({
         data: {
           name: user.name,
+          available: {
+            create: {
+              status: 'PROCESSING',
+              justifications: ['Aguardando confirmação do email'],
+            },
+          },
           role: {
             connect: {
               name: 'RESIDENT',

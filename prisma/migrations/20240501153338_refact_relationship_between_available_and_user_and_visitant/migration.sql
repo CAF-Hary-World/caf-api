@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Available" ALTER COLUMN "visitantId" DROP NOT NULL,
+ALTER COLUMN "userId" DROP NOT NULL;

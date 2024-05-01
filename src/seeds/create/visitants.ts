@@ -7,7 +7,11 @@ async function createVisitant() {
   const user = await prisma.user.create({
     data: {
       name: mockedUser.name,
-      available: true,
+      available: {
+        create: {
+          status: 'ALLOWED',
+        },
+      },
       role: { connect: { name: 'OWNER' } },
       owner: {
         create: {
