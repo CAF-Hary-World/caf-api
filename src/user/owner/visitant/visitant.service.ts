@@ -1,6 +1,6 @@
 import { visitantsInMemory } from './../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Justification, Prisma } from '@prisma/client';
 import {
   ownerInMemory,
   ownersInMemory,
@@ -224,10 +224,12 @@ export class OwnerVisitantService {
     id: string;
     ownerId: string;
     cpf: string;
-    justifications: Array<string>;
+    justifications: Array<Pick<Justification, 'description'>>;
   }) {
     this.resetCache();
     console.log('update available status');
+
+    const allJustification = await this.prisma.justification.findMany();
 
     //  IF visitant belongs to owner
     await this.prisma.user.findUniqueOrThrow({
@@ -257,7 +259,16 @@ export class OwnerVisitantService {
         visitantId: visitant.id,
       },
       data: {
-        justifications,
+        justifications: {
+          createMany: {
+            skipDuplicates: true,
+            data: justifications.map((justification) => ({
+              justificationId: allJustification.find(
+                (just) => just.description === justification.description,
+              ).id,
+            })),
+          },
+        },
         status: 'PROCESSING',
       },
     });

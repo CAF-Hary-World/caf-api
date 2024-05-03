@@ -12,6 +12,8 @@ import { AuthModule } from './auth/auth.module';
 import { RoleModule } from './role/role.module';
 import { VisitantService } from './visitant/visitant.service';
 import { VisitantController } from './visitant/visitant.controller';
+import { JustificationController } from './justification/justification.controller';
+import { JustificationService } from './justification/justification.service';
 
 @Module({
   imports: [UserModule, AuthModule, MailModule, RoleModule],
@@ -20,8 +22,9 @@ import { VisitantController } from './visitant/visitant.controller';
     SignupController,
     UserController,
     VisitantController,
+    JustificationController,
   ],
-  providers: [AppService, SignupService, PrismaService, VisitantService],
+  providers: [AppService, SignupService, PrismaService, VisitantService, JustificationService],
 })
 export class AppModule {
   constructor(private readonly prismaService: PrismaService) {

@@ -9,7 +9,13 @@ export class UserService {
     try {
       const user = await this.prisma.user.findFirstOrThrow({
         where: { id },
-        include: { available: true },
+        include: {
+          available: {
+            include: {
+              justifications: true,
+            },
+          },
+        },
       });
       if (user.available.status === 'ALLOWED')
         throw new Error('User already available');
@@ -19,7 +25,15 @@ export class UserService {
           available: {
             update: {
               status: 'ALLOWED',
-              justifications: [],
+              justifications: {
+                deleteMany: {
+                  justificationId: {
+                    in: user.available.justifications.map(
+                      (justification) => justification.justificationId,
+                    ),
+                  },
+                },
+              },
             },
           },
         },
