@@ -23,7 +23,11 @@ export class SignupService {
           available: {
             create: {
               status: 'PROCESSING',
-              justifications: ['Aguardando confirmação do email'],
+              justifications: {
+                connect: {
+                  description: 'Documentação pendente',
+                },
+              },
             },
           },
           role: {

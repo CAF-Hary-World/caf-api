@@ -37,9 +37,27 @@ async function createVisitant() {
   await prisma.available.createMany({
     data: user.owner.visitantsCreated.map((visitant) => ({
       status: 'PROCESSING',
-      justifications: ['Documentação pendente'],
       visitantId: visitant.id,
     })),
+  });
+
+  const availables = await prisma.available.findMany({
+    where: {
+      visitantId: {
+        in: user.owner.visitantsCreated.map((visitant) => visitant.id),
+      },
+    },
+  });
+
+  await prisma.justification.update({
+    where: { description: 'Aguardando confirmação do email' },
+    data: {
+      availables: {
+        createMany: {
+          data: availables.map((available) => ({ availableId: available.id })),
+        },
+      },
+    },
   });
 
   return user;

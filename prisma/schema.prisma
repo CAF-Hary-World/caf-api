@@ -75,22 +75,6 @@ model Admin {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Available {
-  id                String @id @default(uuid())
-  createdAt         DateTime   @default(now())
-  deletedAt         DateTime?
-  updatedAt         DateTime   @updatedAt
-
-  status            STATUS
-  justifications    String[] @default(["Documentação pendente"])
-
-  visitantId        String?    @unique
-  visitant          Visitant?  @relation(fields: [visitantId], references: [id], onDelete: Cascade)
-
-  userId            String?    @unique
-  user              User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
 model Owner {
   id                 String @id @default(uuid())
   createdAt          DateTime   @default(now())
@@ -237,4 +221,79 @@ model Visitant {
 
 // END USERS
 
+// START AVAILABLE
+
+model Available {
+  id                String @id @default(uuid())
+  createdAt         DateTime   @default(now())
+  deletedAt         DateTime?
+  updatedAt         DateTime   @updatedAt
+
+  status            STATUS
+  justifications    AvailablesJustifications[]
+
+  visitantId        String?    @unique
+  visitant          Visitant?  @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+
+  userId            String?    @unique
+  user              User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AvailablesJustifications {
+  createdAt               DateTime   @default(now())
+  deletedAt               DateTime?
+  updatedAt               DateTime   @updatedAt
+
+  availableId             String
+  availabe                Available @relation(fields: [availableId], references: [id], onDelete: Cascade)
+  justificationId         String
+  justification           Justification @relation(fields: [justificationId], references: [id], onDelete: Cascade)
+
+  @@id([availableId, justificationId])
+}
+
+model Justification {
+  id                      String @id @default(uuid())
+  createdAt               DateTime   @default(now())
+  deletedAt               DateTime?
+  updatedAt               DateTime   @updatedAt
+
+  description             String @unique @default("Documentação pendente")
+
+  availables              AvailablesJustifications[]
+
+  justificationCategories JustificationCategories[]
+}
+
+model JustificationCategories {
+  createdAt                   DateTime   @default(now())
+  deletedAt                   DateTime?
+  updatedAt                   DateTime   @updatedAt
+
+  justificationId             String
+  justification               Justification @relation(fields: [justificationId], references: [id], onDelete: Cascade)
+  categoryId                  String
+  category                    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  @@id([justificationId, categoryId])
+}
+
+
+// END AVAILABLE
+
 // START Bookings
+
+
+// END Bookings
+
+// Polymorphic
+
+model Category {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(now())
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt
+
+  name                          String @unique
+
+  categoryJustifications        JustificationCategories[]
+}

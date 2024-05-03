@@ -3,6 +3,7 @@ import { prisma } from '../../../prismaClient';
 async function statusAllow() {
   const visitant = await prisma.visitant.findFirstOrThrow({
     where: { name: { contains: 'Seeded 0' } },
+    include: { available: { include: { justifications: true } } },
   });
 
   await prisma.visitant.update({
@@ -11,7 +12,14 @@ async function statusAllow() {
       available: {
         update: {
           status: 'ALLOWED',
-          justifications: [],
+          justifications: {
+            disconnect: {
+              id: visitant.available.justifications.find(
+                (justification) =>
+                  justification.availableId === visitant.availableId,
+              ).id,
+            },
+          },
         },
       },
     },

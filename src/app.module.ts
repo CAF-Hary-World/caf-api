@@ -30,5 +30,6 @@ export class AppModule {
   async runSeeds() {
     const seed = new Seed(this.prismaService);
     await seed.createDefaultRoles();
+    await seed.createDefaultJustifications();
   }
 }

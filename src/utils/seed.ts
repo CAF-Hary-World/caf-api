@@ -30,4 +30,38 @@ export class Seed {
       throw new Error(error);
     }
   }
+
+  async createDefaultJustifications() {
+    try {
+      const defaultJustifications: Array<Prisma.JustificationCreateInput> = [
+        { description: 'Aguardando confirmação do email' },
+        { description: 'Confirmação com a administração' },
+        { description: 'Documentação pendente' },
+      ];
+
+      const defaultJustificationsDescriptions = defaultJustifications.map(
+        (justification) => justification.description,
+      );
+      const justifications = await this.prismaService.justification.findMany();
+
+      const justificationDescription = justifications.map(
+        (justification) => justification.description,
+      );
+
+      if (
+        defaultJustificationsDescriptions.some(
+          (justification) => !justificationDescription.includes(justification),
+        )
+      )
+        await this.prismaService.justification.createMany({
+          data: defaultJustifications.map((justification) => ({
+            description: justification.description,
+          })),
+        });
+
+      return;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }
