@@ -23,6 +23,8 @@ export class SignupController {
       await this.signUpService.createOwner(data);
       return;
     } catch (error) {
+      console.log(error);
+
       throw new HttpException(
         {
           status: HttpStatus.UNPROCESSABLE_ENTITY,

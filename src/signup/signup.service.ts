@@ -24,9 +24,22 @@ export class SignupService {
             create: {
               status: 'PROCESSING',
               justifications: {
-                connect: {
-                  description: 'Documentação pendente',
-                },
+                create: [
+                  {
+                    justification: {
+                      connect: {
+                        description: 'Aguardando confirmação do email',
+                      },
+                    },
+                  },
+                  {
+                    justification: {
+                      connect: {
+                        description: 'Confirmação com a administração',
+                      },
+                    },
+                  },
+                ],
               },
             },
           },
@@ -46,7 +59,11 @@ export class SignupService {
             },
           },
         },
+        include: {
+          available: true,
+        },
       });
+
       ownerId = owner.id;
       await this.mailService.sendUserConfirmation({
         email: data.email,

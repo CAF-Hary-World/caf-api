@@ -5,11 +5,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class JustificationService {
   constructor(private prismaService: PrismaService) {}
 
-  // async list() {
-  //   try {
-
-  //   } catch (error) {
-
-  //   }
-  // }
+  async list() {
+    try {
+      return await this.prismaService.justification.findMany();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }
