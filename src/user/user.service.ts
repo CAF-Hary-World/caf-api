@@ -12,7 +12,16 @@ export class UserService {
         include: {
           available: {
             include: {
-              justifications: true,
+              justifications: {
+                include: {
+                  justification: {
+                    select: {
+                      id: true,
+                      description: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -24,13 +33,19 @@ export class UserService {
         data: {
           available: {
             update: {
-              status: 'ALLOWED',
               justifications: {
-                deleteMany: {
-                  justificationId: {
-                    in: user.available.justifications.map(
-                      (justification) => justification.justificationId,
-                    ),
+                delete: {
+                  availableId: user.available.id,
+                  availableId_justificationId: {
+                    availableId: user.available.id,
+                    justificationId: user.available.justifications.find(
+                      (justification) => {
+                        return (
+                          justification.justification.description ===
+                          'Aguardando confirmação do email'
+                        );
+                      },
+                    ).justification.id,
                   },
                 },
               },
