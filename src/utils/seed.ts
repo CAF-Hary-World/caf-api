@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { encodeSha256 } from 'src/libs/bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export class Seed {
@@ -86,7 +87,7 @@ export class Seed {
             root: {
               create: {
                 email: process.env.USER_ROOT_EMAIL,
-                password: process.env.USER_ROOT_PASSWORD,
+                password: encodeSha256(process.env.USER_ROOT_PASSWORD),
               },
             },
             role: {

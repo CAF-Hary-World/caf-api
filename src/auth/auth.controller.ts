@@ -39,7 +39,7 @@ export class AuthController {
   @Post('admin')
   async singInAdmin(@Body() signIn: SignInDto) {
     try {
-      return await this.authService.signInOwnerOrResident({
+      return await this.authService.signInAdmin({
         email: signIn.email,
         password: signIn.password,
       });

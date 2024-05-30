@@ -69,16 +69,17 @@ export class AuthService {
         access_token: await this.jwtService.signAsync(payload),
         user: {
           id: user.id,
-          role: user.role,
           name: user.name,
           email: user.admin ? user.admin.email : user.root.email,
-          phone: user.admin?.phone,
-          photo: user.admin?.photo,
-          adminId: user.admin?.id,
-          rootId: user.root?.id,
+          phone: user.admin?.phone || null,
+          photo: user.admin?.photo || null,
+          role: user.role,
+          adminId: user.admin?.id || null,
+          rootId: user.root?.id || null,
         },
       };
     } catch (error) {
+      console.log(error);
       throw new Error(error);
     }
   }
@@ -178,7 +179,7 @@ export class AuthService {
       ) {
         return await this.prisma.user.findUniqueOrThrow({
           where: {
-            id: admin.userId || root.userId,
+            id: admin?.userId || root.userId,
             available: { status: 'ALLOWED' },
           },
           select: {
