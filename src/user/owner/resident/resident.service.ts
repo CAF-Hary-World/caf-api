@@ -6,6 +6,7 @@ import {
 } from '../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { encodeSha256 } from 'src/libs/bcrypt';
 import {
   ownerInMemory,
   ownersInMemory,
@@ -117,8 +118,6 @@ export class OwnerResidentService {
           },
         });
 
-        console.log(residents);
-
         const residentSerialized: Array<Prisma.UserGetPayload<SelectResident>> =
           residents.map((resident) => ({
             name: resident.user.name,
@@ -175,7 +174,15 @@ export class OwnerResidentService {
           available: {
             create: {
               status: 'PROCESSING',
-              justifications: ['Aguardando confirmação do email'],
+              justifications: {
+                create: {
+                  justification: {
+                    connect: {
+                      description: 'Aguardando confirmação do email',
+                    },
+                  },
+                },
+              },
             },
           },
           role: {
@@ -186,7 +193,7 @@ export class OwnerResidentService {
           resident: {
             create: {
               ...user.resident,
-              password: '123123123',
+              password: encodeSha256(user.resident.password),
               owner: {
                 connect: {
                   id: ownerId,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Owner, Resident, Role, User } from '@prisma/client';
+import { Admin, Owner, Resident, Role, Root, User } from '@prisma/client';
 import { compare } from 'src/libs/bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -11,6 +11,8 @@ type ISignIn = Pick<User, 'id' | 'name'> & {
     owner: Pick<Owner, 'id' | 'house' | 'square'>;
   };
   owner?: Pick<Owner, 'id' | 'house' | 'square' | 'phone' | 'photo' | 'email'>;
+  admin?: Pick<Admin, 'id' | 'phone' | 'photo' | 'email'>;
+  root?: Pick<Root, 'id' | 'email'>;
 };
 @Injectable()
 export class AuthService {
@@ -19,10 +21,13 @@ export class AuthService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async signIn({ email, password }: { email: string; password: string }) {
-    console.log('Login (email) = ', email);
-    console.log('Login (password) = ', password);
-
+  async signInOwnerOrResident({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) {
     try {
       const user: ISignIn = await this.findOwnerOrResident({
         email,
@@ -44,6 +49,33 @@ export class AuthService {
           square: user.owner ? user.owner.square : user.resident.owner.square,
           residentId: user.resident?.id,
           ownerId: user.owner?.id,
+        },
+      };
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async signInAdmin({ email, password }: { email: string; password: string }) {
+    try {
+      const user: ISignIn = await this.findAdmin({
+        email,
+        pass: password,
+      });
+
+      const payload = { email, id: user.id, role: user.role };
+
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+        user: {
+          id: user.id,
+          role: user.role,
+          name: user.name,
+          email: user.admin ? user.admin.email : user.root.email,
+          phone: user.admin?.phone,
+          photo: user.admin?.photo,
+          adminId: user.admin?.id,
+          rootId: user.root?.id,
         },
       };
     } catch (error) {
@@ -118,6 +150,60 @@ export class AuthService {
                 },
               },
             },
+          },
+        });
+      }
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  private async findAdmin({ email, pass }: { email: string; pass: string }) {
+    try {
+      const admin = await this.prisma.admin.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      const root = await this.prisma.root.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      if (
+        (!!admin && compare(pass, admin.password)) ||
+        (!!root && compare(pass, root.password))
+      ) {
+        return await this.prisma.user.findUniqueOrThrow({
+          where: {
+            id: admin.userId || root.userId,
+            available: { status: 'ALLOWED' },
+          },
+          select: {
+            name: true,
+            available: true,
+            id: true,
+            role: { select: { name: true, id: true } },
+            ...(admin && {
+              admin: {
+                select: {
+                  email: true,
+                  id: true,
+                  phone: true,
+                  photo: true,
+                },
+              },
+            }),
+            ...(root && {
+              root: {
+                select: {
+                  id: true,
+                  email: true,
+                },
+              },
+            }),
           },
         });
       }
