@@ -24,7 +24,13 @@ import { JustificationService } from './justification/justification.service';
     VisitantController,
     JustificationController,
   ],
-  providers: [AppService, SignupService, PrismaService, VisitantService, JustificationService],
+  providers: [
+    AppService,
+    SignupService,
+    PrismaService,
+    VisitantService,
+    JustificationService,
+  ],
 })
 export class AppModule {
   constructor(private readonly prismaService: PrismaService) {
@@ -33,6 +39,9 @@ export class AppModule {
   async runSeeds() {
     const seed = new Seed(this.prismaService);
     await seed.createDefaultRoles();
-    await seed.createDefaultJustifications();
+    await Promise.all([
+      seed.createDefaultJustifications(),
+      seed.createRootUser(),
+    ]);
   }
 }

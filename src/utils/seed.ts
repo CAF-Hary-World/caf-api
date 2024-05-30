@@ -64,4 +64,40 @@ export class Seed {
       throw new Error(error);
     }
   }
+
+  async createRootUser() {
+    try {
+      const root = await this.prismaService.root.findUnique({
+        where: {
+          email: process.env.USER_ROOT_EMAIL,
+        },
+      });
+      console.log('Root already exists?', !!root);
+
+      if (!root)
+        await this.prismaService.user.create({
+          data: {
+            name: process.env.USER_ROOT_NAME,
+            available: {
+              create: {
+                status: 'ALLOWED',
+              },
+            },
+            root: {
+              create: {
+                email: process.env.USER_ROOT_EMAIL,
+                password: process.env.USER_ROOT_PASSWORD,
+              },
+            },
+            role: {
+              connect: {
+                name: 'ROOT',
+              },
+            },
+          },
+        });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }
