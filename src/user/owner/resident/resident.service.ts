@@ -1,21 +1,10 @@
-import {
-  residentInMemory,
-  residentsInMemory,
-  SelectResident,
-  visitantsInMemory,
-} from '../../../libs/memory-cache';
+import { residentsInMemory, SelectResident } from '../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { encodeSha256 } from 'src/libs/bcrypt';
-import {
-  ownerInMemory,
-  ownersInMemory,
-  userInMemory,
-  usersInMemory,
-  visitantInMemory,
-} from 'src/libs/memory-cache';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { resetUsers } from 'src/utils/resetCache';
 
 @Injectable()
 export class OwnerResidentService {
@@ -43,16 +32,7 @@ export class OwnerResidentService {
     },
   };
 
-  private resetCache() {
-    userInMemory.clear();
-    usersInMemory.clear();
-    ownerInMemory.clear();
-    ownersInMemory.clear();
-    visitantInMemory.clear();
-    visitantsInMemory.clear();
-    residentsInMemory.clear();
-    residentInMemory.clear();
-  }
+  private resetCache = resetUsers;
 
   constructor(
     private readonly prisma: PrismaService,

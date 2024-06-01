@@ -1,14 +1,8 @@
-import { visitantsInMemory } from './../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
 import { Justification, Prisma } from '@prisma/client';
-import {
-  ownerInMemory,
-  ownersInMemory,
-  userInMemory,
-  usersInMemory,
-  visitantInMemory,
-} from 'src/libs/memory-cache';
+import { visitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { resetUsers } from 'src/utils/resetCache';
 
 @Injectable()
 export class OwnerVisitantService {
@@ -25,14 +19,7 @@ export class OwnerVisitantService {
     phone: true,
   };
 
-  private resetCache() {
-    userInMemory.clear();
-    usersInMemory.clear();
-    ownerInMemory.clear();
-    ownersInMemory.clear();
-    visitantInMemory.clear();
-    visitantsInMemory.clear();
-  }
+  private resetCache = resetUsers;
 
   constructor(private readonly prisma: PrismaService) {}
 

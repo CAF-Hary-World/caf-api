@@ -1,29 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { encodeSha256 } from 'src/libs/bcrypt';
-import {
-  ownerInMemory,
-  ownersInMemory,
-  residentInMemory,
-  residentsInMemory,
-  userInMemory,
-  usersInMemory,
-  visitantInMemory,
-  visitantsInMemory,
-} from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { resetUsers } from 'src/utils/resetCache';
 
 @Injectable()
 export class ResidentService {
-  private resetCache() {
-    userInMemory.clear();
-    usersInMemory.clear();
-    ownerInMemory.clear();
-    ownersInMemory.clear();
-    visitantInMemory.clear();
-    visitantsInMemory.clear();
-    residentsInMemory.clear();
-    residentInMemory.clear();
-  }
+  private resetCache = resetUsers;
 
   constructor(private readonly prisma: PrismaService) {}
 
