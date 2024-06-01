@@ -19,7 +19,7 @@ export class RoleService {
       }
       return rolesInMemory.retrieveItemValue(reference);
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -35,7 +35,7 @@ export class RoleService {
       }
       return roleInMemory.retrieveItemValue(reference);
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -51,7 +51,7 @@ export class RoleService {
       }
       return roleInMemory.retrieveItemValue(reference);
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 }

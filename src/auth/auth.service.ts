@@ -52,7 +52,7 @@ export class AuthService {
         },
       };
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -80,7 +80,7 @@ export class AuthService {
       };
     } catch (error) {
       console.log(error);
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -155,7 +155,9 @@ export class AuthService {
         });
       }
     } catch (error) {
-      throw new Error(error);
+      console.log(error);
+
+      throw error;
     }
   }
 
@@ -209,7 +211,9 @@ export class AuthService {
         });
       }
     } catch (error) {
-      throw new Error(error);
+      console.log(error);
+
+      throw error;
     }
   }
 }

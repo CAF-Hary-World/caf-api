@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import {
   ownerInMemory,
   ownersInMemory,
@@ -109,7 +110,18 @@ export class OwnerService {
     } catch (error) {
       console.log('Owner List Service =', error);
 
-      throw new Error(error);
+      throw error;
+    }
+  }
+
+  async createOwner({}: {
+    data: Prisma.UserCreateInput & Prisma.OwnerCreateInput;
+  }) {
+    try {
+    } catch (error) {
+      console.log('Owner List Service =', error);
+
+      throw error;
     }
   }
 }

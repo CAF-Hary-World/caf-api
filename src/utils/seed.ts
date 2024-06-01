@@ -28,7 +28,7 @@ export class Seed {
 
       return;
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -62,7 +62,7 @@ export class Seed {
 
       return;
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -98,7 +98,7 @@ export class Seed {
           },
         });
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 }

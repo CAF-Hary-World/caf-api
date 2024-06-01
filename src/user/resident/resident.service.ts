@@ -36,7 +36,7 @@ export class ResidentService {
         },
       });
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -69,7 +69,7 @@ export class ResidentService {
         },
       });
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 }

@@ -33,7 +33,7 @@ export class VisitantService {
       }
       return visitantInMemory.retrieveItemValue(reference);
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 }

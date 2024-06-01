@@ -9,7 +9,7 @@ export class JustificationService {
     try {
       return await this.prismaService.justification.findMany();
     } catch (error) {
-      throw new Error(error);
+      throw error;
     }
   }
 }

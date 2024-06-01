@@ -106,7 +106,7 @@ export class OwnerVisitantService {
     } catch (error) {
       console.log('Visitante List Service =', error);
 
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -142,7 +142,7 @@ export class OwnerVisitantService {
     } catch (error) {
       console.log('Visitante Create Service = ', error);
 
-      throw new Error(error);
+      throw error;
     }
   }
 

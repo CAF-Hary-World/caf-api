@@ -75,7 +75,7 @@ export class SignupService {
       await this.prismaService.user.delete({
         where: { id: ownerId },
       });
-      throw new Error(error);
+      throw error;
     }
   }
 }

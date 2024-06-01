@@ -140,7 +140,7 @@ export class OwnerResidentService {
     } catch (error) {
       console.log('Residente List Service =', error);
 
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -220,7 +220,7 @@ export class OwnerResidentService {
       await this.prisma.user.delete({
         where: { id: residentId },
       });
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -249,7 +249,7 @@ export class OwnerResidentService {
     } catch (error) {
       console.log('Residente Create Service = ', error);
 
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -297,7 +297,7 @@ export class OwnerResidentService {
     } catch (error) {
       console.log('Residente Update Service = ', error);
 
-      throw new Error(error);
+      throw error;
     }
   }
 }
