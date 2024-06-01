@@ -43,12 +43,24 @@ export class ResidentService {
   async confirmation({ id, password }: { id: string; password: string }) {
     this.resetCache();
     try {
-      const user = await this.prisma.user.findFirstOrThrow({ where: { id } });
+      const user = await this.prisma.user.findFirstOrThrow({
+        where: { id },
+        include: { available: true },
+      });
       if (user.available) throw new Error('User already available');
       return await this.prisma.user.update({
         where: { id },
         data: {
-          available: true,
+          available: {
+            update: {
+              status: 'ALLOWED',
+              justifications: {
+                deleteMany: {
+                  availableId: user.availableId,
+                },
+              },
+            },
+          },
           resident: {
             update: {
               password: encodeSha256(password),

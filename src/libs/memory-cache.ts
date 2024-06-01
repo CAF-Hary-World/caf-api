@@ -73,7 +73,7 @@ export const adminsInMemory = new MemoryCache<
 export type SelectOwner = {
   select: {
     name: true;
-    available: true;
+    available: { include: { justifications: true } };
     id: true;
     role: { select: { name: true; id: true } };
     owner: {
@@ -92,17 +92,6 @@ export type SelectOwner = {
             phone: true;
             cpf: true;
             photo: true;
-          };
-        };
-        visitants: {
-          select: {
-            cnh: true;
-            cpf: true;
-            email: true;
-            kind: true;
-            code: true;
-            photo: true;
-            id: true;
           };
         };
       };
