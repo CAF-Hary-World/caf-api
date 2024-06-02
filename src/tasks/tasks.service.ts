@@ -7,12 +7,16 @@ export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
   constructor(private prisma: PrismaService) {}
-  // Define the cron job with a dynamic schedule
-  // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
-  //   name: 'restoreAvailableJustificationOfOwnerInvited',
-  //   timeZone: 'UTC',
-  // })
-  @Cron(process.env.NODE_ENV !== 'production' ? '*/50 * * * * *' : '* 1 * * *')
+
+  @Cron(
+    process.env.NODE_ENV === 'production'
+      ? CronExpression.EVERY_DAY_AT_MIDNIGHT
+      : CronExpression.EVERY_10_SECONDS,
+    {
+      name: 'restoreAvailableJustificationOfOwnerInvited',
+      timeZone: 'UTC',
+    },
+  )
   async handleCron() {
     this.logger.debug('Called restoreAvailableJustificationOfOwnerInvited');
     const availablesJustifications =

@@ -1,61 +1,80 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { encodeSha256 } from 'src/libs/bcrypt';
-import { ownerInMemory, ownersInMemory } from 'src/libs/memory-cache';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { resetUsers } from 'src/utils/resetCache';
 
 @Injectable()
 export class SignupService {
+  private resetCache = resetUsers;
+
   constructor(
     private readonly prismaService: PrismaService,
     private mailService: MailService,
   ) {}
 
-  async createOwner(data: Prisma.UserCreateInput & Prisma.OwnerCreateInput) {
-    ownerInMemory.clear();
-    ownersInMemory.clear();
-    let ownerId: string;
+  async activatedOwner({
+    data,
+    id,
+  }: {
+    data: Prisma.UserUpdateInput & Prisma.OwnerUpdateInput;
+    id: string;
+  }) {
+    this.resetCache();
     try {
-      const owner = await this.prismaService.user.create({
-        data: {
-          name: data.name,
+      const userOwner = await this.prismaService.user.findUniqueOrThrow({
+        where: {
+          id,
           available: {
-            create: {
-              status: 'PROCESSING',
-              justifications: {
-                create: [
-                  {
-                    justification: {
-                      connect: {
-                        description: 'Aguardando confirmação do email',
-                      },
-                    },
-                  },
-                  {
-                    justification: {
-                      connect: {
-                        description: 'Confirmação com a administração',
-                      },
-                    },
-                  },
-                ],
-              },
+            status: 'PROCESSING',
+          },
+        },
+        include: {
+          owner: true,
+          available: {
+            include: {
+              justifications: true,
             },
           },
-          role: {
-            connect: {
-              name: 'OWNER',
-            },
-          },
+        },
+      });
+
+      await this.prismaService.user.update({
+        where: {
+          id,
+        },
+        data: {
+          ...(userOwner.name !== data.name && { name: data.name }),
           owner: {
-            create: {
-              cpf: data.cpf,
-              email: data.email,
-              house: data.house,
-              square: data.square,
-              phone: data.phone,
-              password: encodeSha256(data.password),
+            update: {
+              ...(userOwner.owner.cpf !== data.cpf && { cpf: data.cpf }),
+              ...(userOwner.owner.email !== data.email && {
+                email: data.email,
+              }),
+              ...(userOwner.owner.phone !== data.phone && {
+                phone: data.phone,
+              }),
+              ...(userOwner.owner.photo !== data.photo && {
+                photo: data.photo,
+              }),
+              ...(userOwner.owner.house !== data.house && {
+                house: data.house,
+              }),
+              ...(userOwner.owner.square !== data.square && {
+                square: data.square,
+              }),
+              password: encodeSha256(String(data.password)),
+            },
+          },
+          available: {
+            update: {
+              status: 'ALLOWED',
+              justifications: {
+                deleteMany: {
+                  availableId: userOwner.available.id,
+                },
+              },
             },
           },
         },
@@ -64,17 +83,11 @@ export class SignupService {
         },
       });
 
-      ownerId = owner.id;
-      await this.mailService.sendUserConfirmation({
-        email: data.email,
-        name: data.name,
-        id: owner.id,
+      await this.mailService.sendUserValidation({
+        email: userOwner.owner.email,
+        name: userOwner.name,
       });
-      return owner;
     } catch (error) {
-      await this.prismaService.user.delete({
-        where: { id: ownerId },
-      });
       throw error;
     }
   }

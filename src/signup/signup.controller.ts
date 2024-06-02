@@ -4,7 +4,8 @@ import {
   HttpCode,
   HttpException,
   HttpStatus,
-  Post,
+  Patch,
+  Query,
 } from '@nestjs/common';
 import { SignupService } from './signup.service';
 import { Prisma } from '@prisma/client';
@@ -13,14 +14,15 @@ import { Prisma } from '@prisma/client';
 export class SignupController {
   constructor(private readonly signUpService: SignupService) {}
 
-  @Post('')
+  @Patch()
   @HttpCode(204)
   async signup(
     @Body()
-    data: Prisma.UserCreateInput & Prisma.OwnerCreateInput,
+    data: Prisma.UserUpdateInput & Prisma.OwnerUpdateInput,
+    @Query() id: string,
   ) {
     try {
-      await this.signUpService.createOwner(data);
+      await this.signUpService.activatedOwner({ data, id });
       return;
     } catch (error) {
       console.log(error);

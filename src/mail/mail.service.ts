@@ -25,6 +25,23 @@ export class MailService {
     });
   }
 
+  async sendUserValidation(user: Pick<User, 'name'> & Pick<Owner, 'email'>) {
+    const url = process.env.PLATAFORM_URL;
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      // from: '"Support Team" <support@example.com>', // override default from
+      subject: 'Time CAF! Sua conta foi ativada com sucesso.',
+      template: './available', // `.hbs` extension is appended automatically
+      context: {
+        // ✏️ filling curly brackets with content
+        name: user.name,
+        clientName: process.env.CLIENT_NAME,
+        url,
+      },
+    });
+  }
+
   async sendResidentConfirmation({
     recipient,
     sender,
