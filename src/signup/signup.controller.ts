@@ -19,10 +19,9 @@ export class SignupController {
   async signup(
     @Body()
     data: Prisma.UserUpdateInput & Prisma.OwnerUpdateInput,
-    @Query() id: string,
   ) {
     try {
-      await this.signUpService.activatedOwner({ data, id });
+      await this.signUpService.activatedOwner({ data });
       return;
     } catch (error) {
       console.log(error.message);

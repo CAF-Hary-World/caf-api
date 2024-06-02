@@ -16,16 +16,17 @@ export class SignupService {
 
   async activatedOwner({
     data,
-    id,
   }: {
     data: Prisma.UserUpdateInput & Prisma.OwnerUpdateInput;
-    id: string;
   }) {
     this.resetCache();
     try {
       const userOwner = await this.prismaService.user.findUniqueOrThrow({
         where: {
-          id,
+          id: String(data.id),
+          owner: {
+            id: String(data.ownerId),
+          },
           available: {
             status: 'PROCESSING',
           },
@@ -42,7 +43,10 @@ export class SignupService {
 
       await this.prismaService.user.update({
         where: {
-          id,
+          id: String(data.id),
+          owner: {
+            id: String(data.ownerId),
+          },
         },
         data: {
           ...(userOwner.name !== data.name && { name: data.name }),
