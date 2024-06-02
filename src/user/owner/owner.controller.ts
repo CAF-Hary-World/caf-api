@@ -18,11 +18,11 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { OwnerService } from './owner.service';
 
 @Controller('owners')
-@UseGuards(AuthGuard, RolesGuard)
-@Roles(ROLE.ADMIN, ROLE.ROOT)
 export class OwnerController {
   constructor(private ownerService: OwnerService) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Get()
   async listOwners(
     @Query() { page, name, cpf }: { page: number; name?: string; cpf?: string },
@@ -65,6 +65,8 @@ export class OwnerController {
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Get('/:id/:ownerId/send-invite')
   async getSendInvite(
     @Param() { id, ownerId }: { id: string; ownerId: string },
@@ -87,6 +89,8 @@ export class OwnerController {
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Post()
   async createOwner(
     @Body() data: Prisma.UserCreateInput & Prisma.OwnerCreateInput,
@@ -94,21 +98,26 @@ export class OwnerController {
     try {
       return await this.ownerService.createOwner(data);
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error.message);
 
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
         },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Patch('/:id/:ownerId')
   async updateOwner(
     @Body() data: Prisma.UserUpdateInput & Prisma.OwnerUpdateInput,
@@ -132,6 +141,8 @@ export class OwnerController {
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Delete('/:id/:ownerId')
   async deleteOwner(@Param() { id, ownerId }: { id: string; ownerId: string }) {
     try {
@@ -152,6 +163,8 @@ export class OwnerController {
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Delete('/delete-many')
   async deleteManyOwner(@Query() identifiers: string) {
     try {

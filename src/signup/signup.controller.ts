@@ -25,7 +25,7 @@ export class SignupController {
       await this.signUpService.activatedOwner({ data, id });
       return;
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
 
       throw new HttpException(
         {
@@ -35,6 +35,7 @@ export class SignupController {
         HttpStatus.UNPROCESSABLE_ENTITY,
         {
           cause: error,
+          description: error.message,
         },
       );
     }

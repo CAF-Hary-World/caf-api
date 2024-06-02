@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ownerInMemory, ownersInMemory } from 'src/libs/memory-cache';
 import { MailService } from 'src/mail/mail.service';
@@ -109,7 +113,7 @@ export class OwnerService {
     try {
       if (!ownerInMemory.hasItem(reference)) {
         const owner = await this.prisma.user.findUniqueOrThrow({
-          where: { id, ownerId },
+          where: { id, owner: { id: ownerId } },
           select: this.selectScope,
         });
 
@@ -167,9 +171,20 @@ export class OwnerService {
         },
       });
     } catch (error) {
-      console.log('Owner List Service =', error);
+      console.error('Owner Create Service =', error);
 
-      throw error;
+      // Handle specific Prisma errors or throw a general internal server error
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          // Unique constraint failed
+          const failedField = error.meta?.target as Array<string>;
+          throw new ConflictException(
+            `O ${failedField.includes('house') ? 'Quadra e Casa' : failedField} já foi utilizado!`,
+          );
+        }
+      }
+
+      throw new InternalServerErrorException('An unexpected error occurred.');
     }
   }
 
@@ -293,41 +308,52 @@ export class OwnerService {
           name: true,
           owner: {
             select: {
+              id: true,
               email: true,
             },
           },
           available: {
             select: {
               id: true,
+              justifications: {
+                select: {
+                  justification: {
+                    select: {
+                      id: true,
+                      description: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
       });
 
-      await this.mailService.sendUserConfirmation({
-        email: user.owner.email,
-        name: user.name,
+      await this.mailService.sendInviteUser({
         id: user.id,
-      });
-
-      await this.prisma.availablesJustifications.deleteMany({
-        where: {
-          availableId: user.available.id,
+        name: user.name,
+        owner: {
+          email: user.owner.email,
+          id: user.owner.id,
         },
       });
 
-      await this.prisma.available.update({
+      await this.prisma.availablesJustifications.update({
         where: {
-          id: user.available.id,
+          availableId_justificationId: {
+            availableId: user.available.id,
+            justificationId: user.available.justifications.find(
+              (just) =>
+                just.justification.description ===
+                'Aguardando convite da administração',
+            ).justification.id,
+          },
         },
         data: {
-          justifications: {
-            create: {
-              justification: {
-                connect: {
-                  description: 'Aguardando confirmação do email',
-                },
-              },
+          justification: {
+            connect: {
+              description: 'Aguardando confirmação do email',
             },
           },
         },

@@ -6,16 +6,18 @@ import { Owner, Resident, User } from '@prisma/client';
 export class MailService {
   constructor(private mailerService: MailerService) {}
 
-  async sendUserConfirmation(
-    user: Pick<User, 'name' | 'id'> & Pick<Owner, 'email'>,
+  async sendInviteUser(
+    user: Pick<User, 'name' | 'id'> & { owner: Pick<Owner, 'email' | 'id'> },
   ) {
-    const url = process.env.PLATAFORM_URL + `/confirmation?token=${user.id}`;
+    const url =
+      process.env.PLATAFORM_URL +
+      `/signup?id=${user.id}&ownerId=${user.owner.id}`;
 
     await this.mailerService.sendMail({
-      to: user.email,
+      to: user.owner.email,
       // from: '"Support Team" <support@example.com>', // override default from
       subject: 'Bem vindo ao CAF! Confirme seu email',
-      template: './confirmation', // `.hbs` extension is appended automatically
+      template: './invite', // `.hbs` extension is appended automatically
       context: {
         // ✏️ filling curly brackets with content
         name: user.name,
