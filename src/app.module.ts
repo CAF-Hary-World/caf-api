@@ -14,9 +14,17 @@ import { VisitantService } from './visitant/visitant.service';
 import { VisitantController } from './visitant/visitant.controller';
 import { JustificationController } from './justification/justification.controller';
 import { JustificationService } from './justification/justification.service';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksService } from './tasks/tasks.service';
 
 @Module({
-  imports: [UserModule, AuthModule, MailModule, RoleModule],
+  imports: [
+    UserModule,
+    AuthModule,
+    MailModule,
+    RoleModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [
     AppController,
     SignupController,
@@ -30,6 +38,7 @@ import { JustificationService } from './justification/justification.service';
     PrismaService,
     VisitantService,
     JustificationService,
+    TasksService,
   ],
 })
 export class AppModule {

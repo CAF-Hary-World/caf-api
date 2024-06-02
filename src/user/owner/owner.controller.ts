@@ -65,6 +65,28 @@ export class OwnerController {
     }
   }
 
+  @Get('/:id/:ownerId/send-invite')
+  async getSendInvite(
+    @Param() { id, ownerId }: { id: string; ownerId: string },
+  ) {
+    try {
+      return await this.ownerService.sendInvite({ id, ownerId });
+    } catch (error) {
+      console.log('Controller error = ', error);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Resource not found',
+        },
+        HttpStatus.NOT_FOUND,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
+
   @Post()
   async createOwner(
     @Body() data: Prisma.UserCreateInput & Prisma.OwnerCreateInput,

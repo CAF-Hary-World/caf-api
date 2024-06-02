@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ownerInMemory, ownersInMemory } from 'src/libs/memory-cache';
+import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
 
@@ -10,7 +11,9 @@ export class OwnerService {
 
   private readonly selectScope = {
     name: true,
-    available: { include: { justifications: true } },
+    available: {
+      include: { justifications: { include: { justification: true } } },
+    },
     id: true,
     role: { select: { name: true, id: true } },
     owner: {
@@ -35,7 +38,10 @@ export class OwnerService {
     },
   };
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async listOwners({
     page = 1,
@@ -134,9 +140,28 @@ export class OwnerService {
         data: {
           name: user.name,
           role: { connect: { name: 'OWNER' } },
+          available: {
+            create: {
+              status: 'PROCESSING',
+              justifications: {
+                create: {
+                  justification: {
+                    connect: {
+                      description: 'Aguardando convite da administração',
+                    },
+                  },
+                },
+              },
+            },
+          },
           owner: {
             create: {
-              ...owner,
+              cpf: owner.cpf,
+              email: owner.email,
+              password: owner.password,
+              phone: owner.phone,
+              house: owner.house,
+              square: owner.square,
             },
           },
         },
@@ -210,7 +235,7 @@ export class OwnerService {
         },
       });
     } catch (error) {
-      console.log('Owner List Service =', error);
+      console.log('Owner UPDATE Service =', error);
       throw error;
     }
   }
@@ -222,12 +247,13 @@ export class OwnerService {
       await this.prisma.user.delete({
         where: {
           id,
-          ownerId,
+          owner: {
+            id: ownerId,
+          },
         },
       });
     } catch (error) {
-      console.log('Owner List Service =', error);
-
+      console.log('Owner DELETE Service =', error);
       throw error;
     }
   }
@@ -249,6 +275,66 @@ export class OwnerService {
     } catch (error) {
       console.log('Owner List Service =', error);
 
+      throw error;
+    }
+  }
+
+  async sendInvite({ id, ownerId }: { id: string; ownerId: string }) {
+    try {
+      const user = await this.prisma.user.findUniqueOrThrow({
+        where: {
+          id,
+          owner: {
+            id: ownerId,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          owner: {
+            select: {
+              email: true,
+            },
+          },
+          available: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      await this.mailService.sendUserConfirmation({
+        email: user.owner.email,
+        name: user.name,
+        id: user.id,
+      });
+
+      await this.prisma.availablesJustifications.deleteMany({
+        where: {
+          availableId: user.available.id,
+        },
+      });
+
+      await this.prisma.available.update({
+        where: {
+          id: user.available.id,
+        },
+        data: {
+          justifications: {
+            create: {
+              justification: {
+                connect: {
+                  description: 'Aguardando confirmação do email',
+                },
+              },
+            },
+          },
+        },
+      });
+
+      resetUsers();
+    } catch (error) {
       throw error;
     }
   }

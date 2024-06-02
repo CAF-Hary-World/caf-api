@@ -37,12 +37,14 @@ export class Seed {
       const defaultJustifications: Array<Prisma.JustificationCreateInput> = [
         { description: 'Aguardando confirmação do email' },
         { description: 'Confirmação com a administração' },
+        { description: 'Aguardando convite da administração' },
         { description: 'Documentação pendente' },
       ];
 
       const defaultJustificationsDescriptions = defaultJustifications.map(
         (justification) => justification.description,
       );
+
       const justifications = await this.prismaService.justification.findMany();
 
       const justificationDescription = justifications.map(
