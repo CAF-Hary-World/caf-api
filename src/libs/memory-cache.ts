@@ -198,7 +198,20 @@ export const residentVisitantsInMemory = new MemoryCache<
 
 export type SelectVisitant = {
   select: {
-    available: true;
+    available: {
+      select: {
+        status: true;
+        justifications: {
+          select: {
+            justification: {
+              select: {
+                description: true;
+              };
+            };
+          };
+        };
+      };
+    };
     name: true;
     cnh: true;
     cpf: true;

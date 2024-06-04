@@ -7,7 +7,20 @@ import { resetUsers } from 'src/utils/resetCache';
 @Injectable()
 export class OwnerVisitantService {
   private readonly selectScope = {
-    available: true,
+    available: {
+      select: {
+        status: true,
+        justifications: {
+          select: {
+            justification: {
+              select: {
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    },
     name: true,
     cnh: true,
     cpf: true,
@@ -122,6 +135,15 @@ export class OwnerVisitantService {
           available: {
             create: {
               status: 'PROCESSING',
+              justifications: {
+                create: {
+                  justification: {
+                    connect: {
+                      description: 'Documentação pendente',
+                    },
+                  },
+                },
+              },
             },
           },
         },
