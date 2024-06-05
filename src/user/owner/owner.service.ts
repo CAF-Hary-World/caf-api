@@ -205,12 +205,15 @@ export class OwnerService {
       owner: data,
       user: data,
     };
-
+    console.log('id = ', id);
+    console.log('ownerId = ', ownerId);
     try {
       const userUnique = await this.prisma.user.findUniqueOrThrow({
         where: {
           id,
-          ownerId,
+          owner: {
+            id: ownerId,
+          },
         },
         include: {
           owner: true,
@@ -220,7 +223,9 @@ export class OwnerService {
       await this.prisma.user.update({
         where: {
           id,
-          ownerId,
+          owner: {
+            id: ownerId,
+          },
         },
         data: {
           ...(user.name !== userUnique.name && { name: user.name }),
