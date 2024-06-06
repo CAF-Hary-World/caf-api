@@ -276,7 +276,8 @@ model Justification {
   createdAt               DateTime   @default(now())
   deletedAt               DateTime?
   updatedAt               DateTime   @updatedAt
-
+  
+  default                 Boolean @default(false)
   description             String @unique @default("Documentação pendente")
 
   availables              AvailablesJustifications[]

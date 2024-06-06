@@ -24,7 +24,7 @@ export class SignupController {
       await this.signUpService.activatedOwner({ data });
       return;
     } catch (error) {
-      console.log(error.message);
+      console.error(error.message);
 
       throw new HttpException(
         {

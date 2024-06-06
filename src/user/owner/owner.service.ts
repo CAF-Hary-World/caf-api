@@ -101,9 +101,13 @@ export class OwnerService {
         totalPages,
       };
     } catch (error) {
-      console.log('Owner List Service =', error);
+      console.error('Owner List Service =', error);
+      // Handle specific Prisma errors or throw a general internal server error
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new ConflictException(error.meta?.target);
+      }
 
-      throw error;
+      throw new InternalServerErrorException('An unexpected error occurred.');
     }
   }
 
@@ -125,8 +129,12 @@ export class OwnerService {
       }
       return ownerInMemory.retrieveItemValue(reference);
     } catch (error) {
-      console.log(error);
-      throw error;
+      console.error(error);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new ConflictException(error.meta?.target);
+      }
+
+      throw new InternalServerErrorException('An unexpected error occurred.');
     }
   }
 
@@ -205,8 +213,6 @@ export class OwnerService {
       owner: data,
       user: data,
     };
-    console.log('id = ', id);
-    console.log('ownerId = ', ownerId);
     try {
       const userUnique = await this.prisma.user.findUniqueOrThrow({
         where: {
@@ -256,7 +262,16 @@ export class OwnerService {
       });
     } catch (error) {
       console.log('Owner UPDATE Service =', error);
-      throw error;
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          const failedField = error.meta?.target as Array<string>;
+          throw new ConflictException(
+            `O ${failedField.includes('house') ? 'Quadra e Casa' : failedField} já foi utilizado!`,
+          );
+        }
+      }
+
+      throw new InternalServerErrorException('An unexpected error occurred.');
     }
   }
 
@@ -274,7 +289,12 @@ export class OwnerService {
       });
     } catch (error) {
       console.log('Owner DELETE Service =', error);
-      throw error;
+      // Handle specific Prisma errors or throw a general internal server error
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new ConflictException(error.meta?.target);
+      }
+
+      throw new InternalServerErrorException('An unexpected error occurred.');
     }
   }
 
@@ -293,9 +313,13 @@ export class OwnerService {
         },
       });
     } catch (error) {
-      console.log('Owner List Service =', error);
+      console.error('Owner List Service =', error);
 
-      throw error;
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new ConflictException(error.meta?.target);
+      }
+
+      throw new InternalServerErrorException('An unexpected error occurred.');
     }
   }
 
@@ -366,7 +390,61 @@ export class OwnerService {
 
       resetUsers();
     } catch (error) {
-      throw error;
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new ConflictException(error.meta?.target);
+      }
+
+      throw new InternalServerErrorException('An unexpected error occurred.');
+    }
+  }
+
+  async blockOnwer({
+    id,
+    ownerId,
+    justifications,
+  }: {
+    id: string;
+    ownerId: string;
+    justifications: Array<string>;
+  }) {
+    try {
+      const userOwner = await this.prisma.user.findUniqueOrThrow({
+        where: {
+          id,
+          owner: {
+            id: ownerId,
+          },
+        },
+        select: {
+          id: true,
+          available: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      return await this.prisma.available.update({
+        where: {
+          id: userOwner.available.id,
+        },
+        data: {
+          status: 'BLOCKED',
+          justifications: {
+            createMany: {
+              skipDuplicates: true,
+              data: justifications.map((just) => ({ justificationId: just })),
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new ConflictException(error.meta?.target);
+      }
+
+      throw new InternalServerErrorException('An unexpected error occurred.');
     }
   }
 }

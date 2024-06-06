@@ -84,7 +84,7 @@ export class OwnerVisitantController {
         ownerId,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new HttpException(
         {
           status: HttpStatus.UNAUTHORIZED,
@@ -147,7 +147,7 @@ export class OwnerVisitantController {
         ownerId,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new HttpException(
         {
           status:

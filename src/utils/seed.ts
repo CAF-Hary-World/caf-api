@@ -59,6 +59,7 @@ export class Seed {
         await this.prismaService.justification.createMany({
           data: defaultJustifications.map((justification) => ({
             description: justification.description,
+            default: true,
           })),
         });
 

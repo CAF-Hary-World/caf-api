@@ -79,7 +79,7 @@ export class AuthService {
         },
       };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
@@ -155,7 +155,7 @@ export class AuthService {
         });
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       throw error;
     }
@@ -211,7 +211,7 @@ export class AuthService {
         });
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       throw error;
     }

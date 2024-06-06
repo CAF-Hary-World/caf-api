@@ -21,7 +21,7 @@ export class ResidentController {
     try {
       await this.residentService.belongsToOwner(id);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new HttpException(
         {
           status: HttpStatus.FORBIDDEN,
@@ -44,7 +44,7 @@ export class ResidentController {
     try {
       return await this.residentService.confirmation({ id, password });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new HttpException(
         {
           status: HttpStatus.FORBIDDEN,

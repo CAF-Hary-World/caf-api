@@ -27,13 +27,16 @@ export class AuthGuard implements CanActivate {
         secret: jwtConstants.secret,
       });
 
-      console.log('payload = ', payload);
-
       const user = await this.prismaService.user.findUniqueOrThrow({
         where: {
           id: payload.id,
         },
         select: {
+          role: {
+            select: {
+              name: true,
+            },
+          },
           available: {
             select: {
               status: true,
@@ -42,13 +45,15 @@ export class AuthGuard implements CanActivate {
         },
       });
 
-      if (user.available.status !== 'ALLOWED')
+      if (user.available.status !== 'ALLOWED' && user.role.name !== 'ROOT')
         throw new UnauthorizedException();
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request['user'] = payload;
-    } catch {
+    } catch (error) {
+      console.error(error);
+
       throw new UnauthorizedException();
     }
     return true;

@@ -30,17 +30,20 @@ export class OwnerController {
     try {
       return await this.ownerService.listOwners({ page, cpf, name });
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
         },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -50,17 +53,20 @@ export class OwnerController {
     try {
       return await this.ownerService.getOwner({ id, ownerId });
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
         },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -74,17 +80,20 @@ export class OwnerController {
     try {
       return await this.ownerService.sendInvite({ id, ownerId });
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
         },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -126,17 +135,20 @@ export class OwnerController {
     try {
       return await this.ownerService.updateOwner({ data, id, ownerId });
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
         },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -148,17 +160,20 @@ export class OwnerController {
     try {
       return await this.ownerService.deleteOwner({ id, ownerId });
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
         },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -175,17 +190,52 @@ export class OwnerController {
       const result = await this.ownerService.deleteManyOwners(ids);
       return { message: `Deleted ${result.count} users`, count: result.count };
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
         },
-        HttpStatus.NOT_FOUND,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
+  @Patch('/:id/:ownerId/block')
+  async blockOnwer(
+    @Param() { id, ownerId }: { id: string; ownerId: string },
+    @Body() { justifications }: { justifications: Array<string> },
+  ) {
+    try {
+      return await this.ownerService.blockOnwer({
+        id,
+        ownerId,
+        justifications,
+      });
+    } catch (error) {
+      console.error('Controller error = ', error);
+
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
+      throw new HttpException(
         {
-          cause: error,
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
         },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
