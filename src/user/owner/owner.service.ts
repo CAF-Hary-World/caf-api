@@ -447,4 +447,45 @@ export class OwnerService {
       throw new InternalServerErrorException('An unexpected error occurred.');
     }
   }
+
+  async allowOnwer({ id, ownerId }: { id: string; ownerId: string }) {
+    try {
+      const userOwner = await this.prisma.user.findUniqueOrThrow({
+        where: {
+          id,
+          owner: {
+            id: ownerId,
+          },
+        },
+        select: {
+          id: true,
+          available: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      return await this.prisma.available.update({
+        where: {
+          id: userOwner.available.id,
+        },
+        data: {
+          status: 'ALLOWED',
+          justifications: {
+            deleteMany: {
+              availableId: userOwner.available.id,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new ConflictException(error.meta?.target);
+      }
+
+      throw new InternalServerErrorException('An unexpected error occurred.');
+    }
+  }
 }

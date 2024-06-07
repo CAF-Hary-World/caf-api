@@ -12,7 +12,13 @@ export class JustificationService {
 
   async list() {
     try {
-      return await this.prismaService.justification.findMany();
+      return await this.prismaService.justification.findMany({
+        where: {
+          description: {
+            not: 'Aguardando confirmação do email',
+          },
+        },
+      });
     } catch (error) {
       throw error;
     }

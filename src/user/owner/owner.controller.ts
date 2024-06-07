@@ -243,5 +243,25 @@ export class OwnerController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Patch('/:id/:ownerId/allow')
-  async allowOwner(@Param() { id, ownerId }: { id: string; ownerId: string }) {}
+  async allowOwner(@Param() { id, ownerId }: { id: string; ownerId: string }) {
+    try {
+      return await this.ownerService.allowOnwer({ id, ownerId });
+    } catch (error) {
+      console.error('Controller error = ', error);
+
+      // If the error is already an HttpException, just rethrow it
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Otherwise, throw a generic error or add more context if needed
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'An unexpected error occurred while creating the owner',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
