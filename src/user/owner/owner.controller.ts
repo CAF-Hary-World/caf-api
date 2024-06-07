@@ -239,4 +239,9 @@ export class OwnerController {
       );
     }
   }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
+  @Patch('/:id/:ownerId/allow')
+  async allowOwner(@Param() { id, ownerId }: { id: string; ownerId: string }) {}
 }

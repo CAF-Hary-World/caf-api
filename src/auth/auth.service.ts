@@ -8,7 +8,20 @@ type ISignIn = Prisma.UserGetPayload<{
   select: {
     id: true;
     name: true;
-    available: true;
+    available: {
+      select: {
+        status: true;
+        justifications: {
+          select: {
+            justification: {
+              select: {
+                description: true;
+              };
+            };
+          };
+        };
+      };
+    };
     role: {
       select: {
         id: true;
@@ -32,7 +45,6 @@ type ISignIn = Prisma.UserGetPayload<{
       };
     };
   }>;
-} & {
   owner?: Prisma.OwnerGetPayload<{
     select: {
       id: true;
@@ -75,7 +87,13 @@ export class AuthService {
       });
 
       if (user.available.status !== 'ALLOWED')
-        throw new Error('Usuário com acesso impedido.');
+        throw new Error(
+          `Usuário com acesso impedido por: 
+          <ul>
+           ${user.available.justifications.map((jus) => '<li>' + jus.justification.description + '</li>').join('')}
+          <ul>
+           `,
+        );
 
       const payload = { email, id: user.id, role: user.role };
 
@@ -152,7 +170,20 @@ export class AuthService {
           where: { id: owner.userId },
           select: {
             name: true,
-            available: true,
+            available: {
+              select: {
+                status: true,
+                justifications: {
+                  select: {
+                    justification: {
+                      select: {
+                        description: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
             id: true,
             role: { select: { name: true, id: true } },
             owner: {
@@ -175,7 +206,20 @@ export class AuthService {
           where: { id: owner.userId },
           select: {
             name: true,
-            available: true,
+            available: {
+              select: {
+                status: true,
+                justifications: {
+                  select: {
+                    justification: {
+                      select: {
+                        description: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
             id: true,
             role: { select: { name: true, id: true } },
             resident: {
@@ -229,7 +273,20 @@ export class AuthService {
           },
           select: {
             name: true,
-            available: true,
+            available: {
+              select: {
+                status: true,
+                justifications: {
+                  select: {
+                    justification: {
+                      select: {
+                        description: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
             id: true,
             role: { select: { name: true, id: true } },
             ...(admin && {
