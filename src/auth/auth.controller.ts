@@ -22,6 +22,8 @@ export class AuthController {
         password: signIn.password,
       });
     } catch (error) {
+      console.log(error);
+
       throw new HttpException(
         {
           status: HttpStatus.UNAUTHORIZED,

@@ -1,19 +1,59 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Admin, Owner, Resident, Role, Root, User } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { compare } from 'src/libs/bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-type ISignIn = Pick<User, 'id' | 'name'> & {
-  role: Pick<Role, 'id' | 'name'>;
-} & {
-  resident?: Pick<Resident, 'id' | 'email' | 'phone' | 'photo'> & {
-    owner: Pick<Owner, 'id' | 'house' | 'square'>;
+type ISignIn = Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    available: true;
+    role: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
   };
-  owner?: Pick<Owner, 'id' | 'house' | 'square' | 'phone' | 'photo' | 'email'>;
-  admin?: Pick<Admin, 'id' | 'phone' | 'photo' | 'email'>;
-  root?: Pick<Root, 'id' | 'email'>;
+}> & {
+  resident?: Prisma.ResidentGetPayload<{
+    select: {
+      id: true;
+      email: true;
+      phone: true;
+      photo: true;
+      owner: {
+        select: {
+          id: true;
+          house: true;
+          square: true;
+        };
+      };
+    };
+  }>;
+} & {
+  owner?: Prisma.OwnerGetPayload<{
+    select: {
+      id: true;
+      house: true;
+      square: true;
+      phone: true;
+      photo: true;
+      email: true;
+    };
+  }>;
+  admin?: Prisma.AdminGetPayload<{
+    select: {
+      id: true;
+      phone: true;
+      photo: true;
+      email: true;
+    };
+  }>;
+  root?: Prisma.RootGetPayload<{ select: { id: true; email: true } }>;
 };
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -33,6 +73,9 @@ export class AuthService {
         email,
         pass: password,
       });
+
+      if (user.available.status !== 'ALLOWED')
+        throw new Error('Usuário com acesso impedido.');
 
       const payload = { email, id: user.id, role: user.role };
 
@@ -106,7 +149,7 @@ export class AuthService {
 
       if (!!owner && compare(pass, owner.password)) {
         return await this.prisma.user.findUniqueOrThrow({
-          where: { id: owner.userId, available: { status: 'ALLOWED' } },
+          where: { id: owner.userId },
           select: {
             name: true,
             available: true,
@@ -129,7 +172,7 @@ export class AuthService {
 
       if (!!resident && compare(pass, resident.password)) {
         return await this.prisma.user.findUniqueOrThrow({
-          where: { id: owner.userId, available: { status: 'ALLOWED' } },
+          where: { id: owner.userId },
           select: {
             name: true,
             available: true,
