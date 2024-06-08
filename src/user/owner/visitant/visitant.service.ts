@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Justification, Prisma } from '@prisma/client';
-import { visitantsInMemory } from 'src/libs/memory-cache';
+import { visitantInMemory, visitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
 
@@ -49,7 +49,7 @@ export class OwnerVisitantService {
     name?: string;
     cpf?: string;
   }) {
-    const reference = `user${id}-owner-${ownerId}-visitant-${page}-${name}-${cpf}`;
+    const reference = `user-${id}-owner-${ownerId}-visitant-${page}-${name}-${cpf}`;
 
     const perPage = process.env.DEFAULT_PER_PAGE
       ? Number(process.env.DEFAULT_PER_PAGE)
@@ -105,6 +105,40 @@ export class OwnerVisitantService {
       };
     } catch (error) {
       console.log('Visitante List Service =', error);
+
+      throw error;
+    }
+  }
+
+  async getVisitant({
+    userId,
+    visitantId,
+  }: {
+    userId: string;
+    visitantId: string;
+  }) {
+    const reference = `user-${userId}-owner-visitant-${visitantId}`;
+    try {
+      if (!visitantInMemory.hasItem(reference)) {
+        const visitant = await this.prisma.visitant.findUniqueOrThrow({
+          where: {
+            id: visitantId,
+            owner: {
+              userId,
+            },
+          },
+          select: this.selectScope,
+        });
+
+        visitantInMemory.storeExpiringItem(
+          reference,
+          visitant,
+          process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
+        );
+      }
+      return visitantInMemory.retrieveItemValue(reference);
+    } catch (error) {
+      console.log('Visitante GET Service =', error);
 
       throw error;
     }

@@ -14,12 +14,12 @@ import { OwnerVisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Justification, Prisma } from '@prisma/client';
 
-@Controller('users/:id/owners/:ownerId/visitants')
+@Controller('users/:id/owners')
 export class OwnerVisitantController {
   constructor(private readonly visitantService: OwnerVisitantService) {}
 
   @UseGuards(AuthGuard)
-  @Get()
+  @Get('/:ownerId/visitants')
   async listVisitants(
     @Param() { id, ownerId }: { id: string; ownerId: string },
     @Query() { page, name, cpf }: { page: number; name?: string; cpf?: string },
@@ -50,8 +50,34 @@ export class OwnerVisitantController {
     }
   }
 
+  @Get('/visitants/:visitantId')
+  async getVisitant(
+    @Param() { id, visitantId }: { id: string; visitantId: string },
+  ) {
+    try {
+      const visitant = await this.visitantService.getVisitant({
+        userId: id,
+        visitantId,
+      });
+      return visitant;
+    } catch (error) {
+      console.log('Controller error = ', error);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Resource not found',
+        },
+        HttpStatus.NOT_FOUND,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
+
   @UseGuards(AuthGuard)
-  @Post()
+  @Post('/:ownerId/visitants')
   async createVisitant(
     @Body() visitant: Prisma.VisitantCreateInput & { invitedBy: string },
   ) {
@@ -72,7 +98,7 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/remove')
+  @Patch('/:ownerId/visitants/remove')
   async removeVisitant(
     @Body() data: { cpf: string },
     @Param() { id, ownerId }: { id: string; ownerId: string },
@@ -99,7 +125,7 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/add')
+  @Patch('/:ownerId/visitants/add')
   async addVisitant(
     @Body() data: { cpf: string },
     @Param() { id, ownerId }: { id: string; ownerId: string },
@@ -129,7 +155,7 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/available')
+  @Patch('/:ownerId/visitants/available')
   async updateAvailableStatus(
     @Body()
     data: {
