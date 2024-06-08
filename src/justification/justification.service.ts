@@ -15,7 +15,10 @@ export class JustificationService {
       return await this.prismaService.justification.findMany({
         where: {
           description: {
-            not: 'Aguardando confirmação do email',
+            notIn: [
+              'Aguardando confirmação do email',
+              'Aguardando convite da administração',
+            ],
           },
         },
       });

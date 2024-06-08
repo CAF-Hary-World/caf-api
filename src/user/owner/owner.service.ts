@@ -424,6 +424,7 @@ export class OwnerService {
           },
         },
       });
+      this.resetCache();
 
       return await this.prisma.available.update({
         where: {
@@ -466,6 +467,7 @@ export class OwnerService {
           },
         },
       });
+      this.resetCache();
 
       return await this.prisma.available.update({
         where: {
