@@ -1,17 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { resetUsers } from 'src/utils/resetCache';
 
 @Injectable()
 export class TasksService {
+  private resetCache = resetUsers;
   private readonly logger = new Logger(TasksService.name);
 
   constructor(private prisma: PrismaService) {}
 
   @Cron(
     process.env.NODE_ENV === 'production'
-      ? CronExpression.EVERY_DAY_AT_MIDNIGHT
-      : CronExpression.EVERY_10_SECONDS,
+      ? CronExpression.EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM
+      : CronExpression.EVERY_30_SECONDS,
     {
       name: 'restoreAvailableJustificationOfOwnerInvited',
       timeZone: 'UTC',
@@ -29,6 +31,7 @@ export class TasksService {
       });
 
     if (availablesJustifications.length > 0) {
+      this.resetCache();
       const justificationToAllowInvite =
         await this.prisma.justification.findUniqueOrThrow({
           where: {

@@ -84,7 +84,7 @@ export class OwnerService {
             ...(name && { name: { contains: name } }),
             ...(cpf && { owner: { cpf: { contains: cpf } } }),
           },
-          orderBy: { name: 'desc' },
+          orderBy: { createdAt: 'desc' },
           skip: (page - 1) * perPage,
           take: perPage,
           select: this.selectScope,
