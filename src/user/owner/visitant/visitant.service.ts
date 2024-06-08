@@ -115,10 +115,8 @@ export class OwnerVisitantService {
   }: {
     visitant: Prisma.VisitantCreateInput & { invitedBy: string };
   }) {
-    this.resetCache();
-
     try {
-      return await this.prisma.visitant.create({
+      await this.prisma.visitant.create({
         data: {
           cpf: visitant.cpf,
           kind: visitant.kind,
@@ -148,6 +146,8 @@ export class OwnerVisitantService {
           },
         },
       });
+
+      return this.resetCache();
     } catch (error) {
       console.log('Visitante Create Service = ', error);
 
@@ -164,33 +164,37 @@ export class OwnerVisitantService {
     ownerId: string;
     cpf: string;
   }) {
-    this.resetCache();
-
-    const visitant = await this.prisma.visitant.findUniqueOrThrow({
-      where: {
-        cpf,
-      },
-    });
-
-    return await this.prisma.user.update({
-      where: {
-        id,
-        owner: {
-          id: ownerId,
+    try {
+      const visitant = await this.prisma.visitant.findUniqueOrThrow({
+        where: {
+          cpf,
         },
-      },
-      data: {
-        owner: {
-          update: {
-            visitantsOnOwner: {
-              delete: {
-                ownerId_visitantId: { ownerId, visitantId: visitant.id },
+      });
+      await this.prisma.user.update({
+        where: {
+          id,
+          owner: {
+            id: ownerId,
+          },
+        },
+        data: {
+          owner: {
+            update: {
+              visitantsOnOwner: {
+                delete: {
+                  ownerId_visitantId: { ownerId, visitantId: visitant.id },
+                },
               },
             },
           },
         },
-      },
-    });
+      });
+      return this.resetCache();
+    } catch (error) {
+      console.log('Visitante Remove Service = ', error);
+
+      throw error;
+    }
   }
 
   async addVisitant({
@@ -202,26 +206,33 @@ export class OwnerVisitantService {
     ownerId: string;
     cpf: string;
   }) {
-    this.resetCache();
-    return await this.prisma.user.update({
-      where: {
-        id,
-        owner: {
-          id: ownerId,
+    try {
+      await this.prisma.user.update({
+        where: {
+          id,
+          owner: {
+            id: ownerId,
+          },
         },
-      },
-      data: {
-        owner: {
-          update: {
-            visitantsOnOwner: {
-              create: {
-                visitant: { connect: { cpf } },
+        data: {
+          owner: {
+            update: {
+              visitantsOnOwner: {
+                create: {
+                  visitant: { connect: { cpf } },
+                },
               },
             },
           },
         },
-      },
-    });
+      });
+
+      return this.resetCache();
+    } catch (error) {
+      console.log('Visitante Add Service = ', error);
+
+      throw error;
+    }
   }
 
   async updateAvailableStatus({
@@ -235,51 +246,55 @@ export class OwnerVisitantService {
     cpf: string;
     justifications: Array<Pick<Justification, 'description'>>;
   }) {
-    this.resetCache();
-    console.log('update available status');
+    try {
+      const allJustification = await this.prisma.justification.findMany();
 
-    const allJustification = await this.prisma.justification.findMany();
-
-    //  IF visitant belongs to owner
-    await this.prisma.user.findUniqueOrThrow({
-      where: {
-        id,
-        owner: {
-          id: ownerId,
-          visitantsOnOwner: {
-            some: {
-              visitant: {
-                cpf,
+      //  IF visitant belongs to owner
+      await this.prisma.user.findUniqueOrThrow({
+        where: {
+          id,
+          owner: {
+            id: ownerId,
+            visitantsOnOwner: {
+              some: {
+                visitant: {
+                  cpf,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    const visitant = await this.prisma.visitant.findUniqueOrThrow({
-      where: {
-        cpf,
-      },
-    });
-
-    await this.prisma.available.update({
-      where: {
-        visitantId: visitant.id,
-      },
-      data: {
-        justifications: {
-          createMany: {
-            skipDuplicates: true,
-            data: justifications.map((justification) => ({
-              justificationId: allJustification.find(
-                (just) => just.description === justification.description,
-              ).id,
-            })),
-          },
+      const visitant = await this.prisma.visitant.findUniqueOrThrow({
+        where: {
+          cpf,
         },
-        status: 'PROCESSING',
-      },
-    });
+      });
+
+      await this.prisma.available.update({
+        where: {
+          visitantId: visitant.id,
+        },
+        data: {
+          justifications: {
+            createMany: {
+              skipDuplicates: true,
+              data: justifications.map((justification) => ({
+                justificationId: allJustification.find(
+                  (just) => just.description === justification.description,
+                ).id,
+              })),
+            },
+          },
+          status: 'PROCESSING',
+        },
+      });
+      this.resetCache();
+    } catch (error) {
+      console.log('Visitante Update availabe Service = ', error);
+
+      throw error;
+    }
   }
 }
