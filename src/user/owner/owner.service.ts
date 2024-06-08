@@ -68,7 +68,7 @@ export class OwnerService {
           name: 'OWNER',
         },
         ...(name && { name: { contains: name } }),
-        ...(cpf && { cpf: { contains: cpf } }),
+        ...(cpf && { owner: { cpf: { contains: cpf } } }),
       },
     });
 
@@ -82,7 +82,7 @@ export class OwnerService {
               name: 'OWNER',
             },
             ...(name && { name: { contains: name } }),
-            ...(cpf && { cpf: { contains: cpf } }),
+            ...(cpf && { owner: { cpf: { contains: cpf } } }),
           },
           orderBy: { name: 'desc' },
           skip: (page - 1) * perPage,
