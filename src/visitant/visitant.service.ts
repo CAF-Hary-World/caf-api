@@ -1,11 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { visitantInMemory } from 'src/libs/memory-cache';
+import { Prisma } from '@prisma/client';
+import { visitantInMemory, visitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { resetUsers } from 'src/utils/resetCache';
 
 @Injectable()
 export class VisitantService {
   private readonly selectScope = {
-    available: true,
+    available: {
+      select: {
+        status: true,
+        justifications: {
+          select: {
+            justification: {
+              select: {
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    },
     name: true,
     cnh: true,
     cpf: true,
@@ -16,6 +31,9 @@ export class VisitantService {
     photo: true,
     phone: true,
   };
+
+  private resetCache = resetUsers;
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getVisitantByCPF({ cpf }: { cpf: string }) {
@@ -32,6 +50,86 @@ export class VisitantService {
         visitantInMemory.storePermanentItem(reference, visitant);
       }
       return visitantInMemory.retrieveItemValue(reference);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getVisitants({
+    page = 1,
+    name,
+    cpf,
+  }: {
+    page: number;
+    name?: string;
+    cpf?: string;
+  }) {
+    const reference = `visitants-${page}-${name}-${cpf}`;
+
+    const visitantsCount = await this.prisma.user.count({
+      where: {
+        ...(name && { name: { contains: name } }),
+        ...(cpf && { cpf: { contains: cpf } }),
+      },
+    });
+
+    const perPage = process.env.DEFAULT_PER_PAGE
+      ? Number(process.env.DEFAULT_PER_PAGE)
+      : 10;
+
+    const totalPages = Math.ceil(visitantsCount / perPage);
+
+    try {
+      if (!visitantInMemory.hasItem(reference)) {
+        console.log('no visitant cpf in cache');
+        const visitant = await this.prisma.visitant.findMany({
+          select: this.selectScope,
+        });
+        visitantsInMemory.storePermanentItem(reference, visitant);
+      }
+      return {
+        resource: visitantsInMemory.retrieveItemValue(reference),
+        totalPages,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getVisitant({ id }: { id: string }) {
+    const reference = `visitant-${id}`;
+    try {
+      if (!visitantInMemory.hasItem(reference)) {
+        console.log('no visitant id in cache');
+        const visitant = await this.prisma.visitant.findUnique({
+          where: {
+            id,
+          },
+          select: this.selectScope,
+        });
+        visitantInMemory.storePermanentItem(reference, visitant);
+      }
+      return visitantInMemory.retrieveItemValue(reference);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateVisitant({
+    id,
+    data,
+  }: {
+    id: string;
+    data: Prisma.VisitantUpdateInput;
+  }) {
+    try {
+      await this.prisma.visitant.update({
+        where: {
+          id,
+        },
+        data,
+      });
+      this.resetCache();
     } catch (error) {
       throw error;
     }

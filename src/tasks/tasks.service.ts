@@ -10,15 +10,10 @@ export class TasksService {
 
   constructor(private prisma: PrismaService) {}
 
-  @Cron(
-    process.env.NODE_ENV === 'production'
-      ? CronExpression.EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM
-      : CronExpression.EVERY_30_SECONDS,
-    {
-      name: 'restoreAvailableJustificationOfOwnerInvited',
-      timeZone: 'UTC',
-    },
-  )
+  @Cron(CronExpression.EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM, {
+    name: 'restoreAvailableJustificationOfOwnerInvited',
+    timeZone: 'UTC',
+  })
   async handleCron() {
     this.logger.debug('Called restoreAvailableJustificationOfOwnerInvited');
     const availablesJustifications =

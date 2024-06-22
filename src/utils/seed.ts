@@ -76,7 +76,6 @@ export class Seed {
           email: process.env.USER_ROOT_EMAIL,
         },
       });
-      console.log('Root already exists?', !!root);
 
       if (!root)
         await this.prismaService.user.create({
