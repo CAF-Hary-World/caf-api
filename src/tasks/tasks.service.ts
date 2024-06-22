@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import cloudinary from 'cloudinary';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
 
@@ -14,7 +16,7 @@ export class TasksService {
     name: 'restoreAvailableJustificationOfOwnerInvited',
     timeZone: 'UTC',
   })
-  async handleCron() {
+  async handleRestoreAvailableJustificationOfOwnerInvited() {
     this.logger.debug('Called restoreAvailableJustificationOfOwnerInvited');
     const availablesJustifications =
       await this.prisma.availablesJustifications.findMany({
@@ -46,6 +48,21 @@ export class TasksService {
           justificationId: justificationToAllowInvite.id,
         },
       });
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
+    name: 'restoreAvailableJustificationOfOwnerInvited',
+    timeZone: 'UTC',
+  })
+  async handleDeleteTempImagesOfCloudinary() {
+    this.logger.debug('Called handleDeleteTempImagesOfCloudinary');
+    try {
+      await cloudinary.v2.api.delete_resources_by_prefix('samples/');
+      this.logger.debug('samples destoyed');
+    } catch (error) {
+      this.logger.debug(`Error (handleDeleteTempImagesOfCloudinary) ${error}`);
+      throw error;
     }
   }
 }

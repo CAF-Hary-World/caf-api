@@ -66,6 +66,7 @@ export class VisitantController {
   }
 
   @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Patch('/:id')
   async updateVisitant(
     @Param()
