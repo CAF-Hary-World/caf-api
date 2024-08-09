@@ -9,10 +9,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Prisma, ROLE } from '@prisma/client';
+
 import { VisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Roles } from 'src/decorator/roles.decorator';
-import { Prisma, ROLE } from '@prisma/client';
 
 @Controller('visitants')
 export class VisitantController {
@@ -26,7 +27,8 @@ export class VisitantController {
     { page, name, cpf }: { page: number; name?: string; cpf?: string },
   ) {
     try {
-      if (cpf) return await this.visitantService.getVisitantByCPF({ cpf });
+      if (cpf && !name)
+        return await this.visitantService.getVisitantByCPF({ cpf });
 
       return await this.visitantService.getVisitants({ page, cpf, name });
     } catch (error) {

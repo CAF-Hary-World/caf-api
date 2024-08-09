@@ -16,6 +16,8 @@ import { JustificationController } from './justification/justification.controlle
 import { JustificationService } from './justification/justification.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks/tasks.service';
+import { NotificationService } from './notification/notification.service';
+import { NotificationController } from './notification/notification.controller';
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { TasksService } from './tasks/tasks.service';
     UserController,
     VisitantController,
     JustificationController,
+    NotificationController,
   ],
   providers: [
     AppService,
@@ -39,6 +42,7 @@ import { TasksService } from './tasks/tasks.service';
     VisitantService,
     JustificationService,
     TasksService,
+    NotificationService,
   ],
 })
 export class AppModule {

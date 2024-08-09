@@ -84,6 +84,10 @@ export class VisitantService {
         console.log('no visitant cpf in cache');
         const visitant = await this.prisma.visitant.findMany({
           select: this.selectScope,
+          where: {
+            ...(name && { name: { contains: name } }),
+            ...(cpf && { cpf: { contains: cpf } }),
+          },
         });
         visitantsInMemory.storePermanentItem(reference, visitant);
       }
