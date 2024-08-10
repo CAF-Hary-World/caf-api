@@ -157,28 +157,140 @@ export class VisitantService {
           available: {
             select: {
               id: true,
+              justifications: {
+                select: {
+                  justification: {
+                    select: {
+                      description: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
         data,
       });
 
-      await this.prisma.availablesJustifications.create({
-        data: {
-          availabe: {
-            connect: {
-              id: visitant.available.id,
+      if (
+        !visitant.available.justifications.some(
+          (just) =>
+            just.justification.description ===
+            'Confirmação com a administração',
+        )
+      )
+        await this.prisma.availablesJustifications.create({
+          data: {
+            availabe: {
+              connect: {
+                id: visitant.available.id,
+              },
+            },
+            justification: {
+              connect: {
+                description: 'Confirmação com a administração',
+              },
             },
           },
-          justification: {
-            connect: {
-              description: 'Confirmação com a administração',
+        });
+
+      this.resetCache();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async blockVisitant({
+    id,
+    justifications,
+  }: {
+    id: string;
+    justifications: Array<string>;
+  }) {
+    this.resetCache();
+    try {
+      const visitant = await this.prisma.visitant.findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          available: {
+            select: {
+              id: true,
             },
           },
         },
       });
 
-      this.resetCache();
+      return await this.prisma.available.update({
+        where: {
+          id: visitant.available.id,
+        },
+        data: {
+          status: 'BLOCKED',
+          justifications: {
+            createMany: {
+              skipDuplicates: true,
+              data: justifications.map((just) => ({ justificationId: just })),
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async rejectVisitant({
+    id,
+    justifications,
+  }: {
+    id: string;
+    justifications: Array<string>;
+  }) {
+    this.resetCache();
+    try {
+      const visitant = await this.prisma.visitant.findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          available: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      const justification = await this.prisma.justification.findUniqueOrThrow({
+        where: {
+          description: 'Confirmação com a administração',
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      return await this.prisma.available.update({
+        where: {
+          id: visitant.available.id,
+        },
+        data: {
+          justifications: {
+            createMany: {
+              skipDuplicates: true,
+              data: justifications.map((just) => ({ justificationId: just })),
+            },
+            delete: {
+              availableId_justificationId: {
+                availableId: visitant.available.id,
+                justificationId: justification.id,
+              },
+            },
+          },
+        },
+      });
     } catch (error) {
       throw error;
     }
