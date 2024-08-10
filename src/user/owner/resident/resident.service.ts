@@ -61,7 +61,9 @@ export class OwnerResidentService {
     const residentsCount = await this.prisma.resident.count({
       where: {
         ownerId,
-        ...(name && { user: { name: { contains: name } } }),
+        ...(name && {
+          user: { name: { contains: name, mode: 'insensitive' } },
+        }),
         ...(cpf && { cpf: { contains: cpf } }),
       },
     });
@@ -73,7 +75,9 @@ export class OwnerResidentService {
         const residents = await this.prisma.resident.findMany({
           where: {
             ownerId,
-            ...(name && { user: { name: { contains: name } } }),
+            ...(name && {
+              user: { name: { contains: name, mode: 'insensitive' } },
+            }),
             ...(cpf && { cpf: { contains: cpf } }),
           },
           orderBy: { user: { name: 'desc' } },

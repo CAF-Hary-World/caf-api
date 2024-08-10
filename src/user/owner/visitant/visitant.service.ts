@@ -65,7 +65,7 @@ export class OwnerVisitantService {
             },
           },
         },
-        ...(name && { name: { contains: name } }),
+        ...(name && { name: { contains: name, mode: 'insensitive' } }),
         ...(cpf && { cpf: { contains: cpf } }),
       },
     });
@@ -84,7 +84,7 @@ export class OwnerVisitantService {
                 },
               },
             },
-            ...(name && { name: { contains: name } }),
+            ...(name && { name: { contains: name, mode: 'insensitive' } }),
             ...(cpf && { cpf: { contains: cpf } }),
           },
           orderBy: { name: 'desc' },

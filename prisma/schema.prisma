@@ -220,6 +220,7 @@ model Visitant {
   photo                   String?
   documentUrl             String?
   cnh                     String?       @unique
+  cnhURL                  String?       
   invited                 Boolean       @default(false)
 
   availableId             String?       @unique

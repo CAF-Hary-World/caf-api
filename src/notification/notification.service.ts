@@ -176,4 +176,39 @@ export class NotificationService {
       throw error;
     }
   };
+
+  sendsPushesByRole = async ({
+    roles,
+    title,
+    body,
+  }: {
+    roles: Array<ROLE>;
+    title: string;
+    body: string;
+  }): Promise<void> => {
+    try {
+      roles.forEach(async (role) => {
+        let link = process.env.COND_URL;
+        if (role === 'SECURITY') link = process.env.SECURITY_URL;
+        if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
+        await firebase
+          .messaging()
+          .sendToTopic(`role-${role}`, {
+            notification: {
+              title,
+              body,
+            },
+            data: {
+              link,
+              icon: process.env.LOGO_URL,
+            },
+          })
+          .catch((error) => {
+            throw error;
+          });
+      });
+    } catch (error) {
+      throw error;
+    }
+  };
 }

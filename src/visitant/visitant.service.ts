@@ -68,7 +68,7 @@ export class VisitantService {
 
     const visitantsCount = await this.prisma.user.count({
       where: {
-        ...(name && { name: { contains: name } }),
+        ...(name && { name: { contains: name, mode: 'insensitive' } }),
         ...(cpf && { cpf: { contains: cpf } }),
       },
     });
@@ -85,7 +85,7 @@ export class VisitantService {
         const visitant = await this.prisma.visitant.findMany({
           select: this.selectScope,
           where: {
-            ...(name && { name: { contains: name } }),
+            ...(name && { name: { contains: name, mode: 'insensitive' } }),
             ...(cpf && { cpf: { contains: cpf } }),
           },
         });
@@ -127,12 +127,57 @@ export class VisitantService {
     data: Prisma.VisitantUpdateInput;
   }) {
     try {
+      this.resetCache();
       await this.prisma.visitant.update({
         where: {
           id,
         },
         data,
       });
+      this.resetCache();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async confirmationVisitant({
+    id,
+    data,
+  }: {
+    id: string;
+    data: Prisma.VisitantUpdateInput;
+  }) {
+    try {
+      this.resetCache();
+      const visitant = await this.prisma.visitant.update({
+        where: {
+          id,
+        },
+        select: {
+          available: {
+            select: {
+              id: true,
+            },
+          },
+        },
+        data,
+      });
+
+      await this.prisma.availablesJustifications.create({
+        data: {
+          availabe: {
+            connect: {
+              id: visitant.available.id,
+            },
+          },
+          justification: {
+            connect: {
+              description: 'Confirmação com a administração',
+            },
+          },
+        },
+      });
+
       this.resetCache();
     } catch (error) {
       throw error;

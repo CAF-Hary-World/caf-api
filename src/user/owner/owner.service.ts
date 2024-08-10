@@ -67,7 +67,7 @@ export class OwnerService {
         role: {
           name: 'OWNER',
         },
-        ...(name && { name: { contains: name } }),
+        ...(name && { name: { contains: name, mode: 'insensitive' } }),
         ...(cpf && { owner: { cpf: { contains: cpf } } }),
       },
     });
@@ -81,7 +81,7 @@ export class OwnerService {
             role: {
               name: 'OWNER',
             },
-            ...(name && { name: { contains: name } }),
+            ...(name && { name: { contains: name, mode: 'insensitive' } }),
             ...(cpf && { owner: { cpf: { contains: cpf } } }),
           },
           orderBy: { createdAt: 'desc' },
