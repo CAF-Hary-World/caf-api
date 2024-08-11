@@ -31,13 +31,37 @@ export class VisitantController {
   @Get('/')
   async getVisitantByCPF(
     @Query()
-    { page, name, cpf }: { page: number; name?: string; cpf?: string },
+    {
+      page,
+      name,
+      cpf,
+      allowed,
+      blocked,
+      pending,
+      processing,
+    }: {
+      page: number;
+      name?: string;
+      cpf?: string;
+      blocked?: string;
+      allowed?: string;
+      processing?: string;
+      pending?: string;
+    },
   ) {
     try {
       if (cpf && !name)
         return await this.visitantService.getVisitantByCPF({ cpf });
 
-      return await this.visitantService.getVisitants({ page, cpf, name });
+      return await this.visitantService.getVisitants({
+        page,
+        cpf,
+        name,
+        allowed,
+        blocked,
+        pending,
+        processing,
+      });
     } catch (error) {
       throw new HttpException(
         {
@@ -171,6 +195,7 @@ export class VisitantController {
       return await this.notificationService.sendsPushesByRole({
         title: 'Registro de visitante',
         body: `O visitante ${data.name} enviou seu os dados`,
+        path: `/visitants/show/${id}`,
         roles: ['ADMIN', 'ROOT', 'SECURITY'],
       });
     } catch (error) {

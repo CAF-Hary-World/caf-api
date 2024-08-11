@@ -180,9 +180,11 @@ export class NotificationService {
   sendsPushesByRole = async ({
     roles,
     title,
+    path,
     body,
   }: {
     roles: Array<ROLE>;
+    path?: string;
     title: string;
     body: string;
   }): Promise<void> => {
@@ -199,7 +201,7 @@ export class NotificationService {
               body,
             },
             data: {
-              link,
+              link: path ? link + path : link,
               icon: process.env.LOGO_URL,
             },
           })

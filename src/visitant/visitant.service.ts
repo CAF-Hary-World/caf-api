@@ -59,12 +59,20 @@ export class VisitantService {
     page = 1,
     name,
     cpf,
+    allowed,
+    blocked,
+    pending,
+    processing,
   }: {
     page: number;
     name?: string;
     cpf?: string;
+    blocked?: string;
+    allowed?: string;
+    processing?: string;
+    pending?: string;
   }) {
-    const reference = `visitants-${page}-${name}-${cpf}`;
+    const reference = `visitants-${page}-${name}-${cpf}-${allowed}-${blocked}-${pending}-${processing}`;
 
     const visitantsCount = await this.prisma.user.count({
       where: {
@@ -87,6 +95,20 @@ export class VisitantService {
           where: {
             ...(name && { name: { contains: name, mode: 'insensitive' } }),
             ...(cpf && { cpf: { contains: cpf } }),
+            ...(allowed && { available: { status: 'ALLOWED' } }),
+            ...(blocked && { available: { status: 'BLOCKED' } }),
+            ...(processing && { available: { status: 'PROCESSING' } }),
+            ...(pending && {
+              available: {
+                justifications: {
+                  some: {
+                    justification: {
+                      description: 'Confirmação com a administração',
+                    },
+                  },
+                },
+              },
+            }),
           },
         });
         visitantsInMemory.storePermanentItem(reference, visitant);
@@ -263,30 +285,18 @@ export class VisitantService {
         },
       });
 
-      const justification = await this.prisma.justification.findUniqueOrThrow({
-        where: {
-          description: 'Confirmação com a administração',
-        },
-        select: {
-          id: true,
-        },
-      });
-
       return await this.prisma.available.update({
         where: {
           id: visitant.available.id,
         },
         data: {
           justifications: {
+            deleteMany: {
+              availableId: visitant.available.id,
+            },
             createMany: {
               skipDuplicates: true,
               data: justifications.map((just) => ({ justificationId: just })),
-            },
-            delete: {
-              availableId_justificationId: {
-                availableId: visitant.available.id,
-                justificationId: justification.id,
-              },
             },
           },
         },
