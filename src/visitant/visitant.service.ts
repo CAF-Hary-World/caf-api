@@ -110,6 +110,9 @@ export class VisitantService {
               },
             }),
           },
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * perPage,
+          take: perPage,
         });
         visitantsInMemory.storePermanentItem(reference, visitant);
       }
@@ -149,14 +152,13 @@ export class VisitantService {
     data: Prisma.VisitantUpdateInput;
   }) {
     try {
-      this.resetCache();
       await this.prisma.visitant.update({
         where: {
           id,
         },
         data,
       });
-      this.resetCache();
+      return this.resetCache();
     } catch (error) {
       throw error;
     }
@@ -170,7 +172,6 @@ export class VisitantService {
     data: Prisma.VisitantUpdateInput;
   }) {
     try {
-      this.resetCache();
       const visitant = await this.prisma.visitant.update({
         where: {
           id,
@@ -216,7 +217,7 @@ export class VisitantService {
           },
         });
 
-      this.resetCache();
+      return this.resetCache();
     } catch (error) {
       throw error;
     }
@@ -229,7 +230,6 @@ export class VisitantService {
     id: string;
     justifications: Array<string>;
   }) {
-    this.resetCache();
     try {
       const visitant = await this.prisma.visitant.findUniqueOrThrow({
         where: {
@@ -243,8 +243,7 @@ export class VisitantService {
           },
         },
       });
-
-      return await this.prisma.available.update({
+      await this.prisma.available.update({
         where: {
           id: visitant.available.id,
         },
@@ -258,6 +257,8 @@ export class VisitantService {
           },
         },
       });
+
+      return this.resetCache();
     } catch (error) {
       throw error;
     }
@@ -270,7 +271,6 @@ export class VisitantService {
     id: string;
     justifications: Array<string>;
   }) {
-    this.resetCache();
     try {
       const visitant = await this.prisma.visitant.findUniqueOrThrow({
         where: {
@@ -284,8 +284,7 @@ export class VisitantService {
           },
         },
       });
-
-      return await this.prisma.available.update({
+      await this.prisma.available.update({
         where: {
           id: visitant.available.id,
         },
@@ -301,6 +300,34 @@ export class VisitantService {
           },
         },
       });
+
+      return this.resetCache();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async allowVisitant({ id }: { id: string }) {
+    try {
+      await this.prisma.visitant.update({
+        where: {
+          id,
+        },
+        data: {
+          available: {
+            update: {
+              status: 'ALLOWED',
+              justifications: {
+                deleteMany: {
+                  deletedAt: null,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return this.resetCache();
     } catch (error) {
       throw error;
     }

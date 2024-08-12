@@ -46,6 +46,8 @@ export class NotificationService {
         .messaging()
         .subscribeToTopic(token, `role-${user.role.name}`);
 
+      await firebase.messaging().subscribeToTopic(token, `user-${user.id}`);
+
       if (user.role.name === 'OWNER')
         await firebase
           .messaging()
@@ -135,6 +137,50 @@ export class NotificationService {
           notificationToken: {
             connect: {
               token,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  sendPushToUser = async ({
+    body,
+    role,
+    path,
+    title,
+    userId,
+  }: {
+    role: ROLE;
+    userId: string;
+    path?: string;
+    title: string;
+    body: string;
+  }): Promise<void> => {
+    let link = process.env.COND_URL;
+    if (role === 'SECURITY') link = process.env.SECURITY_URL;
+    if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
+    try {
+      await firebase.messaging().sendToTopic(`user-${userId}`, {
+        notification: {
+          title,
+          body,
+        },
+        data: {
+          link: path ? link + path : link,
+          icon: process.env.LOGO_URL,
+        },
+      });
+
+      await this.prismaService.notification.create({
+        data: {
+          body,
+          title,
+          user: {
+            connect: {
+              id: userId,
             },
           },
         },

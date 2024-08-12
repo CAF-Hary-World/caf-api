@@ -184,22 +184,52 @@ export class VisitantController {
     }
   }
 
-  @Patch('/confirmation/:id')
+  @Patch('/confirmation/:userId/:id')
   async confirmationVisitant(
     @Param()
-    { id }: { id: string },
+    { id, userId }: { id: string; userId: string },
     @Body() data: Prisma.VisitantUpdateInput,
   ) {
     try {
       await this.visitantService.confirmationVisitant({ data, id });
-      return await this.notificationService.sendsPushesByRole({
+      await this.notificationService.sendsPushesByRole({
         title: 'Registro de visitante',
         body: `O visitante ${data.name} enviou seu os dados`,
         path: `/visitants/show/${id}`,
         roles: ['ADMIN', 'ROOT', 'SECURITY'],
       });
+      return await this.notificationService.sendPushToUser({
+        title: 'Registro de visitante',
+        body: `O visitante ${data.name} enviou seu os dados`,
+        path: `/visitants/show/${id}`,
+        role: 'OWNER',
+        userId,
+      });
     } catch (error) {
       this.logger.debug('error', error);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: error.message,
+        },
+        HttpStatus.NOT_FOUND,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT, ROLE.SECURITY)
+  @Patch('/:id/allow')
+  async allowVisitant(
+    @Param()
+    { id }: { id: string },
+  ) {
+    try {
+      return await this.visitantService.allowVisitant({ id });
+    } catch (error) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
