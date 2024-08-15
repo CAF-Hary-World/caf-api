@@ -51,9 +51,10 @@ export class OwnerVisitantService {
   }) {
     const reference = `user-${id}-owner-${ownerId}-visitant-${page}-${name}-${cpf}`;
 
-    const perPage = process.env.DEFAULT_PER_PAGE
-      ? Number(process.env.DEFAULT_PER_PAGE)
-      : 10;
+    const perPage =
+      process.env.ENV === 'development'
+        ? 2
+        : Number(process.env.DEFAULT_PER_PAGE);
 
     const visitantsCount = await this.prisma.visitant.count({
       where: {

@@ -54,9 +54,10 @@ export class OwnerResidentService {
   }) {
     const reference = `user${id}-owner-${ownerId}-resident-${page}-${name}-${cpf}`;
 
-    const perPage = process.env.DEFAULT_PER_PAGE
-      ? Number(process.env.DEFAULT_PER_PAGE)
-      : 10;
+    const perPage =
+      process.env.ENV === 'development'
+        ? 2
+        : Number(process.env.DEFAULT_PER_PAGE);
 
     const residentsCount = await this.prisma.resident.count({
       where: {

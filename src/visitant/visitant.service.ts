@@ -81,9 +81,10 @@ export class VisitantService {
       },
     });
 
-    const perPage = process.env.DEFAULT_PER_PAGE
-      ? Number(process.env.DEFAULT_PER_PAGE)
-      : 10;
+    const perPage =
+      process.env.ENV === 'development'
+        ? 2
+        : Number(process.env.DEFAULT_PER_PAGE);
 
     const totalPages = Math.ceil(visitantsCount / perPage);
 

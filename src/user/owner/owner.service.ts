@@ -58,9 +58,10 @@ export class OwnerService {
   }) {
     const reference = `user-owner-${page}-${name}-${cpf}`;
 
-    const perPage = process.env.DEFAULT_PER_PAGE
-      ? Number(process.env.DEFAULT_PER_PAGE)
-      : 10;
+    const perPage =
+      process.env.ENV === 'development'
+        ? 2
+        : Number(process.env.DEFAULT_PER_PAGE);
 
     const ownersCount = await this.prisma.user.count({
       where: {
