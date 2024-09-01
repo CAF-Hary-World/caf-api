@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ROLE } from '@prisma/client';
 import * as firebase from 'firebase-admin';
-import * as path from 'path';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+const serviceAccount = JSON.parse(process.env.FIREBASE);
+
 firebase.initializeApp({
-  credential: firebase.credential.cert(
-    path.join(__dirname, '..', '..', 'firebase-adminsdk.json'),
-  ),
+  credential: firebase.credential.cert(serviceAccount),
 });
 
 @Injectable()
@@ -163,7 +162,8 @@ export class NotificationService {
     if (role === 'SECURITY') link = process.env.SECURITY_URL;
     if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
     try {
-      await firebase.messaging().sendToTopic(`user-${userId}`, {
+      await firebase.messaging().send({
+        topic: `user-${userId}`,
         notification: {
           title,
           body,
@@ -205,7 +205,8 @@ export class NotificationService {
     try {
       await firebase
         .messaging()
-        .sendToTopic(`role-${role}`, {
+        .send({
+          topic: `role-${role}`,
           notification: {
             title,
             body,
@@ -239,9 +240,11 @@ export class NotificationService {
         let link = process.env.COND_URL;
         if (role === 'SECURITY') link = process.env.SECURITY_URL;
         if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
+        console.log(link);
         await firebase
           .messaging()
-          .sendToTopic(`role-${role}`, {
+          .send({
+            topic: `role-${role}`,
             notification: {
               title,
               body,
