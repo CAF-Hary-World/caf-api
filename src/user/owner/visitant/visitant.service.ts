@@ -21,6 +21,7 @@ export class OwnerVisitantService {
         },
       },
     },
+    permissions: true,
     name: true,
     cnh: true,
     cpf: true,

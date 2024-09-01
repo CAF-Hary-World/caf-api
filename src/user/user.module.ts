@@ -13,12 +13,16 @@ import { OwnerVisitantService } from './owner/visitant/visitant.service';
 import { OwnerResidentController } from './owner/resident/resident.controller';
 import { OwnerResidentService } from './owner/resident/resident.service';
 import { MailModule } from 'src/mail/mail.module';
+import { PermissionController } from './permission/permission.controller';
+import { PermissionService } from './permission/permission.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Module({
   controllers: [
     UserController,
     ResidentVisitantController,
     OwnerVisitantController,
+    PermissionController,
     OwnerResidentController,
     ResidentController,
     OwnerController,
@@ -26,8 +30,10 @@ import { MailModule } from 'src/mail/mail.module';
   providers: [
     PrismaService,
     UserService,
+    NotificationService,
     ResidentVisitantService,
     OwnerVisitantService,
+    PermissionService,
     OwnerResidentService,
     ResidentService,
     OwnerService,

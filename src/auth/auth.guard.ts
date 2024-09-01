@@ -32,6 +32,7 @@ export class AuthGuard implements CanActivate {
           id: payload.id,
         },
         select: {
+          id: true,
           role: {
             select: {
               name: true,

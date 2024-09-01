@@ -21,6 +21,7 @@ export class VisitantService {
         },
       },
     },
+    permissions: true,
     name: true,
     cnh: true,
     cpf: true,

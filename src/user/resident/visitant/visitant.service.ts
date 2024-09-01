@@ -17,10 +17,23 @@ export class ResidentVisitantService {
       select: {
         visitants: {
           select: {
-            available: true,
+            available: {
+              select: {
+                status: true,
+                justifications: {
+                  select: {
+                    justification: {
+                      select: {
+                        description: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            permissions: true,
             name: true,
             cnh: true,
-            code: true,
             cpf: true,
             documentUrl: true,
             email: true,

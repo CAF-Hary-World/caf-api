@@ -22,7 +22,10 @@ export class NotificationController {
     @Body() { userId, token }: { userId: string; token: string },
   ) {
     try {
-      return this.notificationService.acceptPushNotification({ token, userId });
+      return await this.notificationService.acceptPushNotification({
+        token,
+        userId,
+      });
     } catch (error) {
       throw new HttpException(
         {
