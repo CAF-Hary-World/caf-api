@@ -42,33 +42,49 @@ export class OwnerVisitantService {
     page = 1,
     name,
     cpf,
+    allowed,
+    blocked,
+    pending,
+    processing,
   }: {
     id: string;
     ownerId: string;
     page: number;
     name?: string;
     cpf?: string;
+    blocked?: string;
+    allowed?: string;
+    processing?: string;
+    pending?: string;
   }) {
-    const reference = `user-${id}-owner-${ownerId}-visitant-${page}-${name}-${cpf}`;
+    const reference = `user-${id}-owner-${ownerId}-visitant-${page}-${name}-${cpf}-${allowed}-${blocked}-${pending}-${processing}`;
 
     const perPage =
       process.env.ENV === 'development'
         ? 2
         : Number(process.env.DEFAULT_PER_PAGE);
 
-    const visitantsCount = await this.prisma.visitant.count({
-      where: {
-        ownersOnVisitants: {
-          some: {
-            owner: {
-              id: ownerId,
-              userId: id,
+    const where: Prisma.VisitantWhereInput = {
+      ...(name && { name: { contains: name, mode: 'insensitive' } }),
+      ...(cpf && { cpf: { contains: cpf } }),
+      ...(allowed && { available: { status: 'ALLOWED' } }),
+      ...(blocked && { available: { status: 'BLOCKED' } }),
+      ...(processing && { available: { status: 'PROCESSING' } }),
+      ...(pending && {
+        available: {
+          justifications: {
+            some: {
+              justification: {
+                description: 'Confirmação com a administração',
+              },
             },
           },
         },
-        ...(name && { name: { contains: name, mode: 'insensitive' } }),
-        ...(cpf && { cpf: { contains: cpf } }),
-      },
+      }),
+    };
+
+    const visitantsCount = await this.prisma.visitant.count({
+      where,
     });
 
     const totalPages = Math.ceil(visitantsCount / perPage);
@@ -76,18 +92,7 @@ export class OwnerVisitantService {
     try {
       if (!visitantsInMemory.hasItem(reference)) {
         const visitants = await this.prisma.visitant.findMany({
-          where: {
-            ownersOnVisitants: {
-              some: {
-                owner: {
-                  id: ownerId,
-                  userId: id,
-                },
-              },
-            },
-            ...(name && { name: { contains: name, mode: 'insensitive' } }),
-            ...(cpf && { cpf: { contains: cpf } }),
-          },
+          where,
           orderBy: { name: 'desc' },
           skip: (page - 1) * perPage,
           take: perPage,

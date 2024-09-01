@@ -74,11 +74,27 @@ export class VisitantService {
   }) {
     const reference = `visitants-${page}-${name}-${cpf}-${allowed}-${blocked}-${pending}-${processing}`;
 
-    const visitantsCount = await this.prisma.user.count({
-      where: {
-        ...(name && { name: { contains: name, mode: 'insensitive' } }),
-        ...(cpf && { cpf: { contains: cpf } }),
-      },
+    const where: Prisma.VisitantWhereInput = {
+      ...(name && { name: { contains: name, mode: 'insensitive' } }),
+      ...(cpf && { cpf: { contains: cpf } }),
+      ...(allowed && { available: { status: 'ALLOWED' } }),
+      ...(blocked && { available: { status: 'BLOCKED' } }),
+      ...(processing && { available: { status: 'PROCESSING' } }),
+      ...(pending && {
+        available: {
+          justifications: {
+            some: {
+              justification: {
+                description: 'Confirmação com a administração',
+              },
+            },
+          },
+        },
+      }),
+    };
+
+    const visitantsCount = await this.prisma.visitant.count({
+      where,
     });
 
     const perPage =
@@ -93,24 +109,7 @@ export class VisitantService {
         console.log('no visitant cpf in cache');
         const visitant = await this.prisma.visitant.findMany({
           select: this.selectScope,
-          where: {
-            ...(name && { name: { contains: name, mode: 'insensitive' } }),
-            ...(cpf && { cpf: { contains: cpf } }),
-            ...(allowed && { available: { status: 'ALLOWED' } }),
-            ...(blocked && { available: { status: 'BLOCKED' } }),
-            ...(processing && { available: { status: 'PROCESSING' } }),
-            ...(pending && {
-              available: {
-                justifications: {
-                  some: {
-                    justification: {
-                      description: 'Confirmação com a administração',
-                    },
-                  },
-                },
-              },
-            }),
-          },
+          where,
           orderBy: { createdAt: 'desc' },
           skip: (page - 1) * perPage,
           take: perPage,

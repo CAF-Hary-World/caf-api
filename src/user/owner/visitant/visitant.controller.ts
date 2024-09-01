@@ -22,7 +22,24 @@ export class OwnerVisitantController {
   @Get('/:ownerId/visitants')
   async listVisitants(
     @Param() { id, ownerId }: { id: string; ownerId: string },
-    @Query() { page, name, cpf }: { page: number; name?: string; cpf?: string },
+    @Query()
+    {
+      page,
+      name,
+      cpf,
+      allowed,
+      blocked,
+      pending,
+      processing,
+    }: {
+      page: number;
+      name?: string;
+      cpf?: string;
+      blocked?: string;
+      allowed?: string;
+      processing?: string;
+      pending?: string;
+    },
   ) {
     try {
       const visitants = await this.visitantService.listVisitants({
@@ -31,6 +48,10 @@ export class OwnerVisitantController {
         page,
         name,
         cpf,
+        allowed,
+        blocked,
+        pending,
+        processing,
       });
       console.log('List visitants');
       return visitants;
