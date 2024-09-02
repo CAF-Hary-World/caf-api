@@ -1,3 +1,4 @@
+import { timeStampISOTime } from 'src/utils/time';
 import { prisma } from '../../../prismaClient';
 
 async function statusAllow() {
@@ -12,12 +13,10 @@ async function statusAllow() {
       available: {
         update: {
           status: 'ALLOWED',
+          updatedAt: timeStampISOTime,
           justifications: {
-            disconnect: {
-              id: visitant.available.justifications.find(
-                (justification) =>
-                  justification.availableId === visitant.availableId,
-              ).id,
+            deleteMany: {
+              availableId: visitant.available.id,
             },
           },
         },

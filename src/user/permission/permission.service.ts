@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { resetPermissions } from 'src/utils/resetCache';
+import { resetPermissions, resetUsers } from 'src/utils/resetCache';
 
 @Injectable()
 export class PermissionService {
@@ -21,14 +21,15 @@ export class PermissionService {
         select: { name: true },
       });
 
-      resetPermissions();
-
       await this.notificationService.sendsPushesByRole({
         roles: ['ADMIN', 'SECURITY', 'ROOT'],
         body: `O morador ${user.name} convidou ${visitant.name}`,
         title: 'Permissão de entrada enviada!',
         path: '/permissions',
       });
+
+      resetPermissions();
+      resetUsers();
 
       return await this.prisma.permission.create({
         data: {

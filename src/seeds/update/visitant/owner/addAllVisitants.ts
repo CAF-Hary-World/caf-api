@@ -1,3 +1,4 @@
+import { timeStampISOTime } from 'src/utils/time';
 import { mockedOwner } from '../../../mock';
 import { prisma } from '../../../prismaClient';
 
@@ -18,6 +19,7 @@ async function addAllVisitants() {
           data: visitants.map((visitant) => ({ visitantId: visitant.id })),
         },
       },
+      updatedAt: timeStampISOTime,
     },
   });
 }

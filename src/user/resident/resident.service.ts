@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { encodeSha256 } from 'src/libs/bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
+import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class ResidentService {
@@ -36,6 +37,7 @@ export class ResidentService {
           available: {
             update: {
               status: 'ALLOWED',
+              updatedAt: timeStampISOTime,
               justifications: {
                 deleteMany: {
                   availableId: user.availableId,

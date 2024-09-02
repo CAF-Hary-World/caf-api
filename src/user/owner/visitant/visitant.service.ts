@@ -3,6 +3,7 @@ import { Justification, Prisma } from '@prisma/client';
 import { visitantInMemory, visitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
+import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class OwnerVisitantService {
@@ -21,7 +22,11 @@ export class OwnerVisitantService {
         },
       },
     },
-    permissions: true,
+    permissions: {
+      where: {
+        deletedAt: null,
+      },
+    },
     name: true,
     cnh: true,
     cpf: true,
@@ -221,6 +226,7 @@ export class OwnerVisitantService {
         data: {
           owner: {
             update: {
+              updatedAt: timeStampISOTime,
               visitantsOnOwner: {
                 delete: {
                   ownerId_visitantId: { ownerId, visitantId: visitant.id },
@@ -258,6 +264,7 @@ export class OwnerVisitantService {
         data: {
           owner: {
             update: {
+              updatedAt: timeStampISOTime,
               visitantsOnOwner: {
                 create: {
                   visitant: { connect: { cpf } },
@@ -329,6 +336,7 @@ export class OwnerVisitantService {
             },
           },
           status: 'PROCESSING',
+          updatedAt: timeStampISOTime,
         },
       });
       this.resetCache();

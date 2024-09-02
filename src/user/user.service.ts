@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class UserService {
@@ -33,6 +34,7 @@ export class UserService {
         data: {
           available: {
             update: {
+              updatedAt: timeStampISOTime,
               justifications: {
                 delete: {
                   availableId: user.available.id,

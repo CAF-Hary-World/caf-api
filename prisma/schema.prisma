@@ -42,18 +42,18 @@ enum STATUS {
 
 model Role {
   id          String @id @default(uuid())
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt   DateTime?   
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   name        ROLE @unique
   user        User[]
 }
 
 model User {
   id                      String @id @default(uuid())
-  createdAt               DateTime   @default(now())
+  createdAt               DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt               DateTime?
-  updatedAt               DateTime   @updatedAt
+  updatedAt               DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   name                    String
   roleId                  String
@@ -78,9 +78,9 @@ model User {
 
 model Root {
   id                      String @id @default(uuid())
-  createdAt               DateTime   @default(now())
+  createdAt               DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt               DateTime?
-  updatedAt               DateTime   @updatedAt
+  updatedAt               DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   password                String
   email                   String     @unique
@@ -91,9 +91,9 @@ model Root {
 
 model Admin {
   id          String      @id @default(uuid())
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime    @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt   DateTime?   
-  updatedAt   DateTime    @updatedAt
+  updatedAt   DateTime    @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   photo       String?
   password    String
@@ -106,9 +106,9 @@ model Admin {
 
 model Owner {
   id                 String @id @default(uuid())
-  createdAt          DateTime   @default(now())
+  createdAt          DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt          DateTime?
-  updatedAt          DateTime   @updatedAt
+  updatedAt          DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   photo              String?
   password           String
@@ -134,9 +134,9 @@ model Owner {
 }
 
 model VisitantsOnOwner {
-  createdAt                 DateTime      @default(now())
+  createdAt                 DateTime      @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt                 DateTime?
-  updatedAt                 DateTime      @updatedAt
+  updatedAt                 DateTime      @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   // Relation Visitant
   visitantId                String
@@ -150,9 +150,9 @@ model VisitantsOnOwner {
 }
 
 model VisitantsOnResident {
-  createdAt                 DateTime      @default(now())
+  createdAt                 DateTime      @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt                 DateTime?
-  updatedAt                 DateTime      @updatedAt
+  updatedAt                 DateTime      @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   // Relation Visitant
   visitantId                String
@@ -167,9 +167,9 @@ model VisitantsOnResident {
 
 model InvitationByOwner {
   id          String @id @default(uuid())
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt   DateTime?
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   ownerId     String     
   owner       Owner      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -179,9 +179,9 @@ model InvitationByOwner {
 
 model InvitationByResident {
   id              String @id @default(uuid())
-  createdAt       DateTime   @default(now())
+  createdAt       DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt       DateTime?
-  updatedAt       DateTime   @updatedAt
+  updatedAt       DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   residentId      String     
   resident        Resident      @relation(fields: [residentId], references: [id], onDelete: Cascade)
@@ -191,9 +191,9 @@ model InvitationByResident {
 
 model Resident {
   id                    String @id @default(uuid())
-  createdAt             DateTime   @default(now())
+  createdAt             DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt             DateTime?
-  updatedAt             DateTime   @updatedAt
+  updatedAt             DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   photo                 String?
   password              String
@@ -215,9 +215,9 @@ model Resident {
 
 model Visitant {
   id                      String        @id @default(uuid())
-  createdAt               DateTime      @default(now())
+  createdAt               DateTime      @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt               DateTime?
-  updatedAt               DateTime      @updatedAt
+  updatedAt               DateTime      @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   name                    String
   phone                   String
@@ -257,9 +257,9 @@ model Visitant {
 
 model Available {
   id                String @id @default(uuid())
-  createdAt         DateTime   @default(now())
+  createdAt         DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt         DateTime?
-  updatedAt         DateTime   @updatedAt
+  updatedAt         DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   status            STATUS
   justifications    AvailablesJustifications[]
@@ -272,9 +272,9 @@ model Available {
 }
 
 model AvailablesJustifications {
-  createdAt               DateTime   @default(now())
+  createdAt               DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt               DateTime?
-  updatedAt               DateTime   @updatedAt
+  updatedAt               DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   availableId             String
   availabe                Available @relation(fields: [availableId], references: [id], onDelete: Cascade)
@@ -286,9 +286,9 @@ model AvailablesJustifications {
 
 model Justification {
   id                      String @id @default(uuid())
-  createdAt               DateTime   @default(now())
+  createdAt               DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt               DateTime?
-  updatedAt               DateTime   @updatedAt
+  updatedAt               DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   
   default                 Boolean @default(false)
   description             String @unique @default("Documentação pendente")
@@ -299,9 +299,9 @@ model Justification {
 }
 
 model JustificationCategories {
-  createdAt                   DateTime   @default(now())
+  createdAt                   DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt                   DateTime?
-  updatedAt                   DateTime   @updatedAt
+  updatedAt                   DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   justificationId             String
   justification               Justification @relation(fields: [justificationId], references: [id], onDelete: Cascade)
@@ -322,9 +322,9 @@ model JustificationCategories {
 
 model NotificationToken {
   id                            String @id @default(uuid())
-  createdAt                     DateTime   @default(now())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt                     DateTime?
-  updatedAt                     DateTime   @updatedAt
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   token                         String @unique
   status                        String @default("ACTIVE")
@@ -337,9 +337,9 @@ model NotificationToken {
 
 model Notification {
   id                            String @id @default(uuid())
-  createdAt                     DateTime   @default(now())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt                     DateTime?
-  updatedAt                     DateTime   @updatedAt
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   title                         String
   body                          String
@@ -358,9 +358,9 @@ model Notification {
 
 model Permission {
   id                            String @id @default(uuid())
-  createdAt                     DateTime   @default(now())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt                     DateTime?
-  updatedAt                     DateTime   @updatedAt
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   checkin                       DateTime?
   checkout                      DateTime?
@@ -377,9 +377,9 @@ model Permission {
 
 model Category {
   id                            String @id @default(uuid())
-  createdAt                     DateTime   @default(now())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt                     DateTime?
-  updatedAt                     DateTime   @updatedAt
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   name                          String @unique
 

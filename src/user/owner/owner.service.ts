@@ -8,6 +8,7 @@ import { ownerInMemory, ownersInMemory } from 'src/libs/memory-cache';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
+import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class OwnerService {
@@ -235,7 +236,10 @@ export class OwnerService {
           },
         },
         data: {
-          ...(user.name !== userUnique.name && { name: user.name }),
+          ...(user.name !== userUnique.name && {
+            name: user.name,
+            updatedAt: timeStampISOTime,
+          }),
           owner: {
             update: {
               ...(owner.cpf !== userUnique.owner.cpf && { cpf: owner.cpf }),
@@ -257,6 +261,7 @@ export class OwnerService {
               ...(owner.password !== userUnique.owner.password && {
                 password: owner.password,
               }),
+              updatedAt: timeStampISOTime,
             },
           },
         },
@@ -386,6 +391,7 @@ export class OwnerService {
               description: 'Aguardando confirmação do email',
             },
           },
+          updatedAt: timeStampISOTime,
         },
       });
 
@@ -433,6 +439,7 @@ export class OwnerService {
         },
         data: {
           status: 'BLOCKED',
+          updatedAt: timeStampISOTime,
           justifications: {
             createMany: {
               skipDuplicates: true,
@@ -476,6 +483,7 @@ export class OwnerService {
         },
         data: {
           status: 'ALLOWED',
+          updatedAt: timeStampISOTime,
           justifications: {
             deleteMany: {
               availableId: userOwner.available.id,

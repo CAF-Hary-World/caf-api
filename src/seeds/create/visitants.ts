@@ -1,3 +1,4 @@
+import { timeStampISOTime } from 'src/utils/time';
 import { mockedOwner, mockedUser, mockedVisitants } from '../mock';
 import { prisma } from '../prismaClient';
 
@@ -57,6 +58,7 @@ async function createVisitant() {
           data: availables.map((available) => ({ availableId: available.id })),
         },
       },
+      updatedAt: timeStampISOTime,
     },
   });
 

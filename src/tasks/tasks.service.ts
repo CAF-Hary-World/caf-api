@@ -3,7 +3,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import cloudinary from 'cloudinary';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { resetUsers } from 'src/utils/resetCache';
+import { resetPermissions, resetUsers } from 'src/utils/resetCache';
+import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class TasksService {
@@ -62,6 +63,46 @@ export class TasksService {
       this.logger.debug('samples destoyed');
     } catch (error) {
       this.logger.debug(`Error (handleDeleteTempImagesOfCloudinary) ${error}`);
+      throw error;
+    }
+  }
+
+  @Cron(
+    process.env.NODE_ENV === 'production'
+      ? CronExpression.EVERY_DAY_AT_MIDNIGHT
+      : CronExpression.EVERY_30_SECONDS,
+    {
+      name: 'deleteAllPermission',
+      timeZone: 'UTC',
+    },
+  )
+  async handleDeleteAllPermission() {
+    this.logger.debug('Called deleteAllPermission');
+
+    try {
+      const permissions = await this.prisma.permission.findMany({
+        where: {
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+        },
+      });
+      if (permissions.length > 0) {
+        resetPermissions();
+        resetUsers();
+        await this.prisma.permission.updateMany({
+          where: {
+            id: { in: permissions.map((permission) => permission.id) },
+          },
+          data: {
+            deletedAt: timeStampISOTime,
+            updatedAt: timeStampISOTime,
+          },
+        });
+      }
+    } catch (error) {
+      this.logger.debug(`Error (deleteAllPermission) ${error}`);
       throw error;
     }
   }

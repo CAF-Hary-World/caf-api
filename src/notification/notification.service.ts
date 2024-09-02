@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ROLE } from '@prisma/client';
 import * as firebase from 'firebase-admin';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { timeStampISOTime } from 'src/utils/time';
 
 const serviceAccount = JSON.parse(process.env.FIREBASE);
 
@@ -85,7 +86,8 @@ export class NotificationService {
           token,
         },
         data: {
-          deletedAt: Date(),
+          deletedAt: timeStampISOTime,
+          updatedAt: timeStampISOTime,
         },
       });
     } catch (error) {

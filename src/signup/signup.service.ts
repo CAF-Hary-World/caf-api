@@ -4,6 +4,7 @@ import { encodeSha256 } from 'src/libs/bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
+import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class SignupService {
@@ -49,7 +50,10 @@ export class SignupService {
           },
         },
         data: {
-          ...(userOwner.name !== data.name && { name: data.name }),
+          ...(userOwner.name !== data.name && {
+            name: data.name,
+            updatedAt: timeStampISOTime,
+          }),
           owner: {
             update: {
               ...(userOwner.owner.cpf !== data.cpf && { cpf: data.cpf }),
@@ -69,6 +73,7 @@ export class SignupService {
                 square: data.square,
               }),
               password: encodeSha256(String(data.password)),
+              updatedAt: timeStampISOTime,
             },
           },
           available: {

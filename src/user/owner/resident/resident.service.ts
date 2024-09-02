@@ -5,6 +5,7 @@ import { encodeSha256 } from 'src/libs/bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
+import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class OwnerResidentService {
@@ -270,9 +271,11 @@ export class OwnerResidentService {
         },
         data: {
           name: user.name,
+          updatedAt: timeStampISOTime,
           resident: {
             update: {
               cpf: user.resident.cpf,
+              updatedAt: timeStampISOTime,
               email: user.resident.email,
               phone: user.resident.phone,
             },

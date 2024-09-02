@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { visitantInMemory, visitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
+import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class VisitantService {
@@ -21,7 +22,11 @@ export class VisitantService {
         },
       },
     },
-    permissions: true,
+    permissions: {
+      where: {
+        deletedAt: null,
+      },
+    },
     name: true,
     cnh: true,
     cpf: true,
@@ -157,7 +162,7 @@ export class VisitantService {
         where: {
           id,
         },
-        data,
+        data: { ...data, updatedAt: timeStampISOTime },
       });
       return this.resetCache();
     } catch (error) {
@@ -193,7 +198,7 @@ export class VisitantService {
             },
           },
         },
-        data,
+        data: { ...data, updatedAt: timeStampISOTime },
       });
 
       if (
@@ -250,6 +255,7 @@ export class VisitantService {
         },
         data: {
           status: 'BLOCKED',
+          updatedAt: timeStampISOTime,
           justifications: {
             createMany: {
               skipDuplicates: true,
@@ -318,6 +324,7 @@ export class VisitantService {
           available: {
             update: {
               status: 'ALLOWED',
+              updatedAt: timeStampISOTime,
               justifications: {
                 deleteMany: {
                   deletedAt: null,
