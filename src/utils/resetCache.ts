@@ -9,7 +9,6 @@ import {
   residentInMemory,
   adminInMemory,
   adminsInMemory,
-  permissionsInMemory,
 } from 'src/libs/memory-cache';
 
 export function resetUsers() {
@@ -23,8 +22,4 @@ export function resetUsers() {
   visitantsInMemory.clear();
   residentsInMemory.clear();
   residentInMemory.clear();
-}
-
-export function resetPermissions() {
-  permissionsInMemory.clear();
 }

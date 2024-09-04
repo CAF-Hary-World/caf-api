@@ -5,6 +5,8 @@ import {
   Controller,
   HttpException,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -33,6 +35,58 @@ export class PermissionController {
       return await this.permissionService.create({
         userId,
         visitantId: data.visitantId,
+      });
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: error.message,
+        },
+        HttpStatus.NOT_FOUND,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/sign-in/:id')
+  async checkin(
+    @Param() { id }: { id: string },
+    @Body() data: { visitantId: string },
+  ) {
+    const { visitantId } = data;
+    try {
+      return await this.permissionService.updateCheckin({
+        id,
+        visitantId,
+      });
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: error.message,
+        },
+        HttpStatus.NOT_FOUND,
+        {
+          cause: error,
+        },
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/sign-out/:id')
+  async checkout(
+    @Param() { id }: { id: string },
+    @Body() data: { visitantId: string },
+  ) {
+    const { visitantId } = data;
+    try {
+      return await this.permissionService.updateCheckout({
+        id,
+        visitantId,
       });
     } catch (error) {
       throw new HttpException(

@@ -9,6 +9,7 @@ import {
   usersInMemory,
 } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { selectVisitantScope } from 'src/scopes/visitant';
 
 @Injectable()
 export class ResidentVisitantService {
@@ -16,32 +17,7 @@ export class ResidentVisitantService {
     resident: {
       select: {
         visitants: {
-          select: {
-            available: {
-              select: {
-                status: true,
-                justifications: {
-                  select: {
-                    justification: {
-                      select: {
-                        description: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            permissions: true,
-            name: true,
-            cnh: true,
-            cpf: true,
-            documentUrl: true,
-            email: true,
-            id: true,
-            kind: true,
-            photo: true,
-            phone: true,
-          },
+          select: selectVisitantScope,
         },
       },
     },

@@ -85,6 +85,7 @@ export class VisitantController {
     try {
       return await this.visitantService.getVisitant({ id });
     } catch (error) {
+      console.log('error getVisitant = ', error);
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,

@@ -199,7 +199,33 @@ export type SelectVisitant = {
         };
       };
     };
-    permissions: true;
+    permissions: {
+      where: {
+        deletedAt: null;
+      };
+      include: {
+        user: {
+          select: {
+            owner: {
+              select: {
+                house: true;
+                square: true;
+              };
+            };
+            resident: {
+              select: {
+                owner: {
+                  select: {
+                    house: true;
+                    square: true;
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
     name: true;
     cnh: true;
     cpf: true;
@@ -220,43 +246,4 @@ export const visitantInMemory = new MemoryCache<
 export const visitantsInMemory = new MemoryCache<
   string,
   Array<Prisma.VisitantGetPayload<SelectVisitant> | null>
->(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
-
-export type SelectPermission = {
-  select: {
-    createdAt: true;
-    checkin: true;
-    checkout: true;
-    visitant: {
-      select: {
-        name: true;
-      };
-    };
-    user: {
-      select: {
-        name: true;
-        owner: {
-          select: {
-            house: true;
-            square: true;
-          };
-        };
-        resident: {
-          select: {
-            owner: {
-              select: {
-                square: true;
-                house: true;
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-};
-
-export const permissionsInMemory = new MemoryCache<
-  string,
-  Array<Prisma.PermissionGetPayload<SelectPermission> | null>
 >(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);

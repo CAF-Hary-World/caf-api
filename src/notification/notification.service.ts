@@ -188,6 +188,7 @@ export class NotificationService {
         },
       });
     } catch (error) {
+      console.log(error);
       throw error;
     }
   };

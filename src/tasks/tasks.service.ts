@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import cloudinary from 'cloudinary';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { resetPermissions, resetUsers } from 'src/utils/resetCache';
+import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
@@ -70,7 +70,7 @@ export class TasksService {
   @Cron(
     process.env.NODE_ENV === 'production'
       ? CronExpression.EVERY_DAY_AT_MIDNIGHT
-      : CronExpression.EVERY_30_SECONDS,
+      : CronExpression.EVERY_2_HOURS,
     {
       name: 'deleteAllPermission',
       timeZone: 'UTC',
@@ -89,7 +89,6 @@ export class TasksService {
         },
       });
       if (permissions.length > 0) {
-        resetPermissions();
         resetUsers();
         await this.prisma.permission.updateMany({
           where: {

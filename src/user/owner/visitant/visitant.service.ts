@@ -2,41 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Justification, Prisma } from '@prisma/client';
 import { visitantInMemory, visitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { selectVisitantScope } from 'src/scopes/visitant';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class OwnerVisitantService {
-  private readonly selectScope = {
-    available: {
-      select: {
-        status: true,
-        justifications: {
-          select: {
-            justification: {
-              select: {
-                description: true,
-              },
-            },
-          },
-        },
-      },
-    },
-    permissions: {
-      where: {
-        deletedAt: null,
-      },
-    },
-    name: true,
-    cnh: true,
-    cpf: true,
-    documentUrl: true,
-    email: true,
-    id: true,
-    kind: true,
-    photo: true,
-    phone: true,
-  };
+  private readonly selectScope = selectVisitantScope;
 
   private resetCache = resetUsers;
 
