@@ -12,8 +12,8 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "node dist/main",
-    "start:dev": "nest start -b swc -w",
+    "start": "NODE_ENV=production node dist/main",
+    "start:dev": "NODE_ENV=development nest start -b swc -w",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "start:seed:visitants": "ts-node src/seeds/create/visitants.ts",
