@@ -7,41 +7,14 @@ import { Prisma } from '@prisma/client';
 import { ownerInMemory, ownersInMemory } from 'src/libs/memory-cache';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { selectOwnerScope } from 'src/scopes/visitant';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class OwnerService {
   private resetCache = resetUsers;
-
-  private readonly selectScope = {
-    name: true,
-    available: {
-      include: { justifications: { include: { justification: true } } },
-    },
-    id: true,
-    role: { select: { name: true, id: true } },
-    owner: {
-      select: {
-        email: true,
-        id: true,
-        phone: true,
-        photo: true,
-        cpf: true,
-        house: true,
-        square: true,
-        residents: {
-          select: {
-            email: true,
-            id: true,
-            phone: true,
-            cpf: true,
-            photo: true,
-          },
-        },
-      },
-    },
-  };
+  private readonly selectScope = selectOwnerScope;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -60,7 +33,7 @@ export class OwnerService {
     const reference = `user-owner-${page}-${name}-${cpf}`;
 
     const perPage =
-      process.env.ENV === 'development'
+      process.env.NODE_ENV === 'development'
         ? 2
         : Number(process.env.DEFAULT_PER_PAGE);
 
@@ -98,6 +71,7 @@ export class OwnerService {
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
         );
       }
+
       return {
         resource: ownersInMemory.retrieveItemValue(reference),
         totalPages,
@@ -148,9 +122,8 @@ export class OwnerService {
       owner: data,
       user: data,
     };
-    this.resetCache();
     try {
-      await this.prisma.user.create({
+      const userCreated = await this.prisma.user.create({
         data: {
           name: user.name,
           role: { connect: { name: 'OWNER' } },
@@ -179,7 +152,63 @@ export class OwnerService {
             },
           },
         },
+        select: {
+          id: true,
+          name: true,
+          owner: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+          available: {
+            select: {
+              id: true,
+              justifications: {
+                select: {
+                  justification: {
+                    select: {
+                      id: true,
+                      description: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
+
+      await this.mailService.sendInviteUser({
+        id: userCreated.id,
+        name: userCreated.name,
+        owner: {
+          email: userCreated.owner.email,
+          id: userCreated.owner.id,
+        },
+      });
+
+      await this.prisma.availablesJustifications.update({
+        where: {
+          availableId_justificationId: {
+            availableId: userCreated.available.id,
+            justificationId: userCreated.available.justifications.find(
+              (just) =>
+                just.justification.description ===
+                'Aguardando convite da administração',
+            ).justification.id,
+          },
+        },
+        data: {
+          justification: {
+            connect: {
+              description: 'Aguardando confirmação do email',
+            },
+          },
+          updatedAt: timeStampISOTime,
+        },
+      });
+      this.resetCache();
     } catch (error) {
       console.error('Owner Create Service =', error);
 
