@@ -81,8 +81,6 @@ export class PermissionService {
         },
       });
 
-      console.log(permissions);
-
       await this.prisma.permission.updateMany({
         where: {
           visitant: {
@@ -113,8 +111,6 @@ export class PermissionService {
   }
 
   async updateCheckout({ visitantId }: { visitantId: string }) {
-    console.log('visitantId = ', visitantId);
-
     try {
       const permissions = await this.prisma.permission.findMany({
         where: {

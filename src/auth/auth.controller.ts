@@ -22,7 +22,7 @@ export class AuthController {
         password: signIn.password,
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       throw new HttpException(
         {

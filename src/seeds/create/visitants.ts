@@ -3,8 +3,6 @@ import { mockedOwner, mockedUser, mockedVisitants } from '../mock';
 import { prisma } from '../prismaClient';
 
 async function createVisitant() {
-  console.log('creating visitants...');
-
   const user = await prisma.user.create({
     data: {
       name: mockedUser.name,

@@ -105,7 +105,7 @@ export class OwnerVisitantService {
         totalPages,
       };
     } catch (error) {
-      console.log('Visitante List Service =', error);
+      console.error('Visitante List Service =', error);
 
       throw error;
     }
@@ -139,7 +139,7 @@ export class OwnerVisitantService {
       }
       return visitantInMemory.retrieveItemValue(reference);
     } catch (error) {
-      console.log('Visitante GET Service =', error);
+      console.error('Visitante GET Service =', error);
 
       throw error;
     }
@@ -184,7 +184,7 @@ export class OwnerVisitantService {
 
       return this.resetCache();
     } catch (error) {
-      console.log('Visitante Create Service = ', error);
+      console.error('Visitante Create Service = ', error);
 
       throw error;
     }
@@ -227,7 +227,7 @@ export class OwnerVisitantService {
       });
       return this.resetCache();
     } catch (error) {
-      console.log('Visitante Remove Service = ', error);
+      console.error('Visitante Remove Service = ', error);
 
       throw error;
     }
@@ -266,7 +266,7 @@ export class OwnerVisitantService {
 
       return this.resetCache();
     } catch (error) {
-      console.log('Visitante Add Service = ', error);
+      console.error('Visitante Add Service = ', error);
 
       throw error;
     }
@@ -330,7 +330,7 @@ export class OwnerVisitantService {
       });
       this.resetCache();
     } catch (error) {
-      console.log('Visitante Update availabe Service = ', error);
+      console.error('Visitante Update availabe Service = ', error);
 
       throw error;
     }

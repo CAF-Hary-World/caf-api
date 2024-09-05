@@ -1,14 +1,9 @@
 import { prisma } from 'src/seeds/prismaClient';
 
 async function changeStatusToBlock() {
-  const user = await prisma.user.findFirstOrThrow({
+  await prisma.user.findFirstOrThrow({
     where: { name: { contains: 'Seeded' } },
   });
-
-  // await prisma.visitant.update({where: {
-
-  // }})
-  console.log(user);
 }
 changeStatusToBlock()
   .then(async () => {

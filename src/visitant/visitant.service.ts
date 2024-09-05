@@ -18,7 +18,6 @@ export class VisitantService {
     const reference = `visitant-${cpf}`;
     try {
       if (!visitantInMemory.hasItem(reference)) {
-        console.log('no visitant cpf in cache');
         const visitant = await this.prisma.visitant.findUnique({
           where: {
             cpf,
@@ -84,7 +83,6 @@ export class VisitantService {
 
     try {
       if (!visitantInMemory.hasItem(reference)) {
-        console.log('no visitant cpf in cache');
         const visitant = await this.prisma.visitant.findMany({
           select: this.selectScope,
           where,
@@ -108,7 +106,6 @@ export class VisitantService {
     const reference = `visitant-${id}`;
     try {
       if (!visitantInMemory.hasItem(reference)) {
-        console.log('no visitant id in cache');
         const visitant = await this.prisma.visitant.findUnique({
           where: {
             id,

@@ -15,7 +15,7 @@ async function bootstrap() {
     ],
   });
   await app.listen(Number(process.env.PORT) || 3000, () => {
-    console.log('RUNNING IN PORT = ', Number(process.env.PORT) || 3000);
+    console.info('RUNNING IN PORT = ', Number(process.env.PORT) || 3000);
   });
 }
 bootstrap();

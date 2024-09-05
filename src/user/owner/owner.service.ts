@@ -297,7 +297,7 @@ export class OwnerService {
         },
       });
     } catch (error) {
-      console.log('Owner UPDATE Service =', error);
+      console.error('Owner UPDATE Service =', error);
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           const failedField = error.meta?.target as Array<string>;
@@ -324,7 +324,7 @@ export class OwnerService {
         },
       });
     } catch (error) {
-      console.log('Owner DELETE Service =', error);
+      console.error('Owner DELETE Service =', error);
       // Handle specific Prisma errors or throw a general internal server error
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new ConflictException(error.meta?.target);

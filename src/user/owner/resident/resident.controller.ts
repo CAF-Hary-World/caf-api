@@ -32,10 +32,9 @@ export class OwnerResidentController {
         name,
         cpf,
       });
-      console.log('List residents');
       return residents;
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
       throw new HttpException(
         {

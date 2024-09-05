@@ -97,56 +97,6 @@ export class NotificationService {
 
   getNotifications = async (): Promise<any> => {};
 
-  sendPush = async (
-    userId: string,
-    token: string,
-    title: string,
-    body: string,
-  ): Promise<void> => {
-    try {
-      const notificationToken =
-        await this.prismaService.notificationToken.findUniqueOrThrow({
-          where: {
-            token,
-            status: 'ACTIVE',
-          },
-        });
-
-      await firebase
-        .messaging()
-        .send({
-          notification: {
-            title,
-            body,
-          },
-          token: notificationToken.token,
-          android: { priority: 'high' },
-        })
-        .catch((error) => {
-          throw error;
-        });
-
-      await this.prismaService.notification.create({
-        data: {
-          body,
-          title,
-          user: {
-            connect: {
-              id: userId,
-            },
-          },
-          notificationToken: {
-            connect: {
-              token,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  };
-
   sendPushToUser = async ({
     body,
     role,
@@ -160,8 +110,6 @@ export class NotificationService {
     title: string;
     body: string;
   }): Promise<void> => {
-    console.log('userId = ', userId);
-
     let link = process.env.COND_URL;
     if (role === 'SECURITY') link = process.env.SECURITY_URL;
     if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
@@ -190,7 +138,7 @@ export class NotificationService {
         },
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   };
@@ -245,7 +193,6 @@ export class NotificationService {
         let link = process.env.COND_URL;
         if (role === 'SECURITY') link = process.env.SECURITY_URL;
         if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
-        console.log(link);
         await firebase
           .messaging()
           .send({

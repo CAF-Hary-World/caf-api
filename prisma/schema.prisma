@@ -349,7 +349,6 @@ model Notification {
   notificationToken             NotificationToken? @relation(fields: [notificationTokenId], references: [id])
   userId                        String?
   user                          User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
-
 }
 
 // END Notification

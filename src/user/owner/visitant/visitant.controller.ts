@@ -53,10 +53,9 @@ export class OwnerVisitantController {
         pending,
         processing,
       });
-      console.log('List visitants');
       return visitants;
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
       throw new HttpException(
         {
@@ -82,7 +81,7 @@ export class OwnerVisitantController {
       });
       return visitant;
     } catch (error) {
-      console.log('Controller error = ', error);
+      console.error('Controller error = ', error);
 
       throw new HttpException(
         {
@@ -158,7 +157,7 @@ export class OwnerVisitantController {
         ownerId,
       });
     } catch (error) {
-      console.log(error.code);
+      console.error(error.code);
       throw new HttpException(
         {
           status:

@@ -124,7 +124,7 @@ export class OwnerResidentService {
         totalPages,
       };
     } catch (error) {
-      console.log('Residente List Service =', error);
+      console.error('Residente List Service =', error);
 
       throw error;
     }
@@ -202,7 +202,7 @@ export class OwnerResidentService {
       });
       return resident;
     } catch (error) {
-      console.log('Residente Create Service = ', error);
+      console.error('Residente Create Service = ', error);
       await this.prisma.user.delete({
         where: { id: residentId },
       });
@@ -233,7 +233,7 @@ export class OwnerResidentService {
         },
       });
     } catch (error) {
-      console.log('Residente Create Service = ', error);
+      console.error('Residente Create Service = ', error);
 
       throw error;
     }
@@ -251,7 +251,7 @@ export class OwnerResidentService {
     user: Prisma.UserUpdateInput & { resident: Prisma.ResidentUpdateInput };
   }) {
     this.resetCache();
-    console.log('update resident');
+    console.error('update resident');
 
     try {
       //  IF resident belongs to owner
@@ -283,7 +283,7 @@ export class OwnerResidentService {
         },
       });
     } catch (error) {
-      console.log('Residente Update Service = ', error);
+      console.error('Residente Update Service = ', error);
 
       throw error;
     }
