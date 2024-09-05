@@ -203,7 +203,7 @@ export type SelectVisitant = {
       where: {
         deletedAt: null;
       };
-      include: {
+      select: {
         user: {
           select: {
             owner: {

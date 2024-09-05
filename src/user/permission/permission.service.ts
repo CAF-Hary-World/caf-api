@@ -22,7 +22,7 @@ export class PermissionService {
         select: { name: true },
       });
 
-      const permission = await this.prisma.permission.create({
+      await this.prisma.permission.create({
         data: {
           user: {
             connect: {
@@ -43,18 +43,17 @@ export class PermissionService {
         roles: ['ADMIN', 'SECURITY', 'ROOT'],
         body: `O morador ${user.name} convidou ${visitant.name}`,
         title: 'Permissão de entrada enviada!',
-        path: `/permissions/${visitantId}/${permission.id}`,
+        path: `/permissions/${visitantId}`,
       });
     } catch (error) {
       throw error;
     }
   }
 
-  async updateCheckin({ id, visitantId }: { id: string; visitantId: string }) {
+  async updateCheckin({ visitantId }: { visitantId: string }) {
     try {
       const permissions = await this.prisma.permission.findMany({
         where: {
-          id,
           visitant: {
             id: visitantId,
           },
@@ -82,9 +81,10 @@ export class PermissionService {
         },
       });
 
+      console.log(permissions);
+
       await this.prisma.permission.updateMany({
         where: {
-          id,
           visitant: {
             id: visitantId,
           },
@@ -112,14 +112,12 @@ export class PermissionService {
     }
   }
 
-  async updateCheckout({ id, visitantId }: { id: string; visitantId: string }) {
-    console.log('id = ', id);
+  async updateCheckout({ visitantId }: { visitantId: string }) {
     console.log('visitantId = ', visitantId);
 
     try {
       const permissions = await this.prisma.permission.findMany({
         where: {
-          id,
           visitant: {
             id: visitantId,
           },
@@ -150,7 +148,6 @@ export class PermissionService {
 
       await this.prisma.permission.updateMany({
         where: {
-          id,
           visitant: {
             id: visitantId,
           },

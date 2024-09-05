@@ -10,6 +10,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { selectOwnerScope } from 'src/scopes/visitant';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
+import { translate } from 'src/utils/translate';
 
 @Injectable()
 export class OwnerService {
@@ -218,7 +219,7 @@ export class OwnerService {
           // Unique constraint failed
           const failedField = error.meta?.target as Array<string>;
           throw new ConflictException(
-            `O ${failedField.includes('house') ? 'Quadra e Casa' : failedField} já foi utilizado!`,
+            `O ${failedField.includes('house') ? 'Quadra e Casa' : translate(String(failedField))} já foi utilizado!`,
           );
         }
       }

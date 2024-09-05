@@ -59,6 +59,11 @@ export class OwnerVisitantService {
           },
         },
       }),
+      ownersOnVisitants: {
+        some: {
+          ownerId,
+        },
+      },
     };
 
     const visitantsCount = await this.prisma.visitant.count({
@@ -74,11 +79,23 @@ export class OwnerVisitantService {
           orderBy: { name: 'desc' },
           skip: (page - 1) * perPage,
           take: perPage,
-          select: this.selectScope,
+          select: {
+            ...this.selectScope,
+            permissions: {
+              where: {
+                ...this.selectScope.permissions.where,
+                user: {
+                  id,
+                },
+              },
+            },
+          },
         });
 
         visitantsInMemory.storeExpiringItem(
           reference,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
           visitants,
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
         );

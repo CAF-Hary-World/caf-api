@@ -17,9 +17,14 @@ export const selectVisitantScope = {
     where: {
       deletedAt: null,
     },
-    include: {
+    select: {
+      id: true,
+      checkin: true,
+      checkout: true,
+      deletedAt: true,
       user: {
         select: {
+          id: true,
           owner: {
             select: {
               house: true,

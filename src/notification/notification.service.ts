@@ -160,6 +160,8 @@ export class NotificationService {
     title: string;
     body: string;
   }): Promise<void> => {
+    console.log('userId = ', userId);
+
     let link = process.env.COND_URL;
     if (role === 'SECURITY') link = process.env.SECURITY_URL;
     if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;

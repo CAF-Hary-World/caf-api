@@ -5,7 +5,6 @@ import {
   Controller,
   HttpException,
   HttpStatus,
-  Param,
   Patch,
   Post,
   Request,
@@ -51,15 +50,11 @@ export class PermissionController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/sign-in/:id')
-  async checkin(
-    @Param() { id }: { id: string },
-    @Body() data: { visitantId: string },
-  ) {
+  @Patch('/sign-in')
+  async checkin(@Body() data: { visitantId: string }) {
     const { visitantId } = data;
     try {
       return await this.permissionService.updateCheckin({
-        id,
         visitantId,
       });
     } catch (error) {
@@ -77,15 +72,11 @@ export class PermissionController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/sign-out/:id')
-  async checkout(
-    @Param() { id }: { id: string },
-    @Body() data: { visitantId: string },
-  ) {
+  @Patch('/sign-out')
+  async checkout(@Body() data: { visitantId: string }) {
     const { visitantId } = data;
     try {
       return await this.permissionService.updateCheckout({
-        id,
         visitantId,
       });
     } catch (error) {
