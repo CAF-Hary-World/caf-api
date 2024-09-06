@@ -61,7 +61,6 @@ model User {
   available               Available?
 
   notifications           Notification[]
-  notificationTokens      NotificationToken[]
 
   permissions             Permission[]
 
@@ -320,36 +319,19 @@ model JustificationCategories {
 
 // START Notification
 
-model NotificationToken {
-  id                            String @id @default(uuid())
-  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
-  deletedAt                     DateTime?
-  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
-
-  token                         String @unique
-  status                        String @default("ACTIVE")
-  
-  userId                        String?
-  user                          User?  @relation(fields: [userId], references: [id])
-
-  notifications                 Notification[]
-}
-
 model Notification {
   id                            String @id @default(uuid())
   createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
   deletedAt                     DateTime?
   updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
+  status                        String @default("ACTIVE")
   title                         String
   body                          String
-  status                        String @default("ACTIVE")
 
-  notificationTokenId           String?
-  notificationToken             NotificationToken? @relation(fields: [notificationTokenId], references: [id])
   userId                        String?
-  user                          User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+  user                          User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+ }
 
 // END Notification
 

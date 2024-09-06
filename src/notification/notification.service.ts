@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ROLE } from '@prisma/client';
 import * as firebase from 'firebase-admin';
+import {
+  notificationInMemory,
+  notificationsInMemory,
+} from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { timeStampISOTime } from 'src/utils/time';
+import { getDaysAgo } from 'src/utils/time';
 
 const serviceAccount = JSON.parse(process.env.FIREBASE);
 
@@ -37,65 +41,72 @@ export class NotificationService {
         },
       });
 
-      const notificationToken =
-        await this.prismaService.notificationToken.findUnique({
-          where: { token },
-        });
+      await Promise.all([
+        firebase.messaging().subscribeToTopic(token, `role-${user.role.name}`),
+        firebase.messaging().subscribeToTopic(token, `user-${user.id}`),
+        user.role.name === 'OWNER' &&
+          firebase
+            .messaging()
+            .subscribeToTopic(
+              token,
+              `address-${user.owner.square}-${user.owner.house}`,
+            ),
+        user.role.name === 'RESIDENT' &&
+          firebase
+            .messaging()
+            .subscribeToTopic(
+              token,
+              `address-${user.resident.owner.square}-${user.resident.owner.house}`,
+            ),
+      ]);
+    } catch (error) {
+      throw error;
+    }
+  };
 
-      await firebase
-        .messaging()
-        .subscribeToTopic(token, `role-${user.role.name}`);
+  disableNotification = async (id: string) => {
+    try {
+      await this.prismaService.notification.delete({
+        where: {
+          id,
+        },
+      });
+      notificationInMemory.clear();
+      return notificationsInMemory.clear();
+    } catch (error) {
+      throw error;
+    }
+  };
 
-      await firebase.messaging().subscribeToTopic(token, `user-${user.id}`);
-
-      if (user.role.name === 'OWNER')
-        await firebase
-          .messaging()
-          .subscribeToTopic(
-            token,
-            `address-${user.owner.square}-${user.owner.house}`,
-          );
-      if (user.role.name === 'RESIDENT')
-        await firebase
-          .messaging()
-          .subscribeToTopic(
-            token,
-            `address-${user.resident.owner.square}-${user.resident.owner.house}`,
-          );
-
-      if (Boolean(notificationToken)) return;
-      await this.prismaService.notificationToken.create({
-        data: {
-          user: {
-            connect: {
+  getUserNotifications = async ({
+    userId,
+  }: {
+    userId: string;
+  }): Promise<any> => {
+    const reference = `notification-user-${userId}`;
+    try {
+      if (!notificationsInMemory.hasItem(reference)) {
+        const notifications = await this.prismaService.notification.findMany({
+          where: {
+            user: {
               id: userId,
             },
+            createdAt: {
+              gte: getDaysAgo(1),
+            },
           },
-          token,
-        },
-      });
+        });
+        notificationsInMemory.storeExpiringItem(
+          reference,
+          notifications,
+          process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
+        );
+      }
+      return notificationsInMemory.retrieveItemValue(reference);
     } catch (error) {
       throw error;
     }
   };
-
-  disablePushNotification = async (token: string) => {
-    try {
-      await this.prismaService.notificationToken.update({
-        where: {
-          token,
-        },
-        data: {
-          deletedAt: timeStampISOTime,
-          updatedAt: timeStampISOTime,
-        },
-      });
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  getNotifications = async (): Promise<any> => {};
 
   sendPushToUser = async ({
     body,
@@ -114,29 +125,32 @@ export class NotificationService {
     if (role === 'SECURITY') link = process.env.SECURITY_URL;
     if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
     try {
-      await firebase.messaging().send({
-        topic: `user-${userId}`,
-        notification: {
-          title,
-          body,
-        },
-        data: {
-          link: path ? link + path : link,
-          icon: process.env.LOGO_URL,
-        },
-      });
-
-      await this.prismaService.notification.create({
-        data: {
-          body,
-          title,
-          user: {
-            connect: {
-              id: userId,
+      await Promise.all([
+        firebase.messaging().send({
+          topic: `user-${userId}`,
+          notification: {
+            title,
+            body,
+          },
+          data: {
+            link: path ? link + path : link,
+            icon: process.env.LOGO_URL,
+          },
+        }),
+        this.prismaService.notification.create({
+          data: {
+            body,
+            title,
+            user: {
+              connect: {
+                id: userId,
+              },
             },
           },
-        },
-      });
+        }),
+      ]);
+      notificationInMemory.clear();
+      return notificationsInMemory.clear();
     } catch (error) {
       console.error(error);
       throw error;
@@ -156,22 +170,47 @@ export class NotificationService {
     if (role === 'SECURITY') link = process.env.SECURITY_URL;
     if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
     try {
-      await firebase
-        .messaging()
-        .send({
-          topic: `role-${role}`,
-          notification: {
-            title,
-            body,
+      // Fetch all users with the specific role
+      const users = await this.prismaService.user.findMany({
+        where: {
+          role: {
+            name: role, // Adjust this if role relation is slightly different
           },
-          data: {
-            link,
-            icon: process.env.LOGO_URL,
-          },
-        })
-        .catch((error) => {
-          throw error;
-        });
+        },
+      });
+
+      if (users.length === 0)
+        throw new Error('No users found for the specified role');
+
+      await Promise.all([
+        ...users.map(async (user) =>
+          this.prismaService.notification.create({
+            data: {
+              body,
+              title,
+              userId: user.id, // Set the userId for each notification
+            },
+          }),
+        ),
+        firebase
+          .messaging()
+          .send({
+            topic: `role-${role}`,
+            notification: {
+              title,
+              body,
+            },
+            data: {
+              link,
+              icon: process.env.LOGO_URL,
+            },
+          })
+          .catch((error) => {
+            throw error;
+          }),
+      ]);
+      notificationInMemory.clear();
+      return notificationsInMemory.clear();
     } catch (error) {
       throw error;
     }
@@ -193,23 +232,48 @@ export class NotificationService {
         let link = process.env.COND_URL;
         if (role === 'SECURITY') link = process.env.SECURITY_URL;
         if (role === 'ADMIN' || role === 'ROOT') link = process.env.ADMIN_URL;
-        await firebase
-          .messaging()
-          .send({
-            topic: `role-${role}`,
-            notification: {
-              title,
-              body,
+
+        const users = await this.prismaService.user.findMany({
+          where: {
+            role: {
+              name: role, // Adjust this if role relation is slightly different
             },
-            data: {
-              link: path ? link + path : link,
-              icon: process.env.LOGO_URL,
-            },
-          })
-          .catch((error) => {
-            throw error;
-          });
+          },
+        });
+
+        if (users.length === 0) return;
+
+        await Promise.all([
+          ...users.map(async (user) =>
+            this.prismaService.notification.create({
+              data: {
+                body,
+                title,
+                userId: user.id, // Set the userId for each notification
+              },
+            }),
+          ),
+          firebase
+            .messaging()
+            .send({
+              topic: `role-${role}`,
+              notification: {
+                title,
+                body,
+              },
+              data: {
+                link: path ? link + path : link,
+                icon: process.env.LOGO_URL,
+              },
+            })
+            .catch((error) => {
+              throw error;
+            }),
+        ]);
       });
+
+      notificationInMemory.clear();
+      return notificationsInMemory.clear();
     } catch (error) {
       throw error;
     }

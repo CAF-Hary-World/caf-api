@@ -247,3 +247,22 @@ export const visitantsInMemory = new MemoryCache<
   string,
   Array<Prisma.VisitantGetPayload<SelectVisitant> | null>
 >(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export type SelectNotification = {
+  select: {
+    id: true;
+    title: true;
+    body: true;
+    status: true;
+  };
+};
+
+export const notificationInMemory = new MemoryCache<
+  string,
+  Prisma.NotificationGetPayload<SelectNotification> | null
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const notificationsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.NotificationGetPayload<SelectNotification> | null>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);

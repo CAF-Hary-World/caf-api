@@ -98,8 +98,8 @@ export class PermissionService {
       permissions.forEach(async (permission) => {
         await this.notificationService.sendPushToUser({
           userId: permission.user.id,
-          body: `A portaria já liberou a entrada.`,
-          title: `${permission.visitant.name} chegou.`,
+          title: `Visitante chegou`,
+          body: `${permission.visitant.name} passou pela portaria e esta a caminho da sua casa.`,
           role: permission.user.role.name,
         });
       });
@@ -161,8 +161,8 @@ export class PermissionService {
       permissions.forEach(async (permission) => {
         await this.notificationService.sendPushToUser({
           userId: permission.user.id,
-          body: `Saida confirmada.`,
-          title: `${permission.visitant.name} saiu do ${process.env.CLIENT_NAME} com segurança.`,
+          title: `Saida confirmada.`,
+          body: `${permission.visitant.name} saiu do ${process.env.CLIENT_NAME} com segurança.`,
           role: permission.user.role.name,
         });
       });
