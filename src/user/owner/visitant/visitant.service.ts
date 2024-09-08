@@ -125,7 +125,9 @@ export class OwnerVisitantService {
           where: {
             id: visitantId,
             owner: {
-              userId,
+              user: {
+                id: userId,
+              },
             },
           },
           select: this.selectScope,

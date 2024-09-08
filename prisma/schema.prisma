@@ -224,9 +224,7 @@ model Visitant {
   kind                    KIND
   email                   String?       @unique
   photo                   String?
-  documentUrl             String?
-  cnh                     String?       @unique
-  cnhURL                  String?       
+  documentUrl             String?      
   invited                 Boolean       @default(false)
 
   availableId             String?       @unique

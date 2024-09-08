@@ -227,7 +227,6 @@ export type SelectVisitant = {
       };
     };
     name: true;
-    cnh: true;
     cpf: true;
     documentUrl: true;
     email: true;

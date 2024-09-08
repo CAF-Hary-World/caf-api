@@ -52,57 +52,60 @@ export class PermissionService {
 
   async updateCheckin({ visitantId }: { visitantId: string }) {
     try {
-      const permissions = await this.prisma.permission.findMany({
-        where: {
-          visitant: {
-            id: visitantId,
+      const [permissions] = await Promise.all([
+        this.prisma.permission.findMany({
+          where: {
+            visitant: {
+              id: visitantId,
+            },
+            deletedAt: null,
+            checkin: null,
           },
-          deletedAt: null,
-          checkin: null,
-        },
-        select: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              role: {
-                select: {
-                  name: true,
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                role: {
+                  select: {
+                    name: true,
+                  },
                 },
               },
             },
-          },
-          visitant: {
-            select: {
-              id: true,
-              name: true,
+            visitant: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
-        },
-      });
-
-      await this.prisma.permission.updateMany({
-        where: {
-          visitant: {
-            id: visitantId,
+        }),
+        this.prisma.permission.updateMany({
+          where: {
+            visitant: {
+              id: visitantId,
+            },
+            deletedAt: null,
+            checkin: null,
           },
-          deletedAt: null,
-          checkin: null,
-        },
-        data: {
-          checkin: timeStampISOTime,
-          updatedAt: timeStampISOTime,
-        },
-      });
+          data: {
+            checkin: timeStampISOTime,
+            updatedAt: timeStampISOTime,
+          },
+        }),
+      ]);
 
-      permissions.forEach(async (permission) => {
-        await this.notificationService.sendPushToUser({
-          userId: permission.user.id,
-          title: `Visitante chegou`,
-          body: `${permission.visitant.name} passou pela portaria e esta a caminho da sua casa.`,
-          role: permission.user.role.name,
-        });
-      });
+      await Promise.all(
+        permissions.map(async (permission) =>
+          this.notificationService.sendPushToUser({
+            userId: permission.user.id,
+            title: `Visitante chegou`,
+            body: `${permission.visitant.name} passou pela portaria e esta a caminho da sua casa.`,
+            role: permission.user.role.name,
+          }),
+        ),
+      );
 
       return resetUsers();
     } catch (error) {
@@ -112,60 +115,63 @@ export class PermissionService {
 
   async updateCheckout({ visitantId }: { visitantId: string }) {
     try {
-      const permissions = await this.prisma.permission.findMany({
-        where: {
-          visitant: {
-            id: visitantId,
+      const [permissions] = await Promise.all([
+        this.prisma.permission.findMany({
+          where: {
+            visitant: {
+              id: visitantId,
+            },
+            deletedAt: null,
+            checkin: { not: null },
+            checkout: null,
           },
-          deletedAt: null,
-          checkin: { not: null },
-          checkout: null,
-        },
-        select: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              role: {
-                select: {
-                  name: true,
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                role: {
+                  select: {
+                    name: true,
+                  },
                 },
               },
             },
-          },
-          visitant: {
-            select: {
-              id: true,
-              name: true,
+            visitant: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
-        },
-      });
-
-      await this.prisma.permission.updateMany({
-        where: {
-          visitant: {
-            id: visitantId,
+        }),
+        this.prisma.permission.updateMany({
+          where: {
+            visitant: {
+              id: visitantId,
+            },
+            deletedAt: null,
+            checkin: { not: null },
+            checkout: null,
           },
-          deletedAt: null,
-          checkin: { not: null },
-          checkout: null,
-        },
-        data: {
-          checkout: timeStampISOTime,
-          updatedAt: timeStampISOTime,
-          deletedAt: timeStampISOTime,
-        },
-      });
+          data: {
+            checkout: timeStampISOTime,
+            updatedAt: timeStampISOTime,
+            deletedAt: timeStampISOTime,
+          },
+        }),
+      ]);
 
-      permissions.forEach(async (permission) => {
-        await this.notificationService.sendPushToUser({
-          userId: permission.user.id,
-          title: `Saida confirmada.`,
-          body: `${permission.visitant.name} saiu do ${process.env.CLIENT_NAME} com segurança.`,
-          role: permission.user.role.name,
-        });
-      });
+      await Promise.all(
+        permissions.map(async (permission) =>
+          this.notificationService.sendPushToUser({
+            userId: permission.user.id,
+            title: `Saida confirmada.`,
+            body: `${permission.visitant.name} saiu do ${process.env.CLIENT_NAME} com segurança.`,
+            role: permission.user.role.name,
+          }),
+        ),
+      );
 
       return resetUsers();
     } catch (error) {

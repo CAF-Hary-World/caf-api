@@ -46,7 +46,6 @@ export const selectVisitantScope = {
     },
   },
   name: true,
-  cnh: true,
   cpf: true,
   documentUrl: true,
   email: true,
