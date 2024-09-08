@@ -6,7 +6,7 @@ import {
   notificationsInMemory,
 } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { getDaysAgo } from 'src/utils/time';
+import { getDaysAgo, timeStampISOTime } from 'src/utils/time';
 
 const serviceAccount = JSON.parse(process.env.FIREBASE);
 
@@ -64,11 +64,16 @@ export class NotificationService {
     }
   };
 
-  disableNotification = async (id: string) => {
+  disableNotification = async ({ id }: { id: string }) => {
     try {
-      await this.prismaService.notification.delete({
+      await this.prismaService.notification.update({
         where: {
           id,
+        },
+        data: {
+          status: 'INACTIVE',
+          deletedAt: timeStampISOTime,
+          updatedAt: timeStampISOTime,
         },
       });
       notificationInMemory.clear();
@@ -94,6 +99,7 @@ export class NotificationService {
             createdAt: {
               gte: getDaysAgo(1),
             },
+            deletedAt: null,
           },
         });
         notificationsInMemory.storeExpiringItem(

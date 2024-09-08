@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -14,6 +15,7 @@ import { Request as ExpressRequest } from 'express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { NotificationService } from './notification.service';
 import { ROLE } from '@prisma/client';
+import { handleErrors } from 'src/handles/errors';
 
 // Define CustomRequest interface extending the Express Request
 interface CustomRequest extends ExpressRequest {
@@ -48,6 +50,16 @@ export class NotificationController {
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/:id')
+  async disableNotification(@Param() { id }: { id: string }) {
+    try {
+      return await this.notificationService.disableNotification({ id });
+    } catch (error) {
+      handleErrors(error);
     }
   }
 
