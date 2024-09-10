@@ -3,16 +3,16 @@ import {
   UseGuards,
   Get,
   Param,
-  HttpException,
-  HttpStatus,
   Post,
   Body,
   Patch,
   Query,
 } from '@nestjs/common';
+
 import { OwnerResidentService } from './resident.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Prisma } from '@prisma/client';
+import { handleErrors } from 'src/handles/errors';
 
 @Controller('users/:id/owners/:ownerId/residents')
 export class OwnerResidentController {
@@ -36,44 +36,21 @@ export class OwnerResidentController {
     } catch (error) {
       console.error('Controller error = ', error);
 
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
-        },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
   @UseGuards(AuthGuard)
   @Post()
   async createResident(
+    @Param() { ownerId }: { ownerId: string },
     @Body()
-    {
-      user,
-      ownerId,
-    }: {
-      user: Prisma.UserCreateInput & { resident: Prisma.ResidentCreateInput };
-      ownerId: string;
-    },
+    resident: Prisma.UserCreateInput & Prisma.ResidentCreateInput,
   ) {
     try {
-      await this.residentService.createResident({ user, ownerId });
+      await this.residentService.createResident({ resident, ownerId });
     } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          error: error.message,
-        },
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
@@ -90,17 +67,7 @@ export class OwnerResidentController {
         ownerId,
       });
     } catch (error) {
-      console.error(error);
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          error: error.message,
-        },
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
@@ -119,20 +86,7 @@ export class OwnerResidentController {
         user,
       });
     } catch (error) {
-      console.error(error);
-      throw new HttpException(
-        {
-          status:
-            error.code !== 'P2002'
-              ? HttpStatus.UNAUTHORIZED
-              : HttpStatus.CONFLICT,
-          error: error.message,
-        },
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 }

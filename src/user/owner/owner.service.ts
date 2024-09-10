@@ -89,7 +89,7 @@ export class OwnerService {
   }
 
   async getOwner({ id, ownerId }: { id: string; ownerId: string }) {
-    const reference = `user-${id}-owner-${ownerId}`;
+    const reference = `user-${id}-owner`;
 
     try {
       if (!ownerInMemory.hasItem(reference)) {

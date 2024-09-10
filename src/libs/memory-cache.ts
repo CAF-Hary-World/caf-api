@@ -99,6 +99,35 @@ export type SelectOwner = {
   };
 };
 
+export const selectOwner = {
+  select: {
+    name: true,
+    available: { include: { justifications: true } },
+    id: true,
+    role: { select: { name: true, id: true } },
+    owner: {
+      select: {
+        email: true,
+        id: true,
+        phone: true,
+        photo: true,
+        cpf: true,
+        house: true,
+        square: true,
+        residents: {
+          select: {
+            email: true,
+            id: true,
+            phone: true,
+            cpf: true,
+            photo: true,
+          },
+        },
+      },
+    },
+  },
+};
+
 export const ownerInMemory = new MemoryCache<
   string,
   Prisma.UserGetPayload<SelectOwner> | null
@@ -139,6 +168,32 @@ export type SelectResident = {
       };
     };
   };
+};
+
+export const selectResident = {
+  select: {
+    name: true,
+    available: true,
+    id: true,
+    role: { select: { name: true, id: true } },
+    resident: {
+      select: {
+        id: true,
+        cpf: true,
+        email: true,
+        phone: true,
+        photo: true,
+        visitants: true,
+        owner: {
+          select: {
+            id: true,
+            house: true,
+            square: true,
+          },
+        },
+      },
+    },
+  },
 };
 
 export const residentInMemory = new MemoryCache<

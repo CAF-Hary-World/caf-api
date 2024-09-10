@@ -1,6 +1,11 @@
-import { residentsInMemory, SelectResident } from '../../../libs/memory-cache';
+import {
+  residentInMemory,
+  residentsInMemory,
+  selectResident,
+} from '../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+
 import { encodeSha256 } from 'src/libs/bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,30 +14,6 @@ import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class OwnerResidentService {
-  private readonly selectScope = {
-    name: true,
-    available: true,
-    id: true,
-    role: { select: { name: true, id: true } },
-    resident: {
-      select: {
-        id: true,
-        cpf: true,
-        email: true,
-        phone: true,
-        photo: true,
-        visitants: true,
-        owner: {
-          select: {
-            id: true,
-            house: true,
-            square: true,
-          },
-        },
-      },
-    },
-  };
-
   private resetCache = resetUsers;
 
   constructor(
@@ -56,17 +37,21 @@ export class OwnerResidentService {
     const reference = `user${id}-owner-${ownerId}-resident-${page}-${name}-${cpf}`;
 
     const perPage =
-      process.env.ENV === 'development'
+      process.env.NODE_ENV === 'development'
         ? 2
         : Number(process.env.DEFAULT_PER_PAGE);
 
-    const residentsCount = await this.prisma.resident.count({
+    const residentsCount = await this.prisma.user.count({
       where: {
-        ownerId,
-        ...(name && {
-          user: { name: { contains: name, mode: 'insensitive' } },
+        ...(name && { name: { contains: name, mode: 'insensitive' } }),
+        ...(cpf && { resident: { cpf: { contains: cpf } } }),
+        ...(ownerId && {
+          resident: {
+            owner: {
+              id: ownerId,
+            },
+          },
         }),
-        ...(cpf && { cpf: { contains: cpf } }),
       },
     });
 
@@ -74,48 +59,27 @@ export class OwnerResidentService {
 
     try {
       if (!residentsInMemory.hasItem(reference)) {
-        const residents = await this.prisma.resident.findMany({
+        const residents = await this.prisma.user.findMany({
           where: {
-            ownerId,
-            ...(name && {
-              user: { name: { contains: name, mode: 'insensitive' } },
+            ...(name && { name: { contains: name, mode: 'insensitive' } }),
+            ...(cpf && { resident: { cpf: { contains: cpf } } }),
+            ...(ownerId && {
+              resident: {
+                owner: {
+                  id: ownerId,
+                },
+              },
             }),
-            ...(cpf && { cpf: { contains: cpf } }),
           },
-          orderBy: { user: { name: 'desc' } },
+          orderBy: { name: 'desc' },
           skip: (page - 1) * perPage,
           take: perPage,
-          select: {
-            id: true,
-            cpf: true,
-            email: true,
-            phone: true,
-            photo: true,
-            visitants: true,
-            owner: { select: { id: true, house: true, square: true } },
-            user: {
-              select: {
-                name: true,
-                available: true,
-                id: true,
-                role: true,
-              },
-            },
-          },
+          ...selectResident,
         });
-
-        const residentSerialized: Array<Prisma.UserGetPayload<SelectResident>> =
-          residents.map((resident) => ({
-            name: resident.user.name,
-            available: resident.user.available,
-            id: resident.user.id,
-            role: resident.user.role,
-            resident: { ...resident },
-          }));
 
         residentsInMemory.storeExpiringItem(
           reference,
-          residentSerialized,
+          residents,
           process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
         );
       }
@@ -131,32 +95,18 @@ export class OwnerResidentService {
   }
 
   async createResident({
-    user,
+    resident,
     ownerId,
   }: {
-    user: Prisma.UserCreateInput & { resident: Prisma.ResidentCreateInput };
+    resident: Prisma.UserCreateInput & Prisma.ResidentCreateInput;
     ownerId: string;
   }) {
-    this.resetCache();
     let residentId: string;
 
     try {
-      const owner = await this.prisma.owner.findUnique({
-        where: {
-          id: ownerId,
-        },
-        select: {
-          user: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      });
-
-      const resident = await this.prisma.user.create({
+      const residentCreated = await this.prisma.user.create({
         data: {
-          name: user.name,
+          name: resident.name,
           available: {
             create: {
               status: 'PROCESSING',
@@ -178,8 +128,9 @@ export class OwnerResidentService {
           },
           resident: {
             create: {
-              ...user.resident,
-              password: encodeSha256(user.resident.password),
+              password: encodeSha256(resident.cpf),
+              cpf: resident.cpf,
+              phone: resident.phone,
               owner: {
                 connect: {
                   id: ownerId,
@@ -188,19 +139,31 @@ export class OwnerResidentService {
             },
           },
         },
+        ...selectResident,
       });
-      residentId = resident.id;
+      residentInMemory.storeExpiringItem(
+        `user-${residentCreated.id}-resident`,
+        residentCreated,
+        process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
+      );
+      residentId = residentCreated.id;
       await this.mailService.sendResidentConfirmation({
         recipient: {
-          email: user.resident.email,
-          name: user.name,
-          id: residentId,
+          email: resident.email,
+          name: resident.name,
+          id: residentCreated.id,
         },
         sender: {
-          name: owner.user.name,
+          name: residentCreated.name,
         },
       });
-      return resident;
+      this.resetCache();
+      residentInMemory.storeExpiringItem(
+        `user-${residentCreated.id}-resident`,
+        residentCreated,
+        process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
+      );
+      return residentCreated;
     } catch (error) {
       console.error('Residente Create Service = ', error);
       await this.prisma.user.delete({
@@ -221,7 +184,7 @@ export class OwnerResidentService {
   }) {
     this.resetCache();
     try {
-      return await this.prisma.user.delete({
+      await this.prisma.user.delete({
         where: {
           id,
           resident: {
@@ -232,6 +195,7 @@ export class OwnerResidentService {
           },
         },
       });
+      return this.resetCache();
     } catch (error) {
       console.error('Residente Create Service = ', error);
 
@@ -251,37 +215,35 @@ export class OwnerResidentService {
     user: Prisma.UserUpdateInput & { resident: Prisma.ResidentUpdateInput };
   }) {
     this.resetCache();
-    console.error('update resident');
 
     try {
-      //  IF resident belongs to owner
-      await this.prisma.user.findUniqueOrThrow({
+      await this.prisma.user.update({
         where: {
           id,
           resident: {
             id: residentId,
-            ownerId,
+            owner: {
+              id: ownerId,
+            },
           },
-        },
-      });
-
-      await this.prisma.user.update({
-        where: {
-          id,
         },
         data: {
           name: user.name,
           updatedAt: timeStampISOTime,
           resident: {
             update: {
-              cpf: user.resident.cpf,
+              ...(user.resident.cpf && { cpf: user.resident.cpf }),
+              ...(user.resident.email && { email: user.resident.email }),
+              ...(user.resident.phone && { phone: user.resident.phone }),
+              ...(user.resident.password && {
+                phone: encodeSha256(String(user.resident.password)),
+              }),
               updatedAt: timeStampISOTime,
-              email: user.resident.email,
-              phone: user.resident.phone,
             },
           },
         },
       });
+      return this.resetCache();
     } catch (error) {
       console.error('Residente Update Service = ', error);
 
