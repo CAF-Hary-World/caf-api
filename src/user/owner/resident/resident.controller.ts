@@ -7,6 +7,7 @@ import {
   Body,
   Patch,
   Query,
+  Delete,
 } from '@nestjs/common';
 
 import { OwnerResidentService } from './resident.service';
@@ -55,14 +56,25 @@ export class OwnerResidentController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/remove')
+  @Delete('/:userResidentId/:residentId')
   async removeResident(
-    @Body() data: { cpf: string },
-    @Param() { id, ownerId }: { id: string; ownerId: string },
+    @Param()
+    {
+      id,
+      ownerId,
+      residentId,
+      userResidentId,
+    }: {
+      id: string;
+      ownerId: string;
+      userResidentId: string;
+      residentId: string;
+    },
   ) {
     try {
       return await this.residentService.removeResident({
-        cpf: data.cpf,
+        residentId,
+        userResidentId,
         id,
         ownerId,
       });

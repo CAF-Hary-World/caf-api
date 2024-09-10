@@ -174,23 +174,27 @@ export class OwnerResidentService {
   }
 
   async removeResident({
-    cpf,
+    residentId,
     id,
+    userResidentId,
     ownerId,
   }: {
     id: string;
     ownerId: string;
-    cpf: string;
+    userResidentId: string;
+    residentId: string;
   }) {
-    this.resetCache();
     try {
       await this.prisma.user.delete({
         where: {
-          id,
+          id: userResidentId,
           resident: {
-            cpf,
+            id: residentId,
             owner: {
               id: ownerId,
+              user: {
+                id,
+              },
             },
           },
         },
