@@ -102,6 +102,7 @@ export class NotificationService {
             deletedAt: null,
           },
         });
+
         notificationsInMemory.storeExpiringItem(
           reference,
           notifications,

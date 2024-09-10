@@ -61,6 +61,21 @@ export class VisitantController {
     }
   }
 
+  @UseGuards(AuthGuard)
+  @Get('/cpf/:cpf')
+  async getVisitantByCPF(
+    @Param()
+    { cpf }: { cpf: string },
+  ) {
+    try {
+      return await this.visitantService.getVisitantByCPF({
+        cpf,
+      });
+    } catch (error) {
+      handleErrors(error);
+    }
+  }
+
   @Get('/:id')
   async getVisitant(
     @Param()

@@ -75,7 +75,7 @@ export class VisitantService {
     });
 
     const perPage =
-      process.env.ENV === 'development'
+      process.env.NODE_ENV === 'development'
         ? 2
         : Number(process.env.DEFAULT_PER_PAGE);
 
