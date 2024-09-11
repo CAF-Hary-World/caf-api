@@ -4,7 +4,7 @@ import {
   selectResident,
 } from '../../../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, STATUS } from '@prisma/client';
 
 import { encodeSha256 } from 'src/libs/bcrypt';
 import { MailService } from 'src/mail/mail.service';
@@ -253,6 +253,187 @@ export class OwnerResidentService {
     } catch (error) {
       console.error('Residente Update Service = ', error);
 
+      throw error;
+    }
+  }
+
+  async updateAvailableStatus({
+    residentId,
+    userResidentId,
+    userOwnerId,
+    ownerId,
+    justifications,
+    status,
+  }: {
+    userOwnerId: string;
+    ownerId: string;
+    userResidentId: string;
+    residentId: string;
+    justifications: Array<string>;
+    status: STATUS;
+  }) {
+    try {
+      const allJustification = await this.prisma.justification.findMany();
+
+      await this.prisma.available.update({
+        where: {
+          userId: userResidentId,
+          user: {
+            id: userResidentId,
+            resident: {
+              id: residentId,
+              owner: {
+                id: ownerId,
+                user: {
+                  id: userOwnerId,
+                },
+              },
+            },
+          },
+        },
+        data: {
+          justifications: {
+            createMany: {
+              skipDuplicates: true,
+              data: justifications.map((justification) => ({
+                justificationId: allJustification.find(
+                  (just) => just.description === justification,
+                ).id,
+              })),
+            },
+          },
+          status,
+          updatedAt: timeStampISOTime,
+        },
+      });
+      this.resetCache();
+    } catch (error) {
+      console.error('Resident Update availabe Service = ', error);
+
+      throw error;
+    }
+  }
+
+  async allowResident({
+    ownerId,
+    residentId,
+    userOwnerId,
+    userResidentId,
+  }: {
+    userOwnerId: string;
+    ownerId: string;
+    userResidentId: string;
+    residentId: string;
+  }) {
+    try {
+      const available = await this.prisma.available.findUniqueOrThrow({
+        where: {
+          userId: userResidentId,
+        },
+      });
+
+      await this.prisma.available.update({
+        where: {
+          userId: userResidentId,
+          user: {
+            id: userResidentId,
+            resident: {
+              id: residentId,
+              owner: {
+                id: ownerId,
+                user: {
+                  id: userOwnerId,
+                },
+              },
+            },
+          },
+        },
+        data: {
+          status: 'ALLOWED',
+          updatedAt: timeStampISOTime,
+          justifications: {
+            deleteMany: {
+              availableId: available.id,
+            },
+          },
+        },
+      });
+
+      return this.resetCache();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async sendInvite({ id, residentId }: { id: string; residentId: string }) {
+    try {
+      const user = await this.prisma.user.findUniqueOrThrow({
+        where: {
+          id,
+          resident: {
+            id: residentId,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          resident: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+          available: {
+            select: {
+              id: true,
+              justifications: {
+                select: {
+                  justification: {
+                    select: {
+                      id: true,
+                      description: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      await Promise.all([
+        this.mailService.sendInviteUser({
+          id: user.id,
+          name: user.name,
+          resident: {
+            email: user.resident.email,
+            id: user.resident.id,
+          },
+        }),
+        this.prisma.availablesJustifications.update({
+          where: {
+            availableId_justificationId: {
+              availableId: user.available.id,
+              justificationId: user.available.justifications.find(
+                (just) =>
+                  just.justification.description ===
+                  'Aguardando convite da administração',
+              ).justification.id,
+            },
+          },
+          data: {
+            justification: {
+              connect: {
+                description: 'Aguardando confirmação do email',
+              },
+            },
+            updatedAt: timeStampISOTime,
+          },
+        }),
+      ]);
+
+      resetUsers();
+    } catch (error) {
       throw error;
     }
   }

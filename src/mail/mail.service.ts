@@ -7,14 +7,20 @@ export class MailService {
   constructor(private mailerService: MailerService) {}
 
   async sendInviteUser(
-    user: Pick<User, 'name' | 'id'> & { owner: Pick<Owner, 'email' | 'id'> },
+    user: Pick<User, 'name' | 'id'> & {
+      owner?: Pick<Owner, 'email' | 'id'>;
+    } & {
+      resident?: Pick<Resident, 'email' | 'id'>;
+    },
   ) {
     const url =
       process.env.PLATAFORM_URL +
-      `/signup?id=${user.id}&ownerId=${user.owner.id}`;
+      (user.owner
+        ? `/signup?id=${user.id}&ownerId=${user.owner.id}`
+        : `/signup?id=${user.id}&residentId=${user.resident.id}`);
 
     await this.mailerService.sendMail({
-      to: user.owner.email,
+      to: user.owner ? user.owner.email : user.resident.email,
       // from: '"Support Team" <support@example.com>', // override default from
       subject: 'Bem vindo ao CAF! Confirme seu email',
       template: './invite', // `.hbs` extension is appended automatically

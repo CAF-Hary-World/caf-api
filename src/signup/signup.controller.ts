@@ -1,14 +1,7 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Patch,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Patch, Query } from '@nestjs/common';
 import { SignupService } from './signup.service';
 import { Prisma } from '@prisma/client';
+import { handleErrors } from 'src/handles/errors';
 
 @Controller('signup')
 export class SignupController {
@@ -18,25 +11,19 @@ export class SignupController {
   @HttpCode(204)
   async signup(
     @Body()
-    data: Prisma.UserUpdateInput & Prisma.OwnerUpdateInput,
+    data: Prisma.UserUpdateInput &
+      Prisma.OwnerUpdateInput &
+      Prisma.ResidentUpdateInput,
+    @Query() { id, residentId }: { id: string; residentId: string },
   ) {
     try {
-      await this.signUpService.activatedOwner({ data });
-      return;
+      if (residentId)
+        return await this.signUpService.activatedResident({ id, residentId });
+      return await this.signUpService.activatedOwner({ data });
     } catch (error) {
       console.error(error.message);
 
-      throw new HttpException(
-        {
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          error: error.message,
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        {
-          cause: error,
-          description: error.message,
-        },
-      );
+      handleErrors(error);
     }
   }
 }

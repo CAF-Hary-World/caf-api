@@ -12,7 +12,7 @@ import {
 
 import { OwnerResidentService } from './resident.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { Prisma } from '@prisma/client';
+import { Prisma, STATUS } from '@prisma/client';
 import { handleErrors } from 'src/handles/errors';
 
 @Controller('users/:id/owners/:ownerId/residents')
@@ -114,6 +114,95 @@ export class OwnerResidentController {
         ownerId,
         residentId: user.resident.id,
         user,
+      });
+    } catch (error) {
+      handleErrors(error);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/:userResidentId/:residentId/available')
+  async updateAvailableStatus(
+    @Body()
+    data: {
+      status: STATUS;
+      justifications: Array<string>;
+    },
+    @Param()
+    {
+      id,
+      ownerId,
+      residentId,
+      userResidentId,
+    }: {
+      id: string;
+      ownerId: string;
+      residentId: string;
+      userResidentId: string;
+    },
+  ) {
+    const { justifications, status } = data;
+    try {
+      return await this.residentService.updateAvailableStatus({
+        residentId,
+        userOwnerId: id,
+        userResidentId,
+        status,
+        justifications,
+        ownerId,
+      });
+    } catch (error) {
+      console.error(error);
+      handleErrors(error);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/:userResidentId/:residentId/allow')
+  async allowOwner(
+    @Param()
+    {
+      id,
+      ownerId,
+      residentId,
+      userResidentId,
+    }: {
+      id: string;
+      ownerId: string;
+      residentId: string;
+      userResidentId: string;
+    },
+  ) {
+    try {
+      return await this.residentService.allowResident({
+        ownerId,
+        residentId,
+        userOwnerId: id,
+        userResidentId,
+      });
+    } catch (error) {
+      console.error('Controller error = ', error);
+
+      handleErrors(error);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/:userResidentId/:residentId/send-invite')
+  async getSendInvite(
+    @Param()
+    {
+      residentId,
+      userResidentId,
+    }: {
+      residentId: string;
+      userResidentId: string;
+    },
+  ) {
+    try {
+      return await this.residentService.sendInvite({
+        id: userResidentId,
+        residentId,
       });
     } catch (error) {
       handleErrors(error);

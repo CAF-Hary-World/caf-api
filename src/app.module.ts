@@ -18,6 +18,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks/tasks.service';
 import { NotificationService } from './notification/notification.service';
 import { NotificationController } from './notification/notification.controller';
+import { ResidentService } from './resident/resident.service';
+import { ResidentController } from './resident/resident.controller';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { NotificationController } from './notification/notification.controller';
     SignupController,
     UserController,
     VisitantController,
+    ResidentController,
     JustificationController,
     NotificationController,
   ],
@@ -40,6 +43,7 @@ import { NotificationController } from './notification/notification.controller';
     SignupService,
     PrismaService,
     VisitantService,
+    ResidentService,
     JustificationService,
     TasksService,
     NotificationService,

@@ -147,7 +147,19 @@ export const ownersInMemory = new MemoryCache<
 export type SelectResident = {
   select: {
     name: true;
-    available: true;
+    available: {
+      include: {
+        justifications: {
+          select: {
+            justification: {
+              select: {
+                description: true;
+              };
+            };
+          };
+        };
+      };
+    };
     id: true;
     role: { select: { name: true; id: true } };
     resident: {
@@ -173,7 +185,19 @@ export type SelectResident = {
 export const selectResident = {
   select: {
     name: true,
-    available: true,
+    available: {
+      include: {
+        justifications: {
+          select: {
+            justification: {
+              select: {
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    },
     id: true,
     role: { select: { name: true, id: true } },
     resident: {

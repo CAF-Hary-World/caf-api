@@ -13,12 +13,20 @@ export class TasksService {
 
   constructor(private prisma: PrismaService) {}
 
-  @Cron(CronExpression.EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM, {
-    name: 'restoreAvailableJustificationOfOwnerInvited',
-    timeZone: 'UTC',
-  })
+  @Cron(
+    process.env.NODE_ENV === 'development'
+      ? CronExpression.EVERY_MINUTE
+      : CronExpression.EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM,
+    {
+      name: 'handleRestoreAvailableJustificationOfOwnerInvited',
+      timeZone: 'UTC',
+    },
+  )
   async handleRestoreAvailableJustificationOfOwnerInvited() {
-    this.logger.debug('Called restoreAvailableJustificationOfOwnerInvited');
+    this.logger.debug(
+      'Called handleRestoreAvailableJustificationOfOwnerInvited',
+    );
+
     const availablesJustifications =
       await this.prisma.availablesJustifications.findMany({
         where: {
@@ -52,10 +60,15 @@ export class TasksService {
     }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, {
-    name: 'restoreAvailableJustificationOfOwnerInvited',
-    timeZone: 'UTC',
-  })
+  @Cron(
+    process.env.NODE_ENV === 'development'
+      ? CronExpression.EVERY_MINUTE
+      : CronExpression.EVERY_DAY_AT_MIDNIGHT,
+    {
+      name: 'handleDeleteTempImagesOfCloudinary',
+      timeZone: 'UTC',
+    },
+  )
   async handleDeleteTempImagesOfCloudinary() {
     this.logger.debug('Called handleDeleteTempImagesOfCloudinary');
     try {
@@ -69,7 +82,7 @@ export class TasksService {
 
   @Cron(
     process.env.NODE_ENV === 'development'
-      ? CronExpression.EVERY_2_HOURS
+      ? CronExpression.EVERY_MINUTE
       : CronExpression.EVERY_DAY_AT_MIDNIGHT,
     {
       name: 'deleteAllPermission',
@@ -77,7 +90,7 @@ export class TasksService {
     },
   )
   async handleDeleteAllPermission() {
-    this.logger.debug('Called deleteAllPermission');
+    this.logger.debug('Called handleDeleteAllPermission');
 
     try {
       const permissions = await this.prisma.permission.findMany({
@@ -104,5 +117,13 @@ export class TasksService {
       this.logger.debug(`Error (deleteAllPermission) ${error}`);
       throw error;
     }
+  }
+
+  async runAllTasks() {
+    await Promise.all([
+      this.handleRestoreAvailableJustificationOfOwnerInvited(),
+      this.handleDeleteTempImagesOfCloudinary(),
+      this.handleDeleteAllPermission(),
+    ]);
   }
 }

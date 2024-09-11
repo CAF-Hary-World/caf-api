@@ -16,6 +16,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { Roles } from 'src/decorator/roles.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
 import { OwnerService } from './owner.service';
+import { handleErrors } from 'src/handles/errors';
 
 @Controller('owners')
 export class OwnerController {
@@ -80,21 +81,7 @@ export class OwnerController {
     try {
       return await this.ownerService.sendInvite({ id, ownerId });
     } catch (error) {
-      console.error('Controller error = ', error);
-
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      handleErrors(error);
     }
   }
 
@@ -249,19 +236,7 @@ export class OwnerController {
     } catch (error) {
       console.error('Controller error = ', error);
 
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      handleErrors(error);
     }
   }
 }

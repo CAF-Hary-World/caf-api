@@ -42,60 +42,109 @@ export class SignupService {
         },
       });
 
-      await this.prismaService.user.update({
-        where: {
-          id: String(data.id),
-          owner: {
-            id: String(data.ownerId),
-          },
-        },
-        data: {
-          ...(userOwner.name !== data.name && {
-            name: data.name,
-            updatedAt: timeStampISOTime,
-          }),
-          owner: {
-            update: {
-              ...(userOwner.owner.cpf !== data.cpf && { cpf: data.cpf }),
-              ...(userOwner.owner.email !== data.email && {
-                email: data.email,
-              }),
-              ...(userOwner.owner.phone !== data.phone && {
-                phone: data.phone,
-              }),
-              ...(userOwner.owner.photo !== data.photo && {
-                photo: data.photo,
-              }),
-              ...(userOwner.owner.house !== data.house && {
-                house: data.house,
-              }),
-              ...(userOwner.owner.square !== data.square && {
-                square: data.square,
-              }),
-              password: encodeSha256(String(data.password)),
-              updatedAt: timeStampISOTime,
+      await Promise.all([
+        this.prismaService.user.update({
+          where: {
+            id: String(data.id),
+            owner: {
+              id: String(data.ownerId),
             },
           },
-          available: {
-            update: {
-              status: 'ALLOWED',
-              justifications: {
-                deleteMany: {
-                  availableId: userOwner.available.id,
+          data: {
+            ...(userOwner.name !== data.name && {
+              name: data.name,
+              updatedAt: timeStampISOTime,
+            }),
+            owner: {
+              update: {
+                ...(userOwner.owner.cpf !== data.cpf && { cpf: data.cpf }),
+                ...(userOwner.owner.email !== data.email && {
+                  email: data.email,
+                }),
+                ...(userOwner.owner.phone !== data.phone && {
+                  phone: data.phone,
+                }),
+                ...(userOwner.owner.photo !== data.photo && {
+                  photo: data.photo,
+                }),
+                ...(userOwner.owner.house !== data.house && {
+                  house: data.house,
+                }),
+                ...(userOwner.owner.square !== data.square && {
+                  square: data.square,
+                }),
+                password: encodeSha256(String(data.password)),
+                updatedAt: timeStampISOTime,
+              },
+            },
+            available: {
+              update: {
+                status: 'ALLOWED',
+                justifications: {
+                  deleteMany: {
+                    availableId: userOwner.available.id,
+                  },
                 },
               },
             },
           },
-        },
-        include: {
-          available: true,
-        },
-      });
+          include: {
+            available: true,
+          },
+        }),
+        this.mailService.sendUserValidation({
+          email: userOwner.owner.email,
+          name: userOwner.name,
+        }),
+      ]);
+    } catch (error) {
+      throw error;
+    }
+  }
 
-      await this.mailService.sendUserValidation({
-        email: userOwner.owner.email,
-        name: userOwner.name,
-      });
+  async activatedResident({
+    name,
+    cpf,
+    email,
+    id,
+    residentId,
+    phone,
+    password,
+  }: Prisma.UserUpdateInput & Prisma.ResidentUpdateInput) {
+    try {
+      await Promise.all([
+        this.prismaService.user.update({
+          where: {
+            id: String(id),
+            resident: {
+              id: String(residentId),
+            },
+          },
+          data: {
+            ...(name && { name }),
+            available: {
+              update: {
+                status: 'ALLOWED',
+              },
+            },
+            resident: {
+              update: {
+                ...(phone && { phone }),
+                ...(cpf && { cpf }),
+                ...(email && { email }),
+                password: encodeSha256(String(password)),
+              },
+            },
+          },
+        }),
+        this.prismaService.availablesJustifications.deleteMany({
+          where: {
+            availabe: {
+              userId: String(id),
+            },
+          },
+        }),
+      ]);
     } catch (error) {
       throw error;
     }
