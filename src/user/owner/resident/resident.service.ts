@@ -27,14 +27,35 @@ export class OwnerResidentService {
     page = 1,
     name,
     cpf,
+    allowed,
+    blocked,
+    processing,
   }: {
     id: string;
     ownerId: string;
     page: number;
     name?: string;
     cpf?: string;
+    blocked?: string;
+    allowed?: string;
+    processing?: string;
   }) {
-    const reference = `user${id}-owner-${ownerId}-resident-${page}-${name}-${cpf}`;
+    const where: Prisma.UserWhereInput = {
+      ...(name && { name: { contains: name, mode: 'insensitive' } }),
+      ...(ownerId && {
+        resident: {
+          ...(cpf && { cpf: { contains: cpf } }),
+          owner: {
+            id: ownerId,
+          },
+        },
+      }),
+      ...(allowed && { available: { status: 'ALLOWED' } }),
+      ...(blocked && { available: { status: 'BLOCKED' } }),
+      ...(processing && { available: { status: 'PROCESSING' } }),
+    };
+
+    const reference = `user${id}-owner-${ownerId}-resident-${page}-${name}-${cpf}-${allowed}-${blocked}-${processing}`;
 
     const perPage =
       process.env.NODE_ENV === 'development'
@@ -42,17 +63,7 @@ export class OwnerResidentService {
         : Number(process.env.DEFAULT_PER_PAGE);
 
     const residentsCount = await this.prisma.user.count({
-      where: {
-        ...(name && { name: { contains: name, mode: 'insensitive' } }),
-        ...(cpf && { resident: { cpf: { contains: cpf } } }),
-        ...(ownerId && {
-          resident: {
-            owner: {
-              id: ownerId,
-            },
-          },
-        }),
-      },
+      where,
     });
 
     const totalPages = Math.ceil(residentsCount / perPage);
@@ -60,17 +71,7 @@ export class OwnerResidentService {
     try {
       if (!residentsInMemory.hasItem(reference)) {
         const residents = await this.prisma.user.findMany({
-          where: {
-            ...(name && { name: { contains: name, mode: 'insensitive' } }),
-            ...(cpf && { resident: { cpf: { contains: cpf } } }),
-            ...(ownerId && {
-              resident: {
-                owner: {
-                  id: ownerId,
-                },
-              },
-            }),
-          },
+          where,
           orderBy: { name: 'desc' },
           skip: (page - 1) * perPage,
           take: perPage,
@@ -131,6 +132,7 @@ export class OwnerResidentService {
               password: encodeSha256(resident.cpf),
               cpf: resident.cpf,
               phone: resident.phone,
+              email: resident.email,
               owner: {
                 connect: {
                   id: ownerId,

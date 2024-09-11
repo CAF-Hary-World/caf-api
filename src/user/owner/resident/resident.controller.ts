@@ -23,7 +23,22 @@ export class OwnerResidentController {
   @Get()
   async listResidents(
     @Param() { id, ownerId }: { id: string; ownerId: string },
-    @Query() { page, name, cpf }: { page: number; name?: string; cpf?: string },
+    @Query()
+    {
+      page,
+      name,
+      cpf,
+      allowed,
+      blocked,
+      processing,
+    }: {
+      page: number;
+      name?: string;
+      cpf?: string;
+      blocked?: string;
+      allowed?: string;
+      processing?: string;
+    },
   ) {
     try {
       const residents = await this.residentService.listResidents({
@@ -32,6 +47,9 @@ export class OwnerResidentController {
         page,
         name,
         cpf,
+        allowed,
+        blocked,
+        processing,
       });
       return residents;
     } catch (error) {
