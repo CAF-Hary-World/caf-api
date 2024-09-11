@@ -18,7 +18,11 @@ export class SignupController {
   ) {
     try {
       if (residentId)
-        return await this.signUpService.activatedResident({ id, residentId });
+        return await this.signUpService.activatedResident({
+          ...data,
+          id,
+          residentId,
+        });
       return await this.signUpService.activatedOwner({ data });
     } catch (error) {
       console.error(error.message);

@@ -86,6 +86,8 @@ export class AuthService {
         pass: password,
       });
 
+      console.log(user);
+
       if (user.available.status !== 'ALLOWED')
         throw new Error(
           `Usuário com acesso impedido por: 
@@ -165,7 +167,9 @@ export class AuthService {
         },
       });
 
-      if (!!owner && compare(pass, owner.password)) {
+      console.log(pass, resident.password);
+
+      if (Boolean(owner) && compare(pass, owner.password)) {
         return await this.prisma.user.findUniqueOrThrow({
           where: { id: owner.userId },
           select: {
@@ -201,9 +205,9 @@ export class AuthService {
         });
       }
 
-      if (!!resident && compare(pass, resident.password)) {
+      if (Boolean(resident) && compare(pass, resident.password)) {
         return await this.prisma.user.findUniqueOrThrow({
-          where: { id: owner.userId },
+          where: { id: resident.userId },
           select: {
             name: true,
             available: {
