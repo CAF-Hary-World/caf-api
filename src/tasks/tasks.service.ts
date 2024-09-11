@@ -68,9 +68,9 @@ export class TasksService {
   }
 
   @Cron(
-    process.env.NODE_ENV === 'production'
-      ? CronExpression.EVERY_DAY_AT_MIDNIGHT
-      : CronExpression.EVERY_2_HOURS,
+    process.env.NODE_ENV === 'development'
+      ? CronExpression.EVERY_2_HOURS
+      : CronExpression.EVERY_DAY_AT_MIDNIGHT,
     {
       name: 'deleteAllPermission',
       timeZone: 'UTC',

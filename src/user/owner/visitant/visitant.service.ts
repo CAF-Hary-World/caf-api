@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Justification, Prisma } from '@prisma/client';
+import { Prisma, STATUS } from '@prisma/client';
 import { visitantInMemory, visitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { selectVisitantScope } from 'src/scopes/visitant';
@@ -275,45 +275,33 @@ export class OwnerVisitantService {
   }
 
   async updateAvailableStatus({
-    cpf,
+    visitantId,
     id,
     ownerId,
     justifications,
+    status,
   }: {
     id: string;
     ownerId: string;
-    cpf: string;
-    justifications: Array<Pick<Justification, 'description'>>;
+    visitantId: string;
+    justifications: Array<string>;
+    status: STATUS;
   }) {
     try {
       const allJustification = await this.prisma.justification.findMany();
 
-      //  IF visitant belongs to owner
-      await this.prisma.user.findUniqueOrThrow({
+      await this.prisma.available.update({
         where: {
-          id,
-          owner: {
-            id: ownerId,
-            visitantsOnOwner: {
-              some: {
-                visitant: {
-                  cpf,
-                },
+          visitantId,
+          visitant: {
+            id: visitantId,
+            owner: {
+              id: ownerId,
+              user: {
+                id,
               },
             },
           },
-        },
-      });
-
-      const visitant = await this.prisma.visitant.findUniqueOrThrow({
-        where: {
-          cpf,
-        },
-      });
-
-      await this.prisma.available.update({
-        where: {
-          visitantId: visitant.id,
         },
         data: {
           justifications: {
@@ -321,12 +309,12 @@ export class OwnerVisitantService {
               skipDuplicates: true,
               data: justifications.map((justification) => ({
                 justificationId: allJustification.find(
-                  (just) => just.description === justification.description,
+                  (just) => just.description === justification,
                 ).id,
               })),
             },
           },
-          status: 'PROCESSING',
+          status,
           updatedAt: timeStampISOTime,
         },
       });

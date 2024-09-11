@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { OwnerVisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { Justification, Prisma } from '@prisma/client';
+import { Prisma, STATUS } from '@prisma/client';
 
 @Controller('users/:id/owners')
 export class OwnerVisitantController {
@@ -175,20 +175,26 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/:ownerId/visitants/available')
+  @Patch('/:ownerId/visitants/:visitantId/available')
   async updateAvailableStatus(
     @Body()
     data: {
-      cpf: string;
-      justifications: Array<Pick<Justification, 'description'>>;
+      status: STATUS;
+      justifications: Array<string>;
     },
-    @Param() { id, ownerId }: { id: string; ownerId: string },
+    @Param()
+    {
+      id,
+      ownerId,
+      visitantId,
+    }: { id: string; ownerId: string; visitantId: string },
   ) {
-    const { cpf, justifications } = data;
+    const { justifications, status } = data;
     try {
       return await this.visitantService.updateAvailableStatus({
-        cpf,
+        visitantId,
         id,
+        status,
         justifications,
         ownerId,
       });
