@@ -86,8 +86,6 @@ export class AuthService {
         pass: password,
       });
 
-      console.log(user);
-
       if (user.available.status !== 'ALLOWED')
         throw new Error(
           `Usuário com acesso impedido por: 
@@ -166,8 +164,6 @@ export class AuthService {
           email,
         },
       });
-
-      console.log(pass, resident.password);
 
       if (Boolean(owner) && compare(pass, owner.password)) {
         return await this.prisma.user.findUniqueOrThrow({
