@@ -60,6 +60,24 @@ export class ResidentVisitantController {
   }
 
   @UseGuards(AuthGuard)
+  @Patch('/remove')
+  async removeVisitant(
+    @Body() data: { cpf: string },
+    @Param() { id, residentId }: { id: string; residentId: string },
+  ) {
+    try {
+      return await this.visitantService.removeVisitant({
+        cpf: data.cpf,
+        id,
+        residentId,
+      });
+    } catch (error) {
+      console.error(error);
+      handleErrors(error);
+    }
+  }
+
+  @UseGuards(AuthGuard)
   @Post()
   async createVisitant(
     @Body() visitant: Prisma.VisitantCreateInput & { invitedBy: string },

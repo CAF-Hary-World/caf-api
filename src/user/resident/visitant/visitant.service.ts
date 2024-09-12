@@ -150,6 +150,52 @@ export class ResidentVisitantService {
     }
   }
 
+  async removeVisitant({
+    cpf,
+    id,
+    residentId,
+  }: {
+    id: string;
+    residentId: string;
+    cpf: string;
+  }) {
+    try {
+      const visitant = await this.prisma.visitant.findUniqueOrThrow({
+        where: {
+          cpf,
+        },
+      });
+      await this.prisma.user.update({
+        where: {
+          id,
+          resident: {
+            id: residentId,
+          },
+        },
+        data: {
+          resident: {
+            update: {
+              updatedAt: timeStampISOTime,
+              visitantsOnResident: {
+                delete: {
+                  residentId_visitantId: {
+                    residentId,
+                    visitantId: visitant.id,
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      return this.resetCache();
+    } catch (error) {
+      console.error('Visitante Remove Service = ', error);
+
+      throw error;
+    }
+  }
+
   async addVisitant({
     cpf,
     id,
