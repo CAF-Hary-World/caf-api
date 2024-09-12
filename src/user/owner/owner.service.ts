@@ -4,10 +4,13 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { ownerInMemory, ownersInMemory } from 'src/libs/memory-cache';
+import {
+  ownerInMemory,
+  ownersInMemory,
+  selectOwner,
+} from 'src/libs/memory-cache';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { selectOwnerScope } from 'src/scopes/visitant';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 import { translate } from 'src/utils/translate';
@@ -15,7 +18,7 @@ import { translate } from 'src/utils/translate';
 @Injectable()
 export class OwnerService {
   private resetCache = resetUsers;
-  private readonly selectScope = selectOwnerScope;
+  private readonly selectScope = selectOwner;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -63,7 +66,7 @@ export class OwnerService {
           orderBy: { createdAt: 'desc' },
           skip: (page - 1) * perPage,
           take: perPage,
-          select: this.selectScope,
+          ...this.selectScope,
         });
 
         ownersInMemory.storeExpiringItem(
@@ -95,7 +98,7 @@ export class OwnerService {
       if (!ownerInMemory.hasItem(reference)) {
         const owner = await this.prisma.user.findUniqueOrThrow({
           where: { id, owner: { id: ownerId } },
-          select: this.selectScope,
+          ...this.selectScope,
         });
 
         ownerInMemory.storeExpiringItem(

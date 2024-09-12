@@ -14,12 +14,12 @@ import { OwnerVisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Prisma, STATUS } from '@prisma/client';
 
-@Controller('users/:id/owners')
+@Controller('users/:id/owners/:ownerId/visitants')
 export class OwnerVisitantController {
   constructor(private readonly visitantService: OwnerVisitantService) {}
 
   @UseGuards(AuthGuard)
-  @Get('/:ownerId/visitants')
+  @Get()
   async listVisitants(
     @Param() { id, ownerId }: { id: string; ownerId: string },
     @Query()
@@ -70,7 +70,7 @@ export class OwnerVisitantController {
     }
   }
 
-  @Get('/visitants/:visitantId')
+  @Get('/:visitantId')
   async getVisitant(
     @Param() { id, visitantId }: { id: string; visitantId: string },
   ) {
@@ -97,7 +97,7 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('/:ownerId/visitants')
+  @Post()
   async createVisitant(
     @Body() visitant: Prisma.VisitantCreateInput & { invitedBy: string },
   ) {
@@ -118,7 +118,7 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/:ownerId/visitants/remove')
+  @Patch('/remove')
   async removeVisitant(
     @Body() data: { cpf: string },
     @Param() { id, ownerId }: { id: string; ownerId: string },
@@ -145,7 +145,7 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/:ownerId/visitants/add')
+  @Patch('/add')
   async addVisitant(
     @Body() data: { cpf: string },
     @Param() { id, ownerId }: { id: string; ownerId: string },
@@ -175,7 +175,7 @@ export class OwnerVisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/:ownerId/visitants/:visitantId/available')
+  @Patch('/:visitantId/available')
   async updateAvailableStatus(
     @Body()
     data: {

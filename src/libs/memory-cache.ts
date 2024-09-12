@@ -316,6 +316,63 @@ export type SelectVisitant = {
   };
 };
 
+export const selectVisitant = {
+  available: {
+    select: {
+      status: true,
+      justifications: {
+        select: {
+          justification: {
+            select: {
+              description: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  permissions: {
+    where: {
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      checkin: true,
+      checkout: true,
+      deletedAt: true,
+      user: {
+        select: {
+          id: true,
+          owner: {
+            select: {
+              house: true,
+              square: true,
+            },
+          },
+          resident: {
+            select: {
+              owner: {
+                select: {
+                  house: true,
+                  square: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  name: true,
+  cpf: true,
+  documentUrl: true,
+  email: true,
+  id: true,
+  kind: true,
+  photo: true,
+  phone: true,
+};
+
 export const visitantInMemory = new MemoryCache<
   string,
   Prisma.VisitantGetPayload<SelectVisitant> | null

@@ -2,15 +2,16 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
+  Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ResidentVisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Prisma } from '@prisma/client';
+import { handleErrors } from 'src/handles/errors';
 
 @Controller('users/:id/residents/:residentId/visitants')
 export class ResidentVisitantController {
@@ -19,28 +20,42 @@ export class ResidentVisitantController {
   @UseGuards(AuthGuard)
   @Get()
   async listVisitants(
+    @Query()
+    {
+      page,
+      name,
+      cpf,
+      allowed,
+      blocked,
+      pending,
+      processing,
+    }: {
+      page: number;
+      name?: string;
+      cpf?: string;
+      blocked?: string;
+      allowed?: string;
+      processing?: string;
+      pending?: string;
+    },
     @Param() { id, residentId }: { id: string; residentId: string },
   ) {
     try {
       const residentVisitants = await this.visitantService.listVisitants({
         id,
         residentId,
+        page,
+        name,
+        cpf,
+        allowed,
+        blocked,
+        pending,
+        processing,
       });
 
-      return residentVisitants
-        .map((residentVisitant) => residentVisitant.resident.visitants)
-        .flat();
+      return residentVisitants;
     } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
-        },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
@@ -52,16 +67,25 @@ export class ResidentVisitantController {
     try {
       await this.visitantService.createVisitant({ visitant });
     } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          error: error.message,
-        },
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/add')
+  async addVisitant(
+    @Body() data: { cpf: string },
+    @Param() { id, residentId }: { id: string; residentId: string },
+  ) {
+    try {
+      return await this.visitantService.addVisitant({
+        cpf: data.cpf,
+        id,
+        residentId,
+      });
+    } catch (error) {
+      console.error(error.code);
+      handleErrors(error);
     }
   }
 }

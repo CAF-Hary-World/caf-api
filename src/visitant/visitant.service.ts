@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { visitantInMemory, visitantsInMemory } from 'src/libs/memory-cache';
+import {
+  selectVisitant,
+  visitantInMemory,
+  visitantsInMemory,
+} from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { selectVisitantScope } from 'src/scopes/visitant';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
 export class VisitantService {
-  private readonly selectScope = selectVisitantScope;
+  private readonly selectScope = selectVisitant;
 
   private resetCache = resetUsers;
 
