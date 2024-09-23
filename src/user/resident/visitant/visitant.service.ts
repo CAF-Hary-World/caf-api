@@ -1,15 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import {
-  residentInMemory,
-  residentVisitantInMemory,
-  residentVisitantsInMemory,
-  residentsInMemory,
-  selectVisitant,
-  userInMemory,
-  usersInMemory,
-  visitantsInMemory,
-} from 'src/libs/memory-cache';
+import { selectVisitant, visitantsInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
@@ -121,15 +112,8 @@ export class ResidentVisitantService {
   }: {
     visitant: Prisma.VisitantCreateInput & { invitedBy: string };
   }) {
-    userInMemory.clear();
-    usersInMemory.clear();
-    residentInMemory.clear();
-    residentsInMemory.clear();
-    residentVisitantInMemory.clear();
-    residentVisitantsInMemory.clear();
-
     try {
-      return await this.prisma.visitant.create({
+      const visitantCreated = await this.prisma.visitant.create({
         data: {
           cpf: visitant.cpf,
           kind: visitant.kind,
@@ -138,6 +122,11 @@ export class ResidentVisitantService {
           resident: {
             connect: { id: visitant.invitedBy },
           },
+          residentsOnVisitants: {
+            create: {
+              residentId: visitant.invitedBy,
+            },
+          },
           available: {
             create: {
               status: 'PROCESSING',
@@ -145,6 +134,21 @@ export class ResidentVisitantService {
           },
         },
       });
+
+      await this.prisma.resident.update({
+        where: {
+          id: visitant.invitedBy,
+        },
+        data: {
+          visitantsCreated: {
+            connect: {
+              id: visitantCreated.id,
+            },
+          },
+        },
+      });
+
+      return this.resetCache();
     } catch (error) {
       throw error;
     }

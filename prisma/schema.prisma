@@ -123,13 +123,34 @@ model Owner {
 
   visitantsOnOwner   VisitantsOnOwner[]
 
-  invitations        InvitationByOwner[]
-
   userId             String      @unique
   user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Unique constraint for the combination of square and house
   @@unique([square, house])
+}
+
+
+model Resident {
+  id                    String @id @default(uuid())
+  createdAt             DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt             DateTime?
+  updatedAt             DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  photo                 String?
+  password              String
+  cpf                   String      @unique
+  email                 String?     @unique
+  phone                 String?
+
+  visitantsOnResident   VisitantsOnResident[]
+
+  // Relation field on Resident model
+  visitantsCreated      Visitant[]
+  ownerId               String
+  owner                 Owner       @relation(fields: [ownerId], references: [id], onDelete: Cascade) 
+  userId                String      @unique
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VisitantsOnOwner {
@@ -164,54 +185,6 @@ model VisitantsOnResident {
   @@id([residentId, visitantId])
 }
 
-model InvitationByOwner {
-  id          String @id @default(uuid())
-  createdAt   DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
-  deletedAt   DateTime?
-  updatedAt   DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
-
-  ownerId     String     
-  owner       Owner      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  visitantId  String
-  visitant    Visitant   @relation(fields: [visitantId], references: [id], onDelete: Cascade)
-}
-
-model InvitationByResident {
-  id              String @id @default(uuid())
-  createdAt       DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
-  deletedAt       DateTime?
-  updatedAt       DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
-
-  residentId      String     
-  resident        Resident      @relation(fields: [residentId], references: [id], onDelete: Cascade)
-  visitantId      String
-  visitant        Visitant   @relation(fields: [visitantId], references: [id], onDelete: Cascade)
-}
-
-model Resident {
-  id                    String @id @default(uuid())
-  createdAt             DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
-  deletedAt             DateTime?
-  updatedAt             DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
-
-  photo                 String?
-  password              String
-  cpf                   String      @unique
-  email                 String?     @unique
-  phone                 String?
-
-  invitations           InvitationByResident[]
-
-  visitantsOnResident   VisitantsOnResident[]
-
-  // Relation field on Resident model
-  visitants             Visitant[]
-  ownerId               String
-  owner                 Owner       @relation(fields: [ownerId], references: [id], onDelete: Cascade) 
-  userId                String      @unique
-  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
 model Visitant {
   id                      String        @id @default(uuid())
   createdAt               DateTime      @default(dbgenerated("(NOW() - '3 hours'::interval)"))
@@ -230,13 +203,7 @@ model Visitant {
   availableId             String?       @unique
   available               Available?
 
-  invitationByOwner       String?       @unique
-  inviteByOwner           InvitationByOwner[]
-
   ownersOnVisitants       VisitantsOnOwner[]
-
-  invitationByResident    String?       @unique
-  inviteByResident        InvitationByResident[]
   
   residentsOnVisitants    VisitantsOnResident[]
 

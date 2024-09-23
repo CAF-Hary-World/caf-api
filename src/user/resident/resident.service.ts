@@ -30,7 +30,10 @@ export class ResidentService {
         where: { id },
         include: { available: true },
       });
-      if (user.available) throw new Error('User already available');
+      console.log(user);
+
+      if (user.available.status === 'ALLOWED')
+        throw new Error('User already available');
       return await this.prisma.user.update({
         where: { id },
         data: {
@@ -40,7 +43,7 @@ export class ResidentService {
               updatedAt: timeStampISOTime,
               justifications: {
                 deleteMany: {
-                  availableId: user.availableId,
+                  availableId: user.available.id,
                 },
               },
             },

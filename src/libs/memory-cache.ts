@@ -169,7 +169,7 @@ export type SelectResident = {
         email: true;
         phone: true;
         photo: true;
-        visitants: true;
+        visitantsCreated: true;
         owner: {
           select: {
             id: true;
@@ -207,7 +207,7 @@ export const selectResident = {
         email: true,
         phone: true,
         photo: true,
-        visitants: true,
+        visitantsCreated: true,
         owner: {
           select: {
             id: true,
@@ -236,19 +236,9 @@ export const residentsInMemory = new MemoryCache<
   AMOUNTSINGLERESOURCE, // number of items
 );
 
-export type SelectResidentVisitant = {
-  select: {
-    resident: {
-      select: {
-        visitants: SelectVisitant;
-      };
-    };
-  };
-};
-
 export const residentVisitantInMemory = new MemoryCache<
   string,
-  Prisma.UserGetPayload<SelectResidentVisitant> | null
+  Prisma.VisitantGetPayload<SelectVisitant> | null
 >(
   TIMETOEXPIRECACHE,
   AMOUNTSINGLERESOURCE, // number of items
@@ -256,7 +246,7 @@ export const residentVisitantInMemory = new MemoryCache<
 
 export const residentVisitantsInMemory = new MemoryCache<
   string,
-  Array<Prisma.UserGetPayload<SelectResidentVisitant>> | null
+  Array<Prisma.UserGetPayload<SelectVisitant>> | null
 >(
   TIMETOEXPIRECACHE,
   AMOUNTSINGLERESOURCE, // number of items

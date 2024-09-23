@@ -156,7 +156,7 @@ export class OwnerVisitantService {
     visitant: Prisma.VisitantCreateInput & { invitedBy: string };
   }) {
     try {
-      await this.prisma.visitant.create({
+      const visitantCreated = await this.prisma.visitant.create({
         data: {
           cpf: visitant.cpf,
           kind: visitant.kind,
@@ -182,6 +182,19 @@ export class OwnerVisitantService {
                   },
                 },
               },
+            },
+          },
+        },
+      });
+
+      await this.prisma.owner.update({
+        where: {
+          id: visitant.invitedBy,
+        },
+        data: {
+          visitantsCreated: {
+            connect: {
+              id: visitantCreated.id,
             },
           },
         },

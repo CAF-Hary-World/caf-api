@@ -27,6 +27,7 @@ export class VisitantService {
           },
           select: this.selectScope,
         });
+
         visitantInMemory.storePermanentItem(reference, visitant);
       }
       return visitantInMemory.retrieveItemValue(reference);
