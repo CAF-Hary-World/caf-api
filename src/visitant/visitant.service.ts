@@ -223,6 +223,7 @@ export class VisitantService {
           },
         },
       });
+
       await this.prisma.available.update({
         where: {
           id: visitant.available.id,

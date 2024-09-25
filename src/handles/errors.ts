@@ -1,7 +1,13 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 export function handleErrors(error: unknown) {
   console.error('Controller error = ', error);
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    const fieldTartget = error.meta?.target;
+    throw new ConflictException(fieldTartget[0]);
+  }
 
   // If the error is already an HttpException, just rethrow it
   if (error instanceof HttpException) {

@@ -3,8 +3,6 @@ import {
   UseGuards,
   Get,
   Param,
-  HttpException,
-  HttpStatus,
   Post,
   Body,
   Patch,
@@ -12,7 +10,8 @@ import {
 } from '@nestjs/common';
 import { OwnerVisitantService } from './visitant.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { Prisma, STATUS } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { handleErrors } from 'src/handles/errors';
 
 @Controller('users/:id/owners/:ownerId/visitants')
 export class OwnerVisitantController {
@@ -55,18 +54,7 @@ export class OwnerVisitantController {
       });
       return visitants;
     } catch (error) {
-      console.error('Controller error = ', error);
-
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
-        },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
@@ -81,18 +69,7 @@ export class OwnerVisitantController {
       });
       return visitant;
     } catch (error) {
-      console.error('Controller error = ', error);
-
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Resource not found',
-        },
-        HttpStatus.NOT_FOUND,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
@@ -104,16 +81,7 @@ export class OwnerVisitantController {
     try {
       await this.visitantService.createVisitant({ visitant });
     } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          error: error.message,
-        },
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
@@ -131,16 +99,7 @@ export class OwnerVisitantController {
       });
     } catch (error) {
       console.error(error);
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          error: error.message,
-        },
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
@@ -158,61 +117,7 @@ export class OwnerVisitantController {
       });
     } catch (error) {
       console.error(error.code);
-      throw new HttpException(
-        {
-          status:
-            error.code !== 'P2002'
-              ? HttpStatus.UNAUTHORIZED
-              : HttpStatus.CONFLICT,
-          error: error.message,
-        },
-        error.code !== 'P2002' ? HttpStatus.UNAUTHORIZED : HttpStatus.CONFLICT,
-        {
-          cause: error,
-        },
-      );
-    }
-  }
-
-  @UseGuards(AuthGuard)
-  @Patch('/:visitantId/available')
-  async updateAvailableStatus(
-    @Body()
-    data: {
-      status: STATUS;
-      justifications: Array<string>;
-    },
-    @Param()
-    {
-      id,
-      ownerId,
-      visitantId,
-    }: { id: string; ownerId: string; visitantId: string },
-  ) {
-    const { justifications, status } = data;
-    try {
-      return await this.visitantService.updateAvailableStatus({
-        visitantId,
-        id,
-        status,
-        justifications,
-        ownerId,
-      });
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(
-        {
-          status:
-            error.code !== 'P2002'
-              ? HttpStatus.UNAUTHORIZED
-              : HttpStatus.CONFLICT,
-          error: error.message,
-        },
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 }

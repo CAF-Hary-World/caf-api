@@ -3,14 +3,13 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { JustificationService } from './justification.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { handleErrors } from 'src/handles/errors';
 
 @Controller('justification')
 export class JustificationController {
@@ -22,16 +21,7 @@ export class JustificationController {
       return await this.justificationService.list();
     } catch (error) {
       console.error(error);
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          error: error.message,
-        },
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 
@@ -42,19 +32,7 @@ export class JustificationController {
       return await this.justificationService.create({ description });
     } catch (error) {
       console.error(error);
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      handleErrors(error);
     }
   }
 
@@ -64,19 +42,8 @@ export class JustificationController {
     try {
       return await this.justificationService.delete({ id });
     } catch (error) {
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      console.log(error);
+      handleErrors(error);
     }
   }
 }

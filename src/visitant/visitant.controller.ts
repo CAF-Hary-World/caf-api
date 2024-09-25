@@ -88,8 +88,7 @@ export class VisitantController {
     }
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(ROLE.ADMIN, ROLE.ROOT, ROLE.SECURITY)
+  @UseGuards(AuthGuard)
   @Patch('/:id/block')
   async blockVisitant(
     @Param() { id }: { id: string; ownerId: string },

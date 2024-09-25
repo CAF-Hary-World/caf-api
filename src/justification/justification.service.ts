@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -35,12 +30,7 @@ export class JustificationService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        const fieldTartget = error.meta?.target;
-        throw new ConflictException(fieldTartget[0]);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
+      throw error;
     }
   }
 
@@ -52,12 +42,7 @@ export class JustificationService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        const fieldTartget = error.meta?.target;
-        throw new ConflictException(fieldTartget[0]);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
+      throw error;
     }
   }
 }

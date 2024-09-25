@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, STATUS } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import {
   selectVisitant,
   visitantInMemory,
@@ -285,58 +285,6 @@ export class OwnerVisitantService {
       return this.resetCache();
     } catch (error) {
       console.error('Visitante Add Service = ', error);
-
-      throw error;
-    }
-  }
-
-  async updateAvailableStatus({
-    visitantId,
-    id,
-    ownerId,
-    justifications,
-    status,
-  }: {
-    id: string;
-    ownerId: string;
-    visitantId: string;
-    justifications: Array<string>;
-    status: STATUS;
-  }) {
-    try {
-      const allJustification = await this.prisma.justification.findMany();
-
-      await this.prisma.available.update({
-        where: {
-          visitantId,
-          visitant: {
-            id: visitantId,
-            owner: {
-              id: ownerId,
-              user: {
-                id,
-              },
-            },
-          },
-        },
-        data: {
-          justifications: {
-            createMany: {
-              skipDuplicates: true,
-              data: justifications.map((justification) => ({
-                justificationId: allJustification.find(
-                  (just) => just.description === justification,
-                ).id,
-              })),
-            },
-          },
-          status,
-          updatedAt: timeStampISOTime,
-        },
-      });
-      this.resetCache();
-    } catch (error) {
-      console.error('Visitante Update availabe Service = ', error);
 
       throw error;
     }

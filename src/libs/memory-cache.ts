@@ -73,7 +73,19 @@ export const adminsInMemory = new MemoryCache<
 export type SelectOwner = {
   select: {
     name: true;
-    available: { include: { justifications: true } };
+    available: {
+      include: {
+        justifications: {
+          select: {
+            justification: {
+              select: {
+                description: true;
+              };
+            };
+          };
+        };
+      };
+    };
     id: true;
     role: { select: { name: true; id: true } };
     owner: {
@@ -85,6 +97,7 @@ export type SelectOwner = {
         cpf: true;
         house: true;
         square: true;
+        visitantsCreated: true;
         residents: {
           select: {
             email: true;
@@ -92,6 +105,12 @@ export type SelectOwner = {
             phone: true;
             cpf: true;
             photo: true;
+            user: {
+              select: {
+                id: true;
+                name: true;
+              };
+            };
           };
         };
       };
@@ -102,7 +121,19 @@ export type SelectOwner = {
 export const selectOwner = {
   select: {
     name: true,
-    available: { include: { justifications: true } },
+    available: {
+      include: {
+        justifications: {
+          select: {
+            justification: {
+              select: {
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    },
     id: true,
     role: { select: { name: true, id: true } },
     owner: {
@@ -114,6 +145,7 @@ export const selectOwner = {
         cpf: true,
         house: true,
         square: true,
+        visitantsCreated: true,
         residents: {
           select: {
             email: true,
@@ -121,6 +153,12 @@ export const selectOwner = {
             phone: true,
             cpf: true,
             photo: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
