@@ -210,9 +210,9 @@ model Visitant {
   permissions             Permission[]
 
   ownerId                 String?
-  owner                   Owner?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner                   Owner?         @relation(fields: [ownerId], references: [id])
   residentId              String?
-  resident                Resident?      @relation(fields: [residentId], references: [id], onDelete: Cascade)
+  resident                Resident?      @relation(fields: [residentId], references: [id])
 }
 
 // END USERS
