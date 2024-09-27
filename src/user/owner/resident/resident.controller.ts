@@ -131,12 +131,10 @@ export class OwnerResidentController {
     @Param()
     {
       id,
-      ownerId,
       residentId,
       userResidentId,
     }: {
       id: string;
-      ownerId: string;
       residentId: string;
       userResidentId: string;
     },
@@ -149,7 +147,6 @@ export class OwnerResidentController {
         userResidentId,
         status,
         justifications,
-        ownerId,
       });
     } catch (error) {
       console.error(error);

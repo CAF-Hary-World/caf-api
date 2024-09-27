@@ -260,21 +260,16 @@ export class OwnerResidentService {
   async updateAvailableStatus({
     residentId,
     userResidentId,
-    userOwnerId,
-    ownerId,
     justifications,
     status,
   }: {
     userOwnerId: string;
-    ownerId: string;
     userResidentId: string;
     residentId: string;
     justifications: Array<string>;
     status: STATUS;
   }) {
     try {
-      const allJustification = await this.prisma.justification.findMany();
-
       await this.prisma.available.update({
         where: {
           userId: userResidentId,
@@ -282,12 +277,6 @@ export class OwnerResidentService {
             id: userResidentId,
             resident: {
               id: residentId,
-              owner: {
-                id: ownerId,
-                user: {
-                  id: userOwnerId,
-                },
-              },
             },
           },
         },
@@ -295,11 +284,7 @@ export class OwnerResidentService {
           justifications: {
             createMany: {
               skipDuplicates: true,
-              data: justifications.map((justification) => ({
-                justificationId: allJustification.find(
-                  (just) => just.description === justification,
-                ).id,
-              })),
+              data: justifications.map((just) => ({ justificationId: just })),
             },
           },
           status,
