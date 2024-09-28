@@ -62,14 +62,14 @@ export class ResidentVisitantController {
   @UseGuards(AuthGuard)
   @Patch('/remove')
   async removeVisitant(
-    @Body() data: { cpf: string },
+    @Body() data: { id: string },
     @Param() { id, residentId }: { id: string; residentId: string },
   ) {
     try {
       return await this.visitantService.removeVisitant({
-        cpf: data.cpf,
         id,
         residentId,
+        visitantId: data.id,
       });
     } catch (error) {
       console.error(error);
