@@ -270,6 +270,28 @@ export class OwnerResidentService {
     status: STATUS;
   }) {
     try {
+      const blockedByAdmin = await this.prisma.available.findUnique({
+        where: {
+          userId: userResidentId,
+          user: {
+            id: userResidentId,
+            resident: {
+              id: residentId,
+            },
+          },
+          justifications: {
+            some: {
+              justification: {
+                description: 'Bloqueado pela administração',
+              },
+            },
+          },
+        },
+      });
+
+      if (Boolean(blockedByAdmin))
+        throw new Error('Morador bloqueado pela administração');
+
       await this.prisma.available.update({
         where: {
           userId: userResidentId,

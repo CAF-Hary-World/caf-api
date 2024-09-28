@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Prisma, ROLE } from '@prisma/client';
 import {
   selectVisitant,
   visitantInMemory,
@@ -206,24 +206,35 @@ export class VisitantService {
   async blockVisitant({
     id,
     justifications,
+    role,
   }: {
     id: string;
     justifications: Array<string>;
+    role: ROLE;
   }) {
     try {
-      const visitant = await this.prisma.visitant.findUniqueOrThrow({
-        where: {
-          id,
-        },
-        select: {
-          available: {
-            select: {
-              id: true,
+      const [visitant, justificationByAdmin] = await Promise.all([
+        this.prisma.visitant.findUniqueOrThrow({
+          where: {
+            id,
+          },
+          select: {
+            available: {
+              select: {
+                id: true,
+              },
             },
           },
-        },
-      });
+        }),
+        this.prisma.justification.findFirstOrThrow({
+          where: {
+            description: 'Bloqueado pela administração',
+          },
+        }),
+      ]);
 
+      if (role === 'ADMIN' || role === 'ROOT')
+        justifications.push(justificationByAdmin.id);
       await this.prisma.available.update({
         where: {
           id: visitant.available.id,
@@ -289,8 +300,30 @@ export class VisitantService {
     }
   }
 
-  async allowVisitant({ id }: { id: string }) {
+  async allowVisitant({ id, role }: { id: string; role: ROLE }) {
     try {
+      if (role !== 'ADMIN' && role !== 'ROOT') {
+        const visitant = await this.prisma.visitant.findUnique({
+          where: {
+            id,
+            available: {
+              justifications: {
+                some: {
+                  justification: {
+                    description: 'Bloqueado pela administração',
+                  },
+                },
+              },
+            },
+          },
+        });
+        if (Boolean(visitant))
+          throw new HttpException(
+            'Visitante bloqueado pela administração. Somente eles podem reativar esse visitante.',
+            HttpStatus.FORBIDDEN,
+          );
+      }
+
       await this.prisma.visitant.update({
         where: {
           id,

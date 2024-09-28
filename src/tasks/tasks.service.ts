@@ -15,7 +15,7 @@ export class TasksService {
 
   @Cron(
     process.env.NODE_ENV === 'development'
-      ? CronExpression.EVERY_10_MINUTES
+      ? CronExpression.EVERY_HOUR
       : CronExpression.EVERY_30_MINUTES_BETWEEN_9AM_AND_6PM,
     {
       name: 'handleRestoreAvailableJustificationOfOwnerInvited',
@@ -62,7 +62,7 @@ export class TasksService {
 
   @Cron(
     process.env.NODE_ENV === 'development'
-      ? CronExpression.EVERY_10_MINUTES
+      ? CronExpression.EVERY_HOUR
       : CronExpression.EVERY_DAY_AT_MIDNIGHT,
     {
       name: 'handleDeleteTempImagesOfCloudinary',
@@ -82,7 +82,7 @@ export class TasksService {
 
   @Cron(
     process.env.NODE_ENV === 'development'
-      ? CronExpression.EVERY_10_MINUTES
+      ? CronExpression.EVERY_HOUR
       : CronExpression.EVERY_DAY_AT_MIDNIGHT,
     {
       name: 'deleteAllPermission',

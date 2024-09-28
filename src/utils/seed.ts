@@ -36,6 +36,7 @@ export class Seed {
     try {
       const defaultJustifications: Array<Prisma.JustificationCreateInput> = [
         { description: 'Aguardando confirmação do email' },
+        { description: 'Bloqueado pela administração' },
         { description: 'Confirmação com a administração' },
         { description: 'Aguardando convite da administração' },
         { description: 'Documentação pendente' },

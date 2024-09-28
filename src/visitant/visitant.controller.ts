@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Query,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { Prisma, ROLE } from '@prisma/client';
@@ -17,6 +18,18 @@ import { NotificationService } from 'src/notification/notification.service';
 import { RolesGuard } from 'src/guards/role.guard';
 import { handleErrors } from 'src/handles/errors';
 
+import { Request as ExpressRequest } from 'express';
+
+// Define CustomRequest interface extending the Express Request
+interface CustomRequest extends ExpressRequest {
+  user: {
+    id: string;
+    role: {
+      name: ROLE;
+    };
+  };
+}
+
 @Controller('visitants')
 export class VisitantController {
   constructor(
@@ -25,7 +38,6 @@ export class VisitantController {
   ) {}
 
   @UseGuards(AuthGuard)
-  @Roles(ROLE.ADMIN, ROLE.ROOT, ROLE.SECURITY)
   @Get('/')
   async getVisitants(
     @Query()
@@ -92,6 +104,7 @@ export class VisitantController {
   @UseGuards(AuthGuard)
   @Patch('/:id/block')
   async blockVisitant(
+    @Request() req: CustomRequest,
     @Param() { id }: { id: string; ownerId: string },
     @Body() { justifications }: { justifications: Array<string> },
   ) {
@@ -99,6 +112,7 @@ export class VisitantController {
       return await this.visitantService.blockVisitant({
         id,
         justifications,
+        role: req.user.role.name,
       });
     } catch (error) {
       handleErrors(error);
@@ -123,7 +137,6 @@ export class VisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Roles(ROLE.ADMIN, ROLE.ROOT, ROLE.SECURITY)
   @Patch('/:id')
   async updateVisitant(
     @Param()
@@ -159,14 +172,17 @@ export class VisitantController {
   }
 
   @UseGuards(AuthGuard)
-  @Roles(ROLE.ADMIN, ROLE.ROOT, ROLE.SECURITY)
   @Patch('/:id/allow')
   async allowVisitant(
     @Param()
     { id }: { id: string },
+    @Request() req: CustomRequest,
   ) {
     try {
-      return await this.visitantService.allowVisitant({ id });
+      return await this.visitantService.allowVisitant({
+        id,
+        role: req.user.role.name,
+      });
     } catch (error) {
       handleErrors(error);
     }

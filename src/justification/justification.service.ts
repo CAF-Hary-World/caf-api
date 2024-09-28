@@ -13,6 +13,7 @@ export class JustificationService {
             notIn: [
               'Aguardando confirmação do email',
               'Aguardando convite da administração',
+              'Bloqueado pela administração',
             ],
           },
         },
