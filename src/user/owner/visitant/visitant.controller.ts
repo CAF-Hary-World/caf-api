@@ -88,14 +88,14 @@ export class OwnerVisitantController {
   @UseGuards(AuthGuard)
   @Patch('/remove')
   async removeVisitant(
-    @Body() data: { cpf: string },
+    @Body() data: { id: string },
     @Param() { id, ownerId }: { id: string; ownerId: string },
   ) {
     try {
       return await this.visitantService.removeVisitant({
-        cpf: data.cpf,
         id,
         ownerId,
+        visitantId: data.id,
       });
     } catch (error) {
       console.error(error);

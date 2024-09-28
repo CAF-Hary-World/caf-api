@@ -209,18 +209,18 @@ export class OwnerVisitantService {
   }
 
   async removeVisitant({
-    cpf,
+    visitantId,
     id,
     ownerId,
   }: {
     id: string;
     ownerId: string;
-    cpf: string;
+    visitantId: string;
   }) {
     try {
       const visitant = await this.prisma.visitant.findUniqueOrThrow({
         where: {
-          cpf,
+          id: visitantId,
         },
       });
       await this.prisma.user.update({
