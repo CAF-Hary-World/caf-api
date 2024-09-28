@@ -18,7 +18,7 @@ export function handleErrors(error: unknown) {
   throw new HttpException(
     {
       status: HttpStatus.INTERNAL_SERVER_ERROR,
-      error: 'An unexpected error occurred while blocking the visitant',
+      error: 'Um erro inesperado ocorreu no servidor!',
     },
     HttpStatus.INTERNAL_SERVER_ERROR,
   );
