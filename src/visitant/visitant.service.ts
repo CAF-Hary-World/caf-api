@@ -315,4 +315,18 @@ export class VisitantService {
       throw error;
     }
   }
+
+  async deleteVisitant({ id }: { id: string }) {
+    try {
+      await this.prisma.visitant.delete({
+        where: {
+          id,
+        },
+      });
+
+      return this.resetCache();
+    } catch (error) {
+      throw error;
+    }
+  }
 }

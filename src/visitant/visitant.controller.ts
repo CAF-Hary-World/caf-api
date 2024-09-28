@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -166,6 +167,20 @@ export class VisitantController {
   ) {
     try {
       return await this.visitantService.allowVisitant({ id });
+    } catch (error) {
+      handleErrors(error);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN, ROLE.ROOT, ROLE.SECURITY)
+  @Delete('/:id')
+  async deleteVisitant(
+    @Param()
+    { id }: { id: string },
+  ) {
+    try {
+      return await this.visitantService.deleteVisitant({ id });
     } catch (error) {
       handleErrors(error);
     }
