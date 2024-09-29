@@ -429,3 +429,29 @@ export const notificationsInMemory = new MemoryCache<
   string,
   Array<Prisma.NotificationGetPayload<SelectNotification> | null>
 >(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export type Service = {
+  select: {
+    id: true;
+    name: true;
+    logo: true;
+  };
+};
+
+export const selectService = {
+  select: {
+    id: true,
+    name: true,
+    logo: true,
+  },
+};
+
+export const servicesInMemory = new MemoryCache<
+  string,
+  Array<Prisma.ServiceGetPayload<Service | null>>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const serviceInMemory = new MemoryCache<
+  string,
+  Prisma.ServiceGetPayload<Service>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);

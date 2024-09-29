@@ -81,13 +81,7 @@ export class OwnerService {
         totalPages,
       };
     } catch (error) {
-      console.error('Owner List Service =', error);
-      // Handle specific Prisma errors or throw a general internal server error
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException(error.meta?.target);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
+      throw error;
     }
   }
 
@@ -109,12 +103,7 @@ export class OwnerService {
       }
       return ownerInMemory.retrieveItemValue(reference);
     } catch (error) {
-      console.error(error);
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException(error.meta?.target);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
+      throw error;
     }
   }
 

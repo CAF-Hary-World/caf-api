@@ -64,6 +64,8 @@ model User {
 
   permissions             Permission[]
 
+  servicePermissions       ServicePermission[]
+
   role                    Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
   adminId                 String? @unique
   admin                   Admin?
@@ -318,6 +320,52 @@ model Permission {
 }
 
 // END Permission
+
+// START Service
+
+model Service {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  name                          String @unique
+  logo                          String?
+
+  servicePermissions            ServicePermission[]
+}
+
+model Provider {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  name                          String @unique
+  kind                          KIND?
+  plate                         String?
+  document                      String
+
+  servicePermissions            ServicePermission[]
+}
+
+model ServicePermission {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+
+  providerId                    String?
+  provider                      Provider? @relation(fields: [providerId], references: [id])
+
+  userId                        String
+  user                          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId                     String
+  service                       Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+// END Service
 
 // Polymorphic
 

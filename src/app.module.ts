@@ -20,6 +20,8 @@ import { NotificationService } from './notification/notification.service';
 import { NotificationController } from './notification/notification.controller';
 import { ResidentService } from './resident/resident.service';
 import { ResidentController } from './resident/resident.controller';
+import { ServiceController } from './service/service.controller';
+import { ServiceService } from './service/service.service';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { ResidentController } from './resident/resident.controller';
     ResidentController,
     JustificationController,
     NotificationController,
+    ServiceController,
   ],
   providers: [
     AppService,
@@ -47,6 +50,7 @@ import { ResidentController } from './resident/resident.controller';
     JustificationService,
     TasksService,
     NotificationService,
+    ServiceService,
   ],
 })
 export class AppModule {
