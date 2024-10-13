@@ -31,11 +31,8 @@ export class ServiceService {
               ...(name && { name: { contains: name, mode: 'insensitive' } }),
             },
           }),
-          this.prismaService.user.findMany({
+          this.prismaService.service.findMany({
             where: {
-              role: {
-                name: 'OWNER',
-              },
               ...(name && { name: { contains: name, mode: 'insensitive' } }),
             },
             orderBy: { createdAt: 'desc' },
