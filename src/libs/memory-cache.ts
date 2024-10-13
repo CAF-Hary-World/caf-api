@@ -455,3 +455,35 @@ export const serviceInMemory = new MemoryCache<
   string,
   Prisma.ServiceGetPayload<Service>
 >(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export type Provider = {
+  select: {
+    id: true;
+    name: true;
+    _count: true;
+    document: true;
+    kind: true;
+    plate: true;
+  };
+};
+
+export const selectProvider = {
+  select: {
+    id: true,
+    name: true,
+    _count: true,
+    document: true,
+    kind: true,
+    plate: true,
+  },
+};
+
+export const providersInMemory = new MemoryCache<
+  string,
+  Array<Prisma.ProviderGetPayload<Provider | null>>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const providerInMemory = new MemoryCache<
+  string,
+  Prisma.ProviderGetPayload<Provider>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);

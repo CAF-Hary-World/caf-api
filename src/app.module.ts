@@ -22,6 +22,8 @@ import { ResidentService } from './resident/resident.service';
 import { ResidentController } from './resident/resident.controller';
 import { ServiceController } from './service/service.controller';
 import { ServiceService } from './service/service.service';
+import { ProviderController } from './provider/provider.controller';
+import { ProviderService } from './provider/provider.service';
 
 @Module({
   imports: [
@@ -40,6 +42,7 @@ import { ServiceService } from './service/service.service';
     JustificationController,
     NotificationController,
     ServiceController,
+    ProviderController,
   ],
   providers: [
     AppService,
@@ -51,6 +54,7 @@ import { ServiceService } from './service/service.service';
     TasksService,
     NotificationService,
     ServiceService,
+    ProviderService,
   ],
 })
 export class AppModule {
