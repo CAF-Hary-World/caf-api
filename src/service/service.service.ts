@@ -1,7 +1,9 @@
+import { Prisma } from '@prisma/client';
 import { selectService, serviceInMemory } from './../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
 import { servicesInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { resetService } from 'src/utils/resetCache';
 
 @Injectable()
 export class ServiceService {
@@ -74,6 +76,101 @@ export class ServiceService {
         );
       }
       return serviceInMemory.retrieveItemValue(reference);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteService({ id }: { id: string }) {
+    try {
+      const service = await this.prismaService.service.delete({
+        where: { id },
+      });
+      return service;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteManyService({ ids }: { ids: Array<string> }) {
+    try {
+      const service = await this.prismaService.service.deleteMany({
+        where: {
+          id: {
+            in: ids,
+          },
+        },
+      });
+      return service;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createService(data: Prisma.ServiceCreateInput) {
+    try {
+      const service = await this.prismaService.service.create({
+        data,
+      });
+      resetService();
+
+      return service;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateService({ id, ...data }: Prisma.ServiceUpdateInput) {
+    try {
+      const service = await this.prismaService.service.update({
+        where: {
+          id: String(id),
+        },
+        data,
+      });
+      resetService();
+
+      return service;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createServicePermission({
+    userId,
+    serviceId,
+    providerId,
+  }: {
+    userId: string;
+    serviceId: string;
+    providerId?: string;
+  }) {
+    try {
+      const servicePermission =
+        await this.prismaService.servicePermission.create({
+          data: {
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
+            service: {
+              connect: {
+                id: serviceId,
+              },
+            },
+            ...(providerId && {
+              provider: {
+                connect: {
+                  id: providerId,
+                },
+              },
+            }),
+          },
+        });
+      resetService();
+
+      return servicePermission;
     } catch (error) {
       throw error;
     }
