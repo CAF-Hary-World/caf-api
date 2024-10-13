@@ -487,3 +487,8 @@ export const providerInMemory = new MemoryCache<
   string,
   Prisma.ProviderGetPayload<Provider>
 >(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const logoInMemory = new MemoryCache<string, string>(
+  TIMETOEXPIRECACHE,
+  AMOUNTSINGLERESOURCE,
+);

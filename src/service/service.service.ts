@@ -4,10 +4,14 @@ import { Injectable } from '@nestjs/common';
 import { servicesInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetService } from 'src/utils/resetCache';
+import { LogoService } from 'src/logo/logo.service';
 
 @Injectable()
 export class ServiceService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private logoService: LogoService,
+  ) {}
 
   async listServices({ page = 1, name }: { page: number; name?: string }) {
     const reference = `service-${page}-${name}`;
@@ -110,12 +114,13 @@ export class ServiceService {
   }
 
   async createService(data: Prisma.ServiceCreateInput) {
+    const logo = await this.logoService.getLogo({ name: data.name });
+
     try {
       const service = await this.prismaService.service.create({
-        data,
+        data: { ...data, ...(logo && { logo }) },
       });
       resetService();
-
       return service;
     } catch (error) {
       throw error;

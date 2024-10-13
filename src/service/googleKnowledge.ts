@@ -7,7 +7,10 @@ const knowledgeApi = axios.create({
 });
 
 const brandApi = axios.create({
-  baseURL: process.env.BRAND_API_URL + ` /v2/search`,
+  baseURL: process.env.BRAND_API_URL + `/v2`,
+  headers: {
+    Authorization: `Bearer ${process.env.BRAND_API_KEY}`,
+  },
 });
 
 async function knowledgeQuery(query: string) {
@@ -15,9 +18,20 @@ async function knowledgeQuery(query: string) {
   return search;
 }
 
-async function getBrand({ name }: { name: string }) {
-  const brand = await brandApi.get(`/${name}`);
+async function getBrandByName({ name }: { name: string }) {
+  const brand = await brandApi.get(`/search/${name}`);
   return brand;
 }
 
-export { knowledgeApi, knowledgeQuery, brandApi, getBrand };
+async function getBrandByDomain({ domain }: { domain: string }) {
+  const brand = await brandApi.get(`/brands/${domain}`);
+  return brand;
+}
+
+export {
+  knowledgeApi,
+  knowledgeQuery,
+  brandApi,
+  getBrandByName,
+  getBrandByDomain,
+};

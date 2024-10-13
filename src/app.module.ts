@@ -24,6 +24,8 @@ import { ServiceController } from './service/service.controller';
 import { ServiceService } from './service/service.service';
 import { ProviderController } from './provider/provider.controller';
 import { ProviderService } from './provider/provider.service';
+import { LogoController } from './logo/logo.controller';
+import { LogoService } from './logo/logo.service';
 
 @Module({
   imports: [
@@ -43,6 +45,7 @@ import { ProviderService } from './provider/provider.service';
     NotificationController,
     ServiceController,
     ProviderController,
+    LogoController,
   ],
   providers: [
     AppService,
@@ -55,6 +58,7 @@ import { ProviderService } from './provider/provider.service';
     NotificationService,
     ServiceService,
     ProviderService,
+    LogoService,
   ],
 })
 export class AppModule {
