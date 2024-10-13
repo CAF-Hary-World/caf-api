@@ -85,7 +85,8 @@ export class ServiceController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(ROLE.OWNER, ROLE.RESIDENT)
   @Post('/:id/permission')
   async createPermissionService(
     @Body()
@@ -104,6 +105,36 @@ export class ServiceController {
         userId,
         serviceId,
         providerId,
+      });
+    } catch (error) {
+      handleErrors(error);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/:id/permission/:servicePermissionId')
+  async deletePermissionService(
+    @Param()
+    { servicePermissionId }: { servicePermissionId: string },
+  ) {
+    try {
+      return await this.serviceService.deleteServicePermission({
+        id: servicePermissionId,
+      });
+    } catch (error) {
+      handleErrors(error);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/:id/permission/delete-many')
+  async deleteManyPermissionService(
+    @Body()
+    { ids }: { ids: Array<string> },
+  ) {
+    try {
+      return await this.serviceService.deleteManyServicePermission({
+        ids,
       });
     } catch (error) {
       handleErrors(error);

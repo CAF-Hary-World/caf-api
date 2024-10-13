@@ -86,6 +86,7 @@ export class ServiceService {
       const service = await this.prismaService.service.delete({
         where: { id },
       });
+      resetService();
       return service;
     } catch (error) {
       throw error;
@@ -101,6 +102,7 @@ export class ServiceService {
           },
         },
       });
+      resetService();
       return service;
     } catch (error) {
       throw error;
@@ -166,6 +168,40 @@ export class ServiceService {
                 },
               },
             }),
+          },
+        });
+      resetService();
+
+      return servicePermission;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteServicePermission({ id }: { id: string }) {
+    try {
+      const servicePermission =
+        await this.prismaService.servicePermission.delete({
+          where: {
+            id,
+          },
+        });
+      resetService();
+
+      return servicePermission;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteManyServicePermission({ ids }: { ids: Array<string> }) {
+    try {
+      const servicePermission =
+        await this.prismaService.servicePermission.deleteMany({
+          where: {
+            id: {
+              in: ids,
+            },
           },
         });
       resetService();
