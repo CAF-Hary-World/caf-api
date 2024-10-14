@@ -10,17 +10,18 @@ export class LogoService {
       if (!logoInMemory.hasItem(reference)) {
         const brands = await getBrandByName({ name });
 
-        const domain = brands.data.find(
-          (brand) =>
-            brand.name.toLowerCase() === name.toLowerCase() ||
-            brand.name.includes(name),
-        )?.domain;
+        const domain = brands.data.some(
+          (brand) => brand.name.toLowerCase() === name.toLowerCase(),
+        )
+          ? brands.data.find(
+              (brand) => brand.name.toLowerCase() === name.toLowerCase(),
+            ).domain
+          : brands.data[0].domain;
 
         const logo = await getBrandByDomain({ domain });
 
-        const url = logo.data.logos
-          .find((lg) => lg.theme === 'light')
-          ?.formats.find((frmt) => frmt.format === 'svg')?.src;
+        const url = logo.data.logos.find((lg) => lg.theme === 'dark')
+          ?.formats[0].src;
 
         logoInMemory.storeExpiringItem(
           reference,

@@ -36,7 +36,7 @@ export class ResidentVisitantService {
     const reference = `user-${id}-owner-${residentId}-visitant-${page}-${name}-${cpf}-${allowed}-${blocked}-${pending}-${processing}`;
 
     const perPage =
-      process.env.ENV === 'development'
+      process.env.NODE_ENV === 'development'
         ? 2
         : Number(process.env.DEFAULT_PER_PAGE);
 
