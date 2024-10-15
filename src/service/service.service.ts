@@ -24,25 +24,23 @@ export class ServiceService {
     let totalPages = 1;
 
     try {
-      if (!servicesInMemory.hasItem(reference)) {
-        const [servicesCount, services] = await Promise.all([
-          this.prismaService.service.count({
-            where: {
-              ...(name && { name: { contains: name, mode: 'insensitive' } }),
-            },
-          }),
-          this.prismaService.service.findMany({
-            where: {
-              ...(name && { name: { contains: name, mode: 'insensitive' } }),
-            },
-            orderBy: { createdAt: 'desc' },
-            skip: (page - 1) * perPage,
-            take: perPage,
-            ...selectService,
-          }),
-        ]);
+      const servicesCount = await this.prismaService.service.count({
+        where: {
+          ...(name && { name: { contains: name, mode: 'insensitive' } }),
+        },
+      });
+      totalPages = Math.ceil(servicesCount / perPage);
 
-        totalPages = Math.ceil(servicesCount / perPage);
+      if (!servicesInMemory.hasItem(reference)) {
+        const services = await this.prismaService.service.findMany({
+          where: {
+            ...(name && { name: { contains: name, mode: 'insensitive' } }),
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * perPage,
+          take: perPage,
+          ...selectService,
+        });
 
         servicesInMemory.storeExpiringItem(
           reference,
