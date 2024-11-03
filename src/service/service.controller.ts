@@ -12,7 +12,7 @@ import {
 import { ServiceService } from './service.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { handleErrors } from 'src/handles/errors';
-import { Prisma, ROLE } from '@prisma/client';
+import { KIND, Prisma, ROLE } from '@prisma/client';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/decorator/roles.decorator';
 
@@ -87,24 +87,28 @@ export class ServiceController {
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(ROLE.OWNER, ROLE.RESIDENT)
-  @Post('/:id/permission')
+  @Post('/:id/permissions')
   async createPermissionService(
     @Body()
     {
-      serviceId,
       userId,
-      providerId,
+      provider,
     }: {
       userId: string;
-      serviceId: string;
-      providerId?: string;
+      provider?: {
+        name: string;
+        kind: KIND;
+        plate?: string;
+        document: string;
+      };
     },
+    @Param() { id }: { id: string },
   ) {
     try {
       return await this.serviceService.createServicePermission({
         userId,
-        serviceId,
-        providerId,
+        serviceId: id,
+        provider,
       });
     } catch (error) {
       handleErrors(error);

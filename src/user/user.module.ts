@@ -16,6 +16,8 @@ import { MailModule } from 'src/mail/mail.module';
 import { PermissionController } from './permission/permission.controller';
 import { PermissionService } from './permission/permission.service';
 import { NotificationService } from 'src/notification/notification.service';
+import { ServicePermissionController } from './service/permission/permission.controller';
+import { ServicePermissionService } from './service/permission/permission.service';
 
 @Module({
   controllers: [
@@ -26,6 +28,7 @@ import { NotificationService } from 'src/notification/notification.service';
     OwnerResidentController,
     ResidentController,
     OwnerController,
+    ServicePermissionController,
   ],
   providers: [
     PrismaService,
@@ -37,6 +40,7 @@ import { NotificationService } from 'src/notification/notification.service';
     OwnerResidentService,
     ResidentService,
     OwnerService,
+    ServicePermissionService,
   ],
   imports: [MailModule],
   exports: [UserService],

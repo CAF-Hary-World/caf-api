@@ -355,9 +355,11 @@ model ServicePermission {
   deletedAt                     DateTime?
   updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
+  checkin                       DateTime?
+  checkout                      DateTime?
 
   providerId                    String?
-  provider                      Provider? @relation(fields: [providerId], references: [id])
+  provider                      Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   userId                        String
   user                          User @relation(fields: [userId], references: [id], onDelete: Cascade)

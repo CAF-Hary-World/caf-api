@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import cloudinary from 'cloudinary';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { resetUsers } from 'src/utils/resetCache';
+import { resetProvider, resetService, resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 
 @Injectable()
@@ -37,7 +37,6 @@ export class TasksService {
       });
 
     if (availablesJustifications.length > 0) {
-      this.resetCache();
       const justificationToAllowInvite =
         await this.prisma.justification.findUniqueOrThrow({
           where: {
@@ -57,6 +56,7 @@ export class TasksService {
           justificationId: justificationToAllowInvite.id,
         },
       });
+      this.resetCache();
     }
   }
 
@@ -102,7 +102,6 @@ export class TasksService {
         },
       });
       if (permissions.length > 0) {
-        resetUsers();
         await this.prisma.permission.updateMany({
           where: {
             id: { in: permissions.map((permission) => permission.id) },
@@ -112,6 +111,14 @@ export class TasksService {
             updatedAt: timeStampISOTime,
           },
         });
+        resetUsers();
+        await this.prisma.servicePermission.deleteMany({
+          where: {
+            OR: [{ checkin: null }, { checkout: null }],
+          },
+        });
+        resetService();
+        resetProvider();
       }
     } catch (error) {
       this.logger.debug(`Error (deleteAllPermission) ${error}`);

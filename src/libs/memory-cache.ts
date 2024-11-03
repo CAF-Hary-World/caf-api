@@ -451,6 +451,51 @@ export const servicesInMemory = new MemoryCache<
   Array<Prisma.ServiceGetPayload<Service | null>>
 >(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
 
+export type ServicePermission = {
+  select: {
+    id: true;
+    checkin: true;
+    checkout: true;
+    user: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+    service: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+  };
+};
+
+export const selectServicePermission = {
+  select: {
+    id: true,
+    checkin: true,
+    checkout: true,
+    user: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+    service: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  },
+};
+
+export const servicesPermissionsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.ServicePermissionGetPayload<ServicePermission | null>>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
 export const serviceInMemory = new MemoryCache<
   string,
   Prisma.ServiceGetPayload<Service>

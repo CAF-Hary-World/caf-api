@@ -1,16 +1,18 @@
-import { Prisma } from '@prisma/client';
+import { KIND, Prisma } from '@prisma/client';
 import { selectService, serviceInMemory } from './../libs/memory-cache';
 import { Injectable } from '@nestjs/common';
 import { servicesInMemory } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { resetService } from 'src/utils/resetCache';
+import { resetService, resetServicePermission } from 'src/utils/resetCache';
 import { LogoService } from 'src/logo/logo.service';
+import { ProviderService } from 'src/provider/provider.service';
 
 @Injectable()
 export class ServiceService {
   constructor(
     private prismaService: PrismaService,
     private logoService: LogoService,
+    private providerService: ProviderService,
   ) {}
 
   async listServices({ page = 1, name }: { page: number; name?: string }) {
@@ -141,13 +143,30 @@ export class ServiceService {
   async createServicePermission({
     userId,
     serviceId,
-    providerId,
+    provider,
   }: {
     userId: string;
     serviceId: string;
-    providerId?: string;
+    provider?: {
+      name: string;
+      kind: KIND;
+      plate?: string;
+      document: string;
+    };
   }) {
     try {
+      if (Boolean(provider)) {
+        const providerByDatabase = await this.providerService.getProviderByName(
+          {
+            name: provider.name,
+          },
+        );
+
+        if (Boolean(providerByDatabase)) {
+          await this.providerService.createProvider({ ...provider });
+        }
+      }
+
       const servicePermission =
         await this.prismaService.servicePermission.create({
           data: {
@@ -161,17 +180,17 @@ export class ServiceService {
                 id: serviceId,
               },
             },
-            ...(providerId && {
+            ...(provider && {
               provider: {
                 connect: {
-                  id: providerId,
+                  name: provider.name,
                 },
               },
             }),
           },
         });
       resetService();
-
+      resetServicePermission();
       return servicePermission;
     } catch (error) {
       throw error;

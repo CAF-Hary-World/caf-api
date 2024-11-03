@@ -81,6 +81,33 @@ export class ProviderService {
     }
   }
 
+  async getProviderByName({ name }: { name: string }) {
+    const reference = `provider-${name}`;
+
+    try {
+      if (!providerInMemory.hasItem(reference)) {
+        const provider = await this.prismaService.provider.findFirst({
+          where: {
+            name: {
+              equals: name,
+              mode: 'insensitive',
+            },
+          },
+          ...selectProvider,
+        });
+
+        providerInMemory.storeExpiringItem(
+          reference,
+          provider,
+          process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
+        );
+      }
+      return providerInMemory.retrieveItemValue(reference);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async deleteProvider({ id }: { id: string }) {
     try {
       const provider = await this.prismaService.provider.delete({
