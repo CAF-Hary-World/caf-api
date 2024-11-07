@@ -119,10 +119,11 @@ export class ServiceController {
   @Delete('/:id/permission/:servicePermissionId')
   async deletePermissionService(
     @Param()
-    { servicePermissionId }: { servicePermissionId: string },
+    { id, servicePermissionId }: { id: string; servicePermissionId: string },
   ) {
     try {
       return await this.serviceService.deleteServicePermission({
+        serviceId: id,
         id: servicePermissionId,
       });
     } catch (error) {

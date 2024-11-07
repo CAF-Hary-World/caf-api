@@ -197,16 +197,25 @@ export class ServiceService {
     }
   }
 
-  async deleteServicePermission({ id }: { id: string }) {
+  async deleteServicePermission({
+    id,
+    serviceId,
+  }: {
+    id: string;
+    serviceId: string;
+  }) {
     try {
       const servicePermission =
         await this.prismaService.servicePermission.delete({
           where: {
             id,
+            service: {
+              id: serviceId,
+            },
           },
         });
       resetService();
-
+      resetServicePermission();
       return servicePermission;
     } catch (error) {
       throw error;
