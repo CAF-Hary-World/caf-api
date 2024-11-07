@@ -112,6 +112,15 @@ export class TasksService {
           },
         });
         resetUsers();
+      }
+      const amountServicePermission = await this.prisma.servicePermission.count(
+        {
+          where: {
+            OR: [{ checkin: null }, { checkout: null }],
+          },
+        },
+      );
+      if (amountServicePermission > 0) {
         await this.prisma.servicePermission.deleteMany({
           where: {
             OR: [{ checkin: null }, { checkout: null }],
