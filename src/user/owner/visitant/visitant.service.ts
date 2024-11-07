@@ -162,6 +162,7 @@ export class OwnerVisitantService {
           kind: visitant.kind,
           name: visitant.name,
           phone: visitant.phone,
+          email: visitant.email,
           owner: {
             connect: { id: visitant.invitedBy },
           },

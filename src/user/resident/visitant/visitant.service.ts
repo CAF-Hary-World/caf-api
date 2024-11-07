@@ -119,6 +119,7 @@ export class ResidentVisitantService {
           kind: visitant.kind,
           name: visitant.name,
           phone: visitant.phone,
+          email: visitant.email,
           resident: {
             connect: { id: visitant.invitedBy },
           },
