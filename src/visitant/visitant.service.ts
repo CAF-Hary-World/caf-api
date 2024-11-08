@@ -319,7 +319,7 @@ export class VisitantService {
         });
         if (Boolean(visitant))
           throw new HttpException(
-            'Visitante bloqueado pela administração. Somente eles podem reativar esse visitante.',
+            `Informamos que ${visitant.name.split(' ')[0]} foi bloqueado pela administração. Somente a administração pode desbloquea-lo(a).`,
             HttpStatus.FORBIDDEN,
           );
       }

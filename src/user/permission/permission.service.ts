@@ -13,14 +13,19 @@ export class PermissionService {
 
   async create({ userId, visitantId }: { userId: string; visitantId: string }) {
     try {
-      const user = await this.prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        select: { name: true },
-      });
-      const visitant = await this.prisma.visitant.findUniqueOrThrow({
-        where: { id: visitantId },
-        select: { name: true },
-      });
+      const [user, visitant] = await Promise.all([
+        this.prisma.user.findUniqueOrThrow({
+          where: { id: userId },
+          select: { name: true },
+        }),
+        this.prisma.visitant.findUniqueOrThrow({
+          where: { id: visitantId },
+          select: { name: true, available: true },
+        }),
+      ]);
+
+      if (visitant.available.status !== 'ALLOWED')
+        throw new Error(`Informamos que ${visitant.name} esta bloqueado(a)`);
 
       await this.prisma.permission.create({
         data: {
