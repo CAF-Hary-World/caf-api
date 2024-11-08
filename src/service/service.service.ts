@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { resetService, resetServicePermission } from 'src/utils/resetCache';
 import { LogoService } from 'src/logo/logo.service';
 import { ProviderService } from 'src/provider/provider.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class ServiceService {
@@ -13,6 +14,7 @@ export class ServiceService {
     private prismaService: PrismaService,
     private logoService: LogoService,
     private providerService: ProviderService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async listServices({ page = 1, name }: { page: number; name?: string }) {
@@ -188,10 +190,26 @@ export class ServiceService {
               },
             }),
           },
+          select: {
+            service: {
+              select: {
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
         });
       resetService();
       resetServicePermission();
-      return servicePermission;
+      return await this.notificationService.sendsPushesByRole({
+        roles: ['ADMIN', 'SECURITY', 'ROOT'],
+        body: `O morador ${servicePermission.user.name} liberou a entrada do serviço ${servicePermission.service.name}.`,
+        title: 'Permissão de entrada de serviço enviada!',
+      });
     } catch (error) {
       throw error;
     }
