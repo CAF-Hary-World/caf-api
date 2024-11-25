@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { encodeSha256 } from 'src/libs/bcrypt';
+import { residentsInMemory, selectResident } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
@@ -9,6 +11,69 @@ export class ResidentService {
   private resetCache = resetUsers;
 
   constructor(private readonly prisma: PrismaService) {}
+
+  async listResidents({
+    page = 1,
+    name,
+    cpf,
+    allowed,
+    blocked,
+    processing,
+  }: {
+    page: number;
+    name?: string;
+    cpf?: string;
+    blocked?: string;
+    allowed?: string;
+    processing?: string;
+  }) {
+    const where: Prisma.UserWhereInput = {
+      ...(name && { name: { contains: name, mode: 'insensitive' } }),
+      ...(cpf && { cpf: { contains: cpf } }),
+      ...(allowed && { available: { status: 'ALLOWED' } }),
+      ...(blocked && { available: { status: 'BLOCKED' } }),
+      ...(processing && { available: { status: 'PROCESSING' } }),
+    };
+
+    const reference = `user-resident-${page}-${name}-${cpf}-${allowed}-${blocked}-${processing}`;
+
+    const perPage =
+      process.env.NODE_ENV === 'development'
+        ? 2
+        : Number(process.env.DEFAULT_PER_PAGE);
+
+    const residentsCount = await this.prisma.user.count({
+      where,
+    });
+
+    const totalPages = Math.ceil(residentsCount / perPage);
+
+    try {
+      if (!residentsInMemory.hasItem(reference)) {
+        const residents = await this.prisma.user.findMany({
+          where,
+          orderBy: { name: 'desc' },
+          skip: (page - 1) * perPage,
+          take: perPage,
+          ...selectResident,
+        });
+
+        residentsInMemory.storeExpiringItem(
+          reference,
+          residents,
+          process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
+        );
+      }
+      return {
+        resource: residentsInMemory.retrieveItemValue(reference),
+        totalPages,
+      };
+    } catch (error) {
+      console.error('Residente List Service =', error);
+
+      throw error;
+    }
+  }
 
   async belongsToOwner(id: string) {
     try {

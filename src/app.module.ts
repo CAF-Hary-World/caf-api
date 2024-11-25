@@ -26,6 +26,8 @@ import { ProviderController } from './provider/provider.controller';
 import { ProviderService } from './provider/provider.service';
 import { LogoController } from './logo/logo.controller';
 import { LogoService } from './logo/logo.service';
+import { ParcelService } from './parcel/parcel.service';
+import { ParcelController } from './parcel/parcel.controller';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { LogoService } from './logo/logo.service';
     ServiceController,
     ProviderController,
     LogoController,
+    ParcelController,
   ],
   providers: [
     AppService,
@@ -59,6 +62,7 @@ import { LogoService } from './logo/logo.service';
     ServiceService,
     ProviderService,
     LogoService,
+    ParcelService,
   ],
 })
 export class AppModule {

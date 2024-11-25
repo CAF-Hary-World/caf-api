@@ -64,7 +64,9 @@ model User {
 
   permissions             Permission[]
 
-  servicePermissions       ServicePermission[]
+  parcels                 Parcel[]
+
+  servicePermissions      ServicePermission[]
 
   role                    Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
   adminId                 String? @unique
@@ -333,6 +335,7 @@ model Service {
   logo                          String?
 
   servicePermissions            ServicePermission[]
+  parcels                       Parcel[]
 }
 
 model Provider {
@@ -365,6 +368,24 @@ model ServicePermission {
   user                          User @relation(fields: [userId], references: [id], onDelete: Cascade)
   serviceId                     String
   service                       Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model Parcel {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  status                        STATUS @default(PROCESSING)
+  imageUrl                      String?
+  house                         String
+  square                        String
+
+  userId                        String?
+  recipient                     User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  from                          String?
+  service                       Service? @relation(fields: [from], references: [id], onDelete: Cascade)
 }
 
 // END Service

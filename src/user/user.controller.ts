@@ -1,16 +1,54 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
-  HttpException,
-  HttpStatus,
   Patch,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { handleErrors } from 'src/handles/errors';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { ROLE } from '@prisma/client';
 
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
+
+  @UseGuards(AuthGuard)
+  @Get()
+  async listUsers(
+    @Query()
+    {
+      page,
+      name,
+      house,
+      square,
+      roles,
+    }: {
+      page: number;
+      name?: string;
+      house?: string;
+      square?: string;
+      roles: Array<ROLE>;
+    },
+  ) {
+    try {
+      const residents = await this.userService.listUsers({
+        page,
+        name,
+        house,
+        square,
+        roles,
+      });
+      return residents;
+    } catch (error) {
+      console.error('Controller error = ', error);
+
+      handleErrors(error);
+    }
+  }
 
   @Patch('/confirmation')
   @HttpCode(204)
@@ -19,16 +57,7 @@ export class UserController {
       await this.userService.confirmation(data.id);
       return;
     } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.FORBIDDEN,
-          error: error.message,
-        },
-        HttpStatus.FORBIDDEN,
-        {
-          cause: error,
-        },
-      );
+      handleErrors(error);
     }
   }
 }

@@ -3,8 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   Patch,
   Post,
@@ -66,21 +64,7 @@ export class OwnerController {
     try {
       return await this.ownerService.createOwner(data);
     } catch (error) {
-      console.error('Controller error = ', error.message);
-
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      handleErrors(error);
     }
   }
 
@@ -94,21 +78,7 @@ export class OwnerController {
     try {
       return await this.ownerService.updateOwner({ data, id, ownerId });
     } catch (error) {
-      console.error('Controller error = ', error);
-
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      handleErrors(error);
     }
   }
 
@@ -119,21 +89,7 @@ export class OwnerController {
     try {
       return await this.ownerService.deleteOwner({ id, ownerId });
     } catch (error) {
-      console.error('Controller error = ', error);
-
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      handleErrors(error);
     }
   }
 
@@ -149,21 +105,7 @@ export class OwnerController {
       const result = await this.ownerService.deleteManyOwners(ids);
       return { message: `Deleted ${result.count} users`, count: result.count };
     } catch (error) {
-      console.error('Controller error = ', error);
-
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      handleErrors(error);
     }
   }
 
@@ -181,21 +123,7 @@ export class OwnerController {
         justifications,
       });
     } catch (error) {
-      console.error('Controller error = ', error);
-
-      // If the error is already an HttpException, just rethrow it
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Otherwise, throw a generic error or add more context if needed
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'An unexpected error occurred while creating the owner',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      handleErrors(error);
     }
   }
 

@@ -14,6 +14,8 @@ import {
   providerInMemory,
   providersInMemory,
   servicesPermissionsInMemory,
+  parcelsInMemory,
+  parcelInMemory,
 } from 'src/libs/memory-cache';
 
 export function resetUsers() {
@@ -41,4 +43,12 @@ export function resetProvider() {
 
 export function resetServicePermission() {
   servicesPermissionsInMemory.clear();
+}
+
+export function resetParcels() {
+  parcelsInMemory.clear();
+}
+
+export function resetParcel() {
+  parcelInMemory.clear();
 }

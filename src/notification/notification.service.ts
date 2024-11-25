@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ROLE } from '@prisma/client';
+import { Prisma, ROLE } from '@prisma/client';
 import * as firebase from 'firebase-admin';
 import {
   notificationInMemory,
@@ -203,6 +203,58 @@ export class NotificationService {
           .messaging()
           .send({
             topic: `role-${role}`,
+            notification: {
+              title,
+              body,
+            },
+            data: {
+              link,
+              icon: process.env.LOGO_URL,
+            },
+          })
+          .catch((error) => {
+            throw error;
+          }),
+      ]);
+      notificationInMemory.clear();
+      return notificationsInMemory.clear();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  sendPushByAddress = async ({
+    address,
+    users,
+    title,
+    body,
+    roles,
+  }: {
+    roles: Array<ROLE>;
+    users: Array<{ id: string }>;
+    address: Prisma.OwnerGetPayload<{ select: { house: true; square: true } }>;
+    title: string;
+    body: string;
+  }): Promise<void> => {
+    let link = process.env.COND_URL;
+    if (roles.includes('SECURITY')) link = process.env.SECURITY_URL;
+    if (roles.includes('ADMIN') || roles.includes('ROOT'))
+      link = process.env.ADMIN_URL;
+    try {
+      await Promise.all([
+        ...users.map(async (user) =>
+          this.prismaService.notification.create({
+            data: {
+              body,
+              title,
+              userId: user.id, // Set the userId for each notification
+            },
+          }),
+        ),
+        firebase
+          .messaging()
+          .send({
+            topic: `address-${address.square}-${address.house}`,
             notification: {
               title,
               body,

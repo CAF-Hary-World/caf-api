@@ -33,6 +33,26 @@ export class MailService {
     });
   }
 
+  async sendParcelRecivied({
+    users,
+  }: {
+    users: Array<{ name: string; email: string }>;
+  }) {
+    for (const user of users) {
+      await this.mailerService.sendMail({
+        to: user.email,
+        // from: '"Support Team" <support@example.com>', // override default from
+        subject: 'Bem vindo ao CAF! Confirme seu email',
+        template: './parcelRecevied', // `.hbs` extension is appended automatically
+        context: {
+          // ✏️ filling curly brackets with content
+          name: user.name,
+          clientName: process.env.CLIENT_NAME,
+        },
+      });
+    }
+  }
+
   async sendUserValidation(user: Pick<User, 'name'> & Pick<Owner, 'email'>) {
     const url = process.env.PLATAFORM_URL;
 

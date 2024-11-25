@@ -27,6 +27,31 @@ export const userInMemory = new MemoryCache<
   AMOUNTSINGLERESOURCE, // number of items
 );
 
+export const selectUser = {
+  select: {
+    name: true,
+    available: true,
+    owner: {
+      select: {
+        house: true,
+        square: true,
+      },
+    },
+    resident: {
+      select: {
+        owner: {
+          select: {
+            house: true,
+            square: true,
+          },
+        },
+      },
+    },
+    id: true,
+    role: { select: { name: true, id: true } },
+  },
+};
+
 export const usersInMemory = new MemoryCache<
   string,
   Array<
@@ -537,3 +562,33 @@ export const logoInMemory = new MemoryCache<string, string>(
   TIMETOEXPIRECACHE,
   AMOUNTSINGLERESOURCE,
 );
+
+export type Parcel = {
+  select: {
+    status: true;
+    from: true;
+    house: true;
+    imageUrl: true;
+    recipient: true;
+  };
+};
+
+export const selectParcel = {
+  select: {
+    status: true,
+    from: true,
+    house: true,
+    imageUrl: true,
+    recipient: true,
+  },
+};
+
+export const parcelsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.ParcelGetPayload<Parcel | null>>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const parcelInMemory = new MemoryCache<
+  string,
+  Prisma.ParcelGetPayload<Parcel | null>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
