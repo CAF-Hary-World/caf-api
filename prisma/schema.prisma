@@ -36,6 +36,7 @@ enum STATUS {
   ALLOWED
   BLOCKED
   PROCESSING
+  RETRIEVED
 }
 
 // START USERS
@@ -64,7 +65,8 @@ model User {
 
   permissions             Permission[]
 
-  parcels                 Parcel[]
+  parcels                 Parcel[]      @relation("UserParcels")
+  withdrawnsParcels       Parcel[]      @relation("WithdrawnParcels")
 
   servicePermissions      ServicePermission[]
 
@@ -381,8 +383,11 @@ model Parcel {
   house                         String
   square                        String
 
+  withdrawnById                 String?
+  withdrawnBy                   User?    @relation("WithdrawnParcels", fields: [withdrawnById], references: [id], onDelete: Cascade)
+
   userId                        String?
-  recipient                     User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipient                     User?    @relation("UserParcels", fields: [userId], references: [id], onDelete: Cascade)
 
   from                          String?
   service                       Service? @relation(fields: [from], references: [id], onDelete: Cascade)

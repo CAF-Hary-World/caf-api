@@ -42,8 +42,28 @@ export class MailService {
       await this.mailerService.sendMail({
         to: user.email,
         // from: '"Support Team" <support@example.com>', // override default from
-        subject: 'Bem vindo ao CAF! Confirme seu email',
+        subject: 'Entrega recebida pela portaria',
         template: './parcelRecevied', // `.hbs` extension is appended automatically
+        context: {
+          // ✏️ filling curly brackets with content
+          name: user.name,
+          clientName: process.env.CLIENT_NAME,
+        },
+      });
+    }
+  }
+
+  async sendParcelBlocked({
+    users,
+  }: {
+    users: Array<{ name: string; email: string }>;
+  }) {
+    for (const user of users) {
+      await this.mailerService.sendMail({
+        to: user.email,
+        // from: '"Support Team" <support@example.com>', // override default from
+        subject: 'Problemas com a sua entrega',
+        template: './parcelBlocked', // `.hbs` extension is appended automatically
         context: {
           // ✏️ filling curly brackets with content
           name: user.name,

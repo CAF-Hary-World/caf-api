@@ -570,16 +570,20 @@ export type Parcel = {
     house: true;
     imageUrl: true;
     recipient: true;
+    service: true;
   };
 };
 
 export const selectParcel = {
   select: {
+    id: true,
     status: true,
     from: true,
     house: true,
+    square: true,
     imageUrl: true,
     recipient: true,
+    service: true,
   },
 };
 
