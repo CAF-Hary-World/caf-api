@@ -33,8 +33,6 @@ export class ParcelService {
   }) {
     const reference = `parcels-${page}-${recipient}-${from}-${house}-${square}-${status}`;
 
-    console.log(status);
-
     const where: Prisma.ParcelWhereInput = {
       ...(recipient && {
         recipient: { name: { contains: recipient, mode: 'insensitive' } },

@@ -40,7 +40,6 @@ export class ParcelController {
       status?: Array<STATUS>;
     },
   ) {
-    console.log(status);
     try {
       return await this.parcelService.listParcels({
         page,
