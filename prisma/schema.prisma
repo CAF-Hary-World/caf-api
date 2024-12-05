@@ -1,0 +1,409 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output = "../ERD.svg"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ROLE {
+  ROOT
+  ADMIN
+  RESIDENT
+  OWNER
+  VISITANT
+  SECURITY
+}
+
+enum KIND {
+  PEDESTRIAN
+  DRIVER
+}
+
+enum STATUS {
+  ALLOWED
+  BLOCKED
+  PROCESSING
+  RETRIEVED
+}
+
+// START USERS
+
+model Role {
+  id          String @id @default(uuid())
+  createdAt   DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt   DateTime?   
+  updatedAt   DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  name        ROLE @unique
+  user        User[]
+}
+
+model User {
+  id                      String @id @default(uuid())
+  createdAt               DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt               DateTime?
+  updatedAt               DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  name                    String
+  roleId                  String
+  availableId             String?       @unique
+  available               Available?
+
+  notifications           Notification[]
+
+  permissions             Permission[]
+
+  parcels                 Parcel[]      @relation("UserParcels")
+  withdrawnsParcels       Parcel[]      @relation("WithdrawnParcels")
+
+  servicePermissions      ServicePermission[]
+
+  role                    Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  adminId                 String? @unique
+  admin                   Admin?
+  ownerId                 String? @unique
+  owner                   Owner?
+  residentId              String? @unique
+  resident                Resident?
+  rootId                  String? @unique
+  root                    Root?
+}
+
+model Root {
+  id                      String @id @default(uuid())
+  createdAt               DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt               DateTime?
+  updatedAt               DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  password                String
+  email                   String     @unique
+  
+  userId      String      @unique
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Admin {
+  id          String      @id @default(uuid())
+  createdAt   DateTime    @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt   DateTime?   
+  updatedAt   DateTime    @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  photo       String?
+  password    String
+  phone       String?
+  email       String      @unique
+  
+  userId      String      @unique
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Owner {
+  id                 String @id @default(uuid())
+  createdAt          DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt          DateTime?
+  updatedAt          DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  photo              String?
+  password           String
+  cpf                String      @unique
+  email              String      @unique
+  phone              String      @unique
+  square             String
+  house              String
+
+  // Relation field on Owner model
+  residents          Resident[]
+  visitantsCreated   Visitant[]
+
+  visitantsOnOwner   VisitantsOnOwner[]
+
+  userId             String      @unique
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint for the combination of square and house
+  @@unique([square, house])
+}
+
+
+model Resident {
+  id                    String @id @default(uuid())
+  createdAt             DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt             DateTime?
+  updatedAt             DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  photo                 String?
+  password              String
+  cpf                   String      @unique
+  email                 String?     @unique
+  phone                 String?
+
+  visitantsOnResident   VisitantsOnResident[]
+
+  // Relation field on Resident model
+  visitantsCreated      Visitant[]
+  ownerId               String
+  owner                 Owner       @relation(fields: [ownerId], references: [id], onDelete: Cascade) 
+  userId                String      @unique
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VisitantsOnOwner {
+  createdAt                 DateTime      @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                 DateTime?
+  updatedAt                 DateTime      @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  // Relation Visitant
+  visitantId                String
+  visitant                  Visitant         @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+
+  // Relation Owner
+  ownerId                   String
+  owner                     Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@id([ownerId, visitantId])
+}
+
+model VisitantsOnResident {
+  createdAt                 DateTime      @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                 DateTime?
+  updatedAt                 DateTime      @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  // Relation Visitant
+  visitantId                String
+  visitant                  Visitant         @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+
+  // Relation Owner
+  residentId                String
+  resident                  Resident         @relation(fields: [residentId], references: [id], onDelete: Cascade)
+
+  @@id([residentId, visitantId])
+}
+
+model Visitant {
+  id                      String        @id @default(uuid())
+  createdAt               DateTime      @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt               DateTime?
+  updatedAt               DateTime      @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  name                    String
+  phone                   String
+  cpf                     String        @unique
+  kind                    KIND
+  email                   String?       @unique
+  photo                   String?
+  documentUrl             String?      
+  invited                 Boolean       @default(false)
+
+  availableId             String?       @unique
+  available               Available?
+
+  ownersOnVisitants       VisitantsOnOwner[]
+  
+  residentsOnVisitants    VisitantsOnResident[]
+
+  permissions             Permission[]
+
+  ownerId                 String?
+  owner                   Owner?         @relation(fields: [ownerId], references: [id])
+  residentId              String?
+  resident                Resident?      @relation(fields: [residentId], references: [id])
+}
+
+// END USERS
+
+// START AVAILABLE
+
+model Available {
+  id                String @id @default(uuid())
+  createdAt         DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt         DateTime?
+  updatedAt         DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  status            STATUS
+  justifications    AvailablesJustifications[]
+
+  visitantId        String?    @unique
+  visitant          Visitant?  @relation(fields: [visitantId], references: [id], onDelete: Cascade)
+
+  userId            String?    @unique
+  user              User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AvailablesJustifications {
+  createdAt               DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt               DateTime?
+  updatedAt               DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  availableId             String
+  availabe                Available @relation(fields: [availableId], references: [id], onDelete: Cascade)
+  justificationId         String
+  justification           Justification @relation(fields: [justificationId], references: [id], onDelete: Cascade)
+
+  @@id([availableId, justificationId])
+}
+
+model Justification {
+  id                      String @id @default(uuid())
+  createdAt               DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt               DateTime?
+  updatedAt               DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  
+  default                 Boolean @default(false)
+  description             String @unique @default("Documentação pendente")
+
+  availables              AvailablesJustifications[]
+
+  justificationCategories JustificationCategories[]
+}
+
+model JustificationCategories {
+  createdAt                   DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                   DateTime?
+  updatedAt                   DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  justificationId             String
+  justification               Justification @relation(fields: [justificationId], references: [id], onDelete: Cascade)
+  categoryId                  String
+  category                    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  @@id([justificationId, categoryId])
+}
+
+
+// END AVAILABLE
+
+// START Bookings
+
+
+// END Bookings
+
+// START Notification
+
+model Notification {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  status                        String @default("ACTIVE")
+  title                         String
+  body                          String
+
+  userId                        String?
+  user                          User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+ }
+
+// END Notification
+
+// START Permissions
+
+model Permission {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  checkin                       DateTime?
+  checkout                      DateTime?
+
+  userId                        String?
+  user                          User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visitantCPF                   String?
+  visitant                      Visitant?  @relation(fields: [visitantCPF], references: [cpf], onDelete: Cascade)
+}
+
+// END Permission
+
+// START Service
+
+model Service {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  name                          String @unique
+  logo                          String?
+
+  servicePermissions            ServicePermission[]
+  parcels                       Parcel[]
+}
+
+model Provider {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  name                          String @unique
+  kind                          KIND?
+  plate                         String?
+  document                      String
+
+  servicePermissions            ServicePermission[]
+}
+
+model ServicePermission {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  checkin                       DateTime?
+  checkout                      DateTime?
+
+  providerId                    String?
+  provider                      Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  userId                        String
+  user                          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId                     String
+  service                       Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model Parcel {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  status                        STATUS @default(PROCESSING)
+  imageUrl                      String?
+  house                         String
+  square                        String
+
+  withdrawnById                 String?
+  withdrawnBy                   User?    @relation("WithdrawnParcels", fields: [withdrawnById], references: [id], onDelete: Cascade)
+
+  userId                        String?
+  recipient                     User?    @relation("UserParcels", fields: [userId], references: [id], onDelete: Cascade)
+
+  from                          String?
+  service                       Service? @relation(fields: [from], references: [id], onDelete: Cascade)
+}
+
+// END Service
+
+// Polymorphic
+
+model Category {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  name                          String @unique
+
+  categoryJustifications        JustificationCategories[]
+}
