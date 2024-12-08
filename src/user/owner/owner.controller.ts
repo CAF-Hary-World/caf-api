@@ -95,22 +95,6 @@ export class OwnerController {
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(ROLE.ADMIN, ROLE.ROOT)
-  @Delete('/delete-many')
-  async deleteManyOwner(@Query() identifiers: string) {
-    try {
-      const ids = JSON.parse(identifiers) as {
-        id: string;
-        ownerId: string;
-      }[];
-      const result = await this.ownerService.deleteManyOwners(ids);
-      return { message: `Deleted ${result.count} users`, count: result.count };
-    } catch (error) {
-      handleErrors(error);
-    }
-  }
-
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Patch('/:id/:ownerId/block')
   async blockOnwer(
     @Param() { id, ownerId }: { id: string; ownerId: string },

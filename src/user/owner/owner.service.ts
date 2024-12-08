@@ -11,6 +11,7 @@ import {
 } from 'src/libs/memory-cache';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { deleteImageByUrl } from 'src/utils/images';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 import { translate } from 'src/utils/translate';
@@ -288,6 +289,13 @@ export class OwnerService {
           },
         },
       });
+
+      if (userUnique.owner.photo && data.photo)
+        await deleteImageByUrl({
+          imageUrl: userUnique.owner.photo,
+          location: 'Avatar',
+          resource: 'Owners',
+        });
     } catch (error) {
       console.error('Owner UPDATE Service =', error);
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -307,47 +315,29 @@ export class OwnerService {
     this.resetCache();
 
     try {
-      await this.prisma.user.delete({
+      const user = await this.prisma.user.delete({
         where: {
           id,
           owner: {
             id: ownerId,
           },
         },
-      });
-    } catch (error) {
-      console.error('Owner DELETE Service =', error);
-      // Handle specific Prisma errors or throw a general internal server error
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException(error.meta?.target);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
-    }
-  }
-
-  async deleteManyOwners(identifiers: Array<{ id: string; ownerId: string }>) {
-    this.resetCache();
-
-    try {
-      return await this.prisma.user.deleteMany({
-        where: {
-          id: {
-            in: identifiers.map((identifier) => identifier.id),
-          },
-          ownerId: {
-            in: identifiers.map((identifier) => identifier.ownerId),
+        select: {
+          owner: {
+            select: {
+              photo: true,
+            },
           },
         },
       });
+      if (user.owner.photo)
+        await deleteImageByUrl({
+          imageUrl: user.owner.photo,
+          location: 'Avatar',
+          resource: 'Owners',
+        });
     } catch (error) {
-      console.error('Owner List Service =', error);
-
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException(error.meta?.target);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
+      throw error;
     }
   }
 
@@ -419,11 +409,7 @@ export class OwnerService {
 
       resetUsers();
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException(error.meta?.target);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
+      throw error;
     }
   }
 
@@ -471,11 +457,7 @@ export class OwnerService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException(error.meta?.target);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
+      throw error;
     }
   }
 
@@ -514,11 +496,7 @@ export class OwnerService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new ConflictException(error.meta?.target);
-      }
-
-      throw new InternalServerErrorException('An unexpected error occurred.');
+      throw error;
     }
   }
 }

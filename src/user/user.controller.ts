@@ -44,8 +44,6 @@ export class UserController {
       });
       return residents;
     } catch (error) {
-      console.error('Controller error = ', error);
-
       handleErrors(error);
     }
   }
