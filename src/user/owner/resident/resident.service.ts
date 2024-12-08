@@ -9,6 +9,7 @@ import { Prisma, STATUS } from '@prisma/client';
 import { encodeSha256 } from 'src/libs/bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { deleteImageByUrl } from 'src/utils/images';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 
@@ -187,7 +188,7 @@ export class OwnerResidentService {
     residentId: string;
   }) {
     try {
-      await this.prisma.user.delete({
+      const user = await this.prisma.user.delete({
         where: {
           id: userResidentId,
           resident: {
@@ -200,11 +201,24 @@ export class OwnerResidentService {
             },
           },
         },
+        select: {
+          resident: {
+            select: {
+              photo: true,
+            },
+          },
+        },
       });
+
+      if (user.resident.photo)
+        await deleteImageByUrl({
+          imageUrl: user.resident.photo,
+          location: 'Avatar',
+          resource: 'Residents',
+        });
+
       return this.resetCache();
     } catch (error) {
-      console.error('Residente Create Service = ', error);
-
       throw error;
     }
   }
@@ -223,32 +237,54 @@ export class OwnerResidentService {
     this.resetCache();
 
     try {
-      await this.prisma.user.update({
-        where: {
-          id,
-          resident: {
-            id: residentId,
-            owner: {
-              id: ownerId,
+      const [userResident] = await Promise.all([
+        this.prisma.user.findUnique({
+          where: {
+            id,
+          },
+          select: {
+            resident: {
+              select: {
+                photo: true,
+              },
             },
           },
-        },
-        data: {
-          name: user.name,
-          updatedAt: timeStampISOTime,
-          resident: {
-            update: {
-              ...(user.resident.cpf && { cpf: user.resident.cpf }),
-              ...(user.resident.email && { email: user.resident.email }),
-              ...(user.resident.phone && { phone: user.resident.phone }),
-              ...(user.resident.password && {
-                phone: encodeSha256(String(user.resident.password)),
-              }),
-              updatedAt: timeStampISOTime,
+        }),
+        this.prisma.user.update({
+          where: {
+            id,
+            resident: {
+              id: residentId,
+              owner: {
+                id: ownerId,
+              },
             },
           },
-        },
-      });
+          data: {
+            name: user.name,
+            updatedAt: timeStampISOTime,
+            resident: {
+              update: {
+                ...(user.resident.cpf && { cpf: user.resident.cpf }),
+                ...(user.resident.email && { email: user.resident.email }),
+                ...(user.resident.phone && { phone: user.resident.phone }),
+                ...(user.resident.password && {
+                  phone: encodeSha256(String(user.resident.password)),
+                }),
+                updatedAt: timeStampISOTime,
+              },
+            },
+          },
+        }),
+      ]);
+
+      if (user.resident.photo && userResident.resident.photo)
+        await deleteImageByUrl({
+          imageUrl: userResident.resident.photo,
+          location: 'Avatar',
+          resource: 'Residents',
+        });
+
       return this.resetCache();
     } catch (error) {
       console.error('Residente Update Service = ', error);
