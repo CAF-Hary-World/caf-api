@@ -47,8 +47,6 @@ export class ParcelController {
     try {
       const { house, square } = req.user;
 
-      console.log(req.user);
-
       return await this.parcelService.listParcels({
         page,
         from,

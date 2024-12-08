@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, STATUS, Service, User } from '@prisma/client';
-import { parcelsInMemory, selectParcel } from 'src/libs/memory-cache';
+import {
+  parcelInMemory,
+  parcelsInMemory,
+  selectParcel,
+} from 'src/libs/memory-cache';
 import { MailService } from 'src/mail/mail.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ServiceService } from 'src/service/service.service';
+import { deleteImageByUrl, deleteImagesByUrl } from 'src/utils/images';
 import { resetParcel, resetParcels } from 'src/utils/resetCache';
 
 @Injectable()
@@ -82,6 +87,26 @@ export class ParcelService {
     }
   }
 
+  async getParcel({ id }: { id: string }) {
+    const reference = `parcel-${id}`;
+    try {
+      if (!parcelInMemory.hasItem(reference)) {
+        const parcel = await this.prisma.parcel.findUniqueOrThrow({
+          where: { id },
+          ...selectParcel,
+        });
+        parcelInMemory.storeExpiringItem(
+          reference,
+          parcel,
+          process.env.NODE_ENV === 'test' ? 5 : 3600 * 24, // if test env expire in 5 miliseconds else 1 day
+        );
+      }
+      return parcelInMemory.retrieveItemValue(reference);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async createParcel(
     data: Prisma.ParcelCreateInput & { serviceName?: string; userId?: string },
   ) {
@@ -125,17 +150,6 @@ export class ParcelService {
         },
       });
 
-      await this.prisma.parcel.create({
-        data: {
-          house: data.house,
-          square: data.square,
-          ...(userExists && { recipient: { connect: { id: data.userId } } }),
-          ...(data.serviceName && {
-            service: { connect: { name: data.serviceName } },
-          }),
-        },
-      });
-
       resetParcels();
       resetParcel();
     } catch (error) {
@@ -151,10 +165,19 @@ export class ParcelService {
     where: Prisma.ParcelWhereUniqueInput;
   }) {
     try {
-      await this.prisma.parcel.update({
-        data,
-        where,
-      });
+      const [parcel] = await Promise.all([
+        this.getParcel({ id: where.id }),
+        this.prisma.parcel.update({
+          data,
+          where,
+        }),
+      ]);
+      if (parcel.imageUrl)
+        await deleteImageByUrl({
+          imageUrl: parcel.imageUrl,
+          location: 'Avatar',
+          resource: 'Parcels',
+        });
       resetParcel();
       resetParcels();
     } catch (error) {
@@ -301,11 +324,17 @@ export class ParcelService {
 
   async deleteParcel({ id }: { id: string }) {
     try {
-      await this.prisma.parcel.delete({
+      const parcel = await this.prisma.parcel.delete({
         where: {
           id,
         },
       });
+      if (parcel.imageUrl)
+        await deleteImageByUrl({
+          imageUrl: parcel.imageUrl,
+          location: 'Avatar',
+          resource: 'Parcels',
+        });
       resetParcel();
       resetParcels();
     } catch (error) {
@@ -315,11 +344,25 @@ export class ParcelService {
 
   async deleteManyParcel({ ids }: { ids: Array<string> }) {
     try {
-      await this.prisma.parcel.deleteMany({
-        where: {
-          id: { in: ids },
-        },
-      });
+      const [parcels] = await Promise.all([
+        this.prisma.parcel.findMany({
+          where: {
+            AND: [{ id: { in: ids }, imageUrl: { not: null } }],
+          },
+        }),
+        this.prisma.parcel.deleteMany({
+          where: {
+            id: { in: ids },
+          },
+        }),
+      ]);
+
+      if (parcels.length > 0)
+        await deleteImagesByUrl({
+          imageUrls: parcels.map((parcel) => parcel.imageUrl),
+          location: 'Avatar',
+          resource: 'Parcels',
+        });
       resetParcel();
       resetParcels();
     } catch (error) {

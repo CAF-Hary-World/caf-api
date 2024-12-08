@@ -166,7 +166,7 @@ export class ParcelController {
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(ROLE.ADMIN, ROLE.ROOT, ROLE.SECURITY)
-  @Delete('/many')
+  @Delete('delete/many')
   async deleteManyParcels(@Query() { ids }: { ids: Array<string> }) {
     try {
       await this.parcelService.deleteManyParcel({ ids });

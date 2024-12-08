@@ -95,7 +95,6 @@ export class ResidentService {
         where: { id },
         include: { available: true },
       });
-      console.log(user);
 
       if (user.available.status === 'ALLOWED')
         throw new Error('User already available');
