@@ -27,6 +27,7 @@ export async function deleteImageByUrl({
   resource: RESOURCE;
 }) {
   try {
+    if (!isCloudinaryImage({ url: imageUrl })) return;
     await cloudinary.v2.api.delete_resources([
       `${location}/${resource}/${getImageId({ imageUrl })}`,
     ]);
@@ -46,7 +47,10 @@ export async function deleteImagesByUrl({
   resource: RESOURCE;
 }) {
   try {
-    const resourcesPaths = imageUrls.map(
+    const justCloudinaryImages = imageUrls.filter((imageUrl) =>
+      isCloudinaryImage({ url: imageUrl }),
+    );
+    const resourcesPaths = justCloudinaryImages.map(
       (imageUrl) => `${location}/${resource}/${getImageId({ imageUrl })}`,
     );
 
@@ -55,4 +59,8 @@ export async function deleteImagesByUrl({
   } catch (error) {
     logger.debug(`IMAGES NOT DELETED`);
   }
+}
+
+export function isCloudinaryImage({ url }: { url: string }) {
+  return url.includes('cloudinary');
 }

@@ -7,6 +7,7 @@ import { resetService, resetServicePermission } from 'src/utils/resetCache';
 import { LogoService } from 'src/logo/logo.service';
 import { ProviderService } from 'src/provider/provider.service';
 import { NotificationService } from 'src/notification/notification.service';
+import { deleteImageByUrl, deleteImagesByUrl } from 'src/utils/images';
 
 @Injectable()
 export class ServiceService {
@@ -89,6 +90,14 @@ export class ServiceService {
       const service = await this.prismaService.service.delete({
         where: { id },
       });
+
+      if (service.logo)
+        await deleteImageByUrl({
+          imageUrl: service.logo,
+          location: 'Avatar',
+          resource: 'Services',
+        });
+
       resetService();
       return service;
     } catch (error) {
@@ -98,15 +107,39 @@ export class ServiceService {
 
   async deleteManyService({ ids }: { ids: Array<string> }) {
     try {
-      const service = await this.prismaService.service.deleteMany({
-        where: {
-          id: {
-            in: ids,
+      const [services] = await Promise.all([
+        this.prismaService.service.findMany({
+          where: {
+            AND: [
+              {
+                id: {
+                  in: ids,
+                },
+                logo: { not: null },
+              },
+            ],
           },
-        },
-      });
+        }),
+        this.prismaService.service.deleteMany({
+          where: {
+            id: {
+              in: ids,
+            },
+          },
+        }),
+      ]);
+
+      if (services.length > 0) {
+        const imageUrls = services.map((service) => service.logo);
+        await deleteImagesByUrl({
+          imageUrls,
+          location: 'Avatar',
+          resource: 'Services',
+        });
+      }
+
       resetService();
-      return service;
+      return services;
     } catch (error) {
       throw error;
     }
@@ -128,12 +161,27 @@ export class ServiceService {
 
   async updateService({ id, ...data }: Prisma.ServiceUpdateInput) {
     try {
-      const service = await this.prismaService.service.update({
-        where: {
-          id: String(id),
-        },
-        data,
-      });
+      const [service] = await Promise.all([
+        this.prismaService.service.findUnique({
+          where: {
+            id: String(id),
+          },
+        }),
+        this.prismaService.service.update({
+          where: {
+            id: String(id),
+          },
+          data,
+        }),
+      ]);
+
+      if (service && service.logo)
+        await deleteImageByUrl({
+          imageUrl: service.logo,
+          location: 'Avatar',
+          resource: 'Services',
+        });
+
       resetService();
 
       return service;
