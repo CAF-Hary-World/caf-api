@@ -6,6 +6,7 @@ import {
   visitantsInMemory,
 } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { deleteImageByUrl } from 'src/utils/images';
 import { resetUsers } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 
@@ -132,12 +133,36 @@ export class VisitantService {
     data: Prisma.VisitantUpdateInput;
   }) {
     try {
-      await this.prisma.visitant.update({
-        where: {
-          id,
-        },
-        data: { ...data, updatedAt: timeStampISOTime },
-      });
+      const [visitant] = await Promise.all([
+        this.prisma.visitant.findUniqueOrThrow({
+          where: {
+            id,
+          },
+          select: {
+            photo: true,
+            documentUrl: true,
+          },
+        }),
+        this.prisma.visitant.update({
+          where: {
+            id,
+          },
+          data: { ...data, updatedAt: timeStampISOTime },
+        }),
+      ]);
+
+      if (data.photo && visitant.photo)
+        await deleteImageByUrl({
+          imageUrl: visitant.photo,
+          location: 'Avatar',
+          resource: 'Visitants',
+        });
+      if (data.documentUrl && visitant.documentUrl)
+        await deleteImageByUrl({
+          imageUrl: visitant.documentUrl,
+          location: 'Documents',
+          resource: 'Visitants',
+        });
       return this.resetCache();
     } catch (error) {
       throw error;
@@ -351,11 +376,25 @@ export class VisitantService {
 
   async deleteVisitant({ id }: { id: string }) {
     try {
-      await this.prisma.visitant.delete({
+      const visitant = await this.prisma.visitant.delete({
         where: {
           id,
         },
       });
+
+      if (visitant.documentUrl)
+        await deleteImageByUrl({
+          imageUrl: visitant.documentUrl,
+          location: 'Documents',
+          resource: 'Visitants',
+        });
+
+      if (visitant.photo)
+        await deleteImageByUrl({
+          imageUrl: visitant.photo,
+          location: 'Avatar',
+          resource: 'Visitants',
+        });
 
       return this.resetCache();
     } catch (error) {

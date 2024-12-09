@@ -285,8 +285,6 @@ export class OwnerVisitantService {
 
       return this.resetCache();
     } catch (error) {
-      console.error('Visitante Add Service = ', error);
-
       throw error;
     }
   }

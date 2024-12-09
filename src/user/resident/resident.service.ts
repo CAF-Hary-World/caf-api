@@ -69,8 +69,6 @@ export class ResidentService {
         totalPages,
       };
     } catch (error) {
-      console.error('Residente List Service =', error);
-
       throw error;
     }
   }

@@ -195,8 +195,6 @@ export class ResidentVisitantService {
       });
       return this.resetCache();
     } catch (error) {
-      console.error('Visitante Remove Service = ', error);
-
       throw error;
     }
   }
@@ -234,8 +232,6 @@ export class ResidentVisitantService {
 
       return this.resetCache();
     } catch (error) {
-      console.error('Visitante Add Service = ', error);
-
       throw error;
     }
   }
