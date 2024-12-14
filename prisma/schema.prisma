@@ -39,6 +39,12 @@ enum STATUS {
   RETRIEVED
 }
 
+enum BOOKINGMODE {
+  HOURLY
+  PERIOD
+  DAILY
+}
+
 // START USERS
 
 model Role {
@@ -69,6 +75,8 @@ model User {
   withdrawnsParcels       Parcel[]      @relation("WithdrawnParcels")
 
   servicePermissions      ServicePermission[]
+
+  bookings                Booking[]
 
   role                    Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
   adminId                 String? @unique
@@ -394,6 +402,42 @@ model Parcel {
 }
 
 // END Service
+
+// START Booking
+
+model Place {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  name                          String  @unique
+  status                        STATUS @default(ALLOWED)
+  bookingMode                   BOOKINGMODE @default(DAILY)
+  isPaid                        Boolean @default(false)
+  price                         String?
+
+  bookings                      Booking[]
+}
+
+model Booking {
+  id                            String @id @default(uuid())
+  createdAt                     DateTime   @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+  deletedAt                     DateTime?
+  updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
+
+  interval                      String?
+  date                          DateTime
+
+  placeId                       String
+  place                         Place @relation(references: [id], fields: [placeId], onDelete: Cascade)
+  userId                        String
+  user                          User @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@unique([userId, placeId, date]) // Composite unique constraint
+}
+
+// END Booking
 
 // Polymorphic
 
