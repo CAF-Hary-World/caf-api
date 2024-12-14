@@ -1,3 +1,7 @@
+import { BookingService } from './place/booking/booking.service';
+import { BookingController } from './place/booking/booking.controller';
+import { PlaceService } from './place/place.service';
+import { PlaceController } from './place/place.controller';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -38,6 +42,8 @@ import { ParcelController } from './parcel/parcel.controller';
     ScheduleModule.forRoot(),
   ],
   controllers: [
+    BookingController,
+    PlaceController,
     AppController,
     SignupController,
     UserController,
@@ -51,6 +57,8 @@ import { ParcelController } from './parcel/parcel.controller';
     ParcelController,
   ],
   providers: [
+    BookingService,
+    PlaceService,
     AppService,
     SignupService,
     PrismaService,

@@ -177,7 +177,7 @@ export class VisitantService {
     data: Prisma.VisitantUpdateInput;
   }) {
     try {
-      const visitant = await this.prisma.visitant.update({
+      const visitant = await this.prisma.visitant.findUniqueOrThrow({
         where: {
           id,
         },
@@ -196,6 +196,14 @@ export class VisitantService {
               },
             },
           },
+          photo: true,
+          documentUrl: true,
+        },
+      });
+
+      await this.prisma.visitant.update({
+        where: {
+          id,
         },
         data: { ...data, updatedAt: timeStampISOTime },
       });
@@ -220,6 +228,20 @@ export class VisitantService {
               },
             },
           },
+        });
+
+      if (visitant.photo)
+        await deleteImageByUrl({
+          imageUrl: visitant.photo,
+          location: 'Avatar',
+          resource: 'Visitants',
+        });
+
+      if (visitant.documentUrl)
+        await deleteImageByUrl({
+          imageUrl: visitant.documentUrl,
+          location: 'Documents',
+          resource: 'Visitants',
         });
 
       return this.resetCache();

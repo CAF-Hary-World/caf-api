@@ -16,6 +16,11 @@ import {
   servicesPermissionsInMemory,
   parcelsInMemory,
   parcelInMemory,
+  placesWithBookingsInMemory,
+  placesWithoutBookingsInMemory,
+  placeWithoutBookingsInMemory,
+  bookingInMemory,
+  bookingsInMemory,
 } from 'src/libs/memory-cache';
 
 export function resetUsers() {
@@ -51,4 +56,16 @@ export function resetParcels() {
 
 export function resetParcel() {
   parcelInMemory.clear();
+}
+
+export function resetPlace() {
+  placesWithBookingsInMemory.clear();
+  placesWithBookingsInMemory.clear();
+  placeWithoutBookingsInMemory.clear();
+  placesWithoutBookingsInMemory.clear();
+}
+
+export function resetBooking() {
+  bookingInMemory.clear();
+  bookingsInMemory.clear();
 }

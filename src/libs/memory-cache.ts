@@ -596,3 +596,103 @@ export const parcelInMemory = new MemoryCache<
   string,
   Prisma.ParcelGetPayload<Parcel | null>
 >(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export type PlaceWithBookings = {
+  select: {
+    id: true;
+    bookingMode: true;
+    bookings: true;
+    isPaid: true;
+    name: true;
+    price: true;
+    status: true;
+  };
+};
+
+export type PlaceWithoutBookings = {
+  select: {
+    id: true;
+    bookingMode: true;
+    isPaid: true;
+    name: true;
+    price: true;
+    status: true;
+  };
+};
+
+export const selectPlaceWithBookings = {
+  select: {
+    id: true,
+    bookingMode: true,
+    bookings: true,
+    isPaid: true,
+    name: true,
+    price: true,
+    status: true,
+  },
+};
+
+export const selectPlaceWithoutBookings = {
+  select: {
+    id: true,
+    bookingMode: true,
+    isPaid: true,
+    name: true,
+    price: true,
+    status: true,
+  },
+};
+
+export const placesWithBookingsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.PlaceGetPayload<PlaceWithBookings | null>>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const placeWithBookingsInMemory = new MemoryCache<
+  string,
+  Prisma.PlaceGetPayload<PlaceWithBookings | null>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const placesWithoutBookingsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.PlaceGetPayload<PlaceWithoutBookings | null>>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const placeWithoutBookingsInMemory = new MemoryCache<
+  string,
+  Prisma.PlaceGetPayload<PlaceWithoutBookings | null>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export type Booking = {
+  select: {
+    id: true;
+    date: true;
+    interval: true;
+    place: true;
+    placeId: true;
+    user: true;
+    userId: true;
+  };
+};
+
+export const selectBooking = {
+  select: {
+    id: true,
+    date: true,
+    interval: true,
+    place: true,
+    placeId: true,
+    user: true,
+    userId: true,
+  },
+};
+
+export const bookingInMemory = new MemoryCache<
+  string,
+  Prisma.BookingGetPayload<Booking | null>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
+
+export const bookingsInMemory = new MemoryCache<
+  string,
+  Array<Prisma.BookingGetPayload<Booking | null>>
+>(TIMETOEXPIRECACHE, AMOUNTSINGLERESOURCE);
