@@ -601,6 +601,7 @@ export type PlaceWithBookings = {
   select: {
     id: true;
     bookingMode: true;
+    imageUrl: true;
     bookings: true;
     isPaid: true;
     name: true;
@@ -613,6 +614,7 @@ export type PlaceWithoutBookings = {
   select: {
     id: true;
     bookingMode: true;
+    imageUrl: true;
     isPaid: true;
     name: true;
     price: true;
@@ -624,6 +626,7 @@ export const selectPlaceWithBookings = {
   select: {
     id: true,
     bookingMode: true,
+    imageUrl: true,
     bookings: true,
     isPaid: true,
     name: true,
@@ -636,6 +639,7 @@ export const selectPlaceWithoutBookings = {
   select: {
     id: true,
     bookingMode: true,
+    imageUrl: true,
     isPaid: true,
     name: true,
     price: true,
