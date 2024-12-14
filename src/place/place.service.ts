@@ -8,6 +8,7 @@ import {
   selectPlaceWithoutBookings,
 } from 'src/libs/memory-cache';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { deleteImageByUrl, deleteImagesByUrl } from 'src/utils/images';
 import { resetPlace } from 'src/utils/resetCache';
 import { timeStampISOTime } from 'src/utils/time';
 
@@ -128,15 +129,28 @@ export class PlaceService {
 
   async update({ data, id }: { data: Prisma.PlaceUpdateInput; id: string }) {
     try {
-      await this.prisma.place.update({
-        where: {
-          id,
-        },
-        data: {
-          ...data,
-          updatedAt: timeStampISOTime,
-        },
-      });
+      const [place] = await Promise.all([
+        this.prisma.place.findUniqueOrThrow({
+          where: { id },
+        }),
+        this.prisma.place.update({
+          where: {
+            id,
+          },
+          data: {
+            ...data,
+            updatedAt: timeStampISOTime,
+          },
+        }),
+      ]);
+
+      if (place.imageUrl)
+        await deleteImageByUrl({
+          imageUrl: place.imageUrl,
+          location: 'Avatar',
+          resource: 'Place',
+        });
+
       resetPlace();
     } catch (error) {
       throw error;
@@ -145,11 +159,17 @@ export class PlaceService {
 
   async delete({ id }: { id: string }) {
     try {
-      await this.prisma.place.delete({
+      const place = await this.prisma.place.delete({
         where: {
           id,
         },
       });
+      if (place.imageUrl)
+        await deleteImageByUrl({
+          imageUrl: place.imageUrl,
+          location: 'Avatar',
+          resource: 'Place',
+        });
       resetPlace();
     } catch (error) {
       throw error;
@@ -158,11 +178,23 @@ export class PlaceService {
 
   async deleteMany({ ids }: { ids: Array<string> }) {
     try {
-      await this.prisma.place.deleteMany({
-        where: {
-          id: { in: ids },
-        },
-      });
+      const [places] = await Promise.all([
+        this.prisma.place.findMany({
+          where: { id: { in: ids } },
+        }),
+        this.prisma.place.deleteMany({
+          where: {
+            id: { in: ids },
+          },
+        }),
+      ]);
+      const placesWithImages = places.filter((place) => place.imageUrl);
+      if (placesWithImages.length > 0)
+        await deleteImagesByUrl({
+          imageUrls: placesWithImages.map((place) => place.imageUrl),
+          location: 'Avatar',
+          resource: 'Place',
+        });
       resetPlace();
     } catch (error) {
       throw error;

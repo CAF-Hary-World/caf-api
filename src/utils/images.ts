@@ -9,6 +9,7 @@ type RESOURCE =
   | 'Owners'
   | 'Residents'
   | 'Services'
+  | 'Place'
   | 'Client';
 
 const logger = new Logger('IMAGE');

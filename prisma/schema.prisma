@@ -412,6 +412,7 @@ model Place {
   updatedAt                     DateTime   @updatedAt @default(dbgenerated("(NOW() - '3 hours'::interval)"))
 
   name                          String  @unique
+  imageUrl                      String?
   status                        STATUS @default(ALLOWED)
   bookingMode                   BOOKINGMODE @default(DAILY)
   isPaid                        Boolean @default(false)
