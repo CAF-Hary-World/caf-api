@@ -3,7 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, STATUS } from '@prisma/client';
 import {
   ownerInMemory,
   ownersInMemory,
@@ -29,27 +29,32 @@ export class OwnerService {
   async listOwners({
     page = 1,
     name,
+    status,
     cpf,
   }: {
     page: number;
+    status?: STATUS;
     name?: string;
     cpf?: string;
   }) {
-    const reference = `user-owner-${page}-${name}-${cpf}`;
+    const reference = `user-owner-${page}-${name}-${cpf}-${status}`;
 
     const perPage =
       process.env.NODE_ENV === 'development'
         ? 2
         : Number(process.env.DEFAULT_PER_PAGE);
 
-    const ownersCount = await this.prisma.user.count({
-      where: {
-        role: {
-          name: 'OWNER',
-        },
-        ...(name && { name: { contains: name, mode: 'insensitive' } }),
-        ...(cpf && { owner: { cpf: { contains: cpf } } }),
+    const where: Prisma.UserWhereInput = {
+      role: {
+        name: 'OWNER',
       },
+      ...(name && { name: { contains: name, mode: 'insensitive' } }),
+      ...(cpf && { owner: { cpf: { contains: cpf } } }),
+      ...(status && { available: { status } }),
+    };
+
+    const ownersCount = await this.prisma.user.count({
+      where,
     });
 
     const totalPages = Math.ceil(ownersCount / perPage);
@@ -57,13 +62,7 @@ export class OwnerService {
     try {
       if (!ownersInMemory.hasItem(reference)) {
         const owners = await this.prisma.user.findMany({
-          where: {
-            role: {
-              name: 'OWNER',
-            },
-            ...(name && { name: { contains: name, mode: 'insensitive' } }),
-            ...(cpf && { owner: { cpf: { contains: cpf } } }),
-          },
+          where,
           orderBy: { createdAt: 'desc' },
           skip: (page - 1) * perPage,
           take: perPage,

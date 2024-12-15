@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { Prisma, ROLE } from '@prisma/client';
+import { Prisma, ROLE, STATUS } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Roles } from 'src/decorator/roles.decorator';
 import { RolesGuard } from 'src/guards/role.guard';
@@ -24,10 +24,21 @@ export class OwnerController {
   @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Get()
   async listOwners(
-    @Query() { page, name, cpf }: { page: number; name?: string; cpf?: string },
+    @Query()
+    {
+      page,
+      name,
+      cpf,
+      status,
+    }: {
+      page: number;
+      name?: string;
+      cpf?: string;
+      status?: STATUS;
+    },
   ) {
     try {
-      return await this.ownerService.listOwners({ page, cpf, name });
+      return await this.ownerService.listOwners({ page, cpf, name, status });
     } catch (error) {
       handleErrors(error);
     }
