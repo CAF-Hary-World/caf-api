@@ -13,7 +13,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { handleErrors } from 'src/handles/errors';
 import { Prisma } from '@prisma/client';
 
-@Controller('places/:placeId/bookings')
+@Controller('/bookings')
 export class BookingController {
   constructor(private bookingService: BookingService) {}
 
@@ -32,13 +32,11 @@ export class BookingController {
       placeName?: string;
       date?: string;
     },
-    @Param() { placeId }: { placeId: string },
   ) {
     try {
       return await this.bookingService.list({
         page,
         date,
-        placeId,
         placeName,
         userName,
       });
@@ -49,9 +47,9 @@ export class BookingController {
 
   @UseGuards(AuthGuard)
   @Get(':id')
-  async get(@Param() { id, placeId }: { id: string; placeId: string }) {
+  async get(@Param() { id }: { id: string }) {
     try {
-      return await this.bookingService.get({ id, placeId });
+      return await this.bookingService.get({ id });
     } catch (error) {
       handleErrors(error);
     }
@@ -60,11 +58,11 @@ export class BookingController {
   @UseGuards(AuthGuard)
   @Patch(':id')
   async update(
-    @Param() { id, placeId }: { id: string; placeId: string },
+    @Param() { id }: { id: string },
     @Body() data: Prisma.BookingUpdateInput,
   ) {
     try {
-      return await this.bookingService.update({ id, data, placeId });
+      return await this.bookingService.update({ id, data });
     } catch (error) {
       handleErrors(error);
     }
@@ -72,9 +70,9 @@ export class BookingController {
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  async delete(@Param() { id, placeId }: { id: string; placeId: string }) {
+  async delete(@Param() { id }: { id: string }) {
     try {
-      return await this.bookingService.delete({ id, placeId });
+      return await this.bookingService.delete({ id });
     } catch (error) {
       handleErrors(error);
     }
@@ -82,12 +80,9 @@ export class BookingController {
 
   @UseGuards(AuthGuard)
   @Delete('delete-many')
-  async deleteMany(
-    @Query() { ids }: { ids: Array<string> },
-    @Param() { placeId }: { placeId: string },
-  ) {
+  async deleteMany(@Query() { ids }: { ids: Array<string> }) {
     try {
-      return await this.bookingService.deleteMany({ ids, placeId });
+      return await this.bookingService.deleteMany({ ids });
     } catch (error) {
       handleErrors(error);
     }

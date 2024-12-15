@@ -1,5 +1,9 @@
-import { BookingService } from './place/booking/booking.service';
-import { BookingController } from './place/booking/booking.controller';
+import { BookingService as UserBookingService } from './user/booking/booking.service';
+import { BookingController as UserBookingController } from './user/booking/booking.controller';
+import { BookingService } from './booking/booking.service';
+import { BookingController } from './booking/booking.controller';
+import { BookingService as PlaceBookingService } from './place/booking/booking.service';
+import { BookingController as PlaceBookingController } from './place/booking/booking.controller';
 import { PlaceService } from './place/place.service';
 import { PlaceController } from './place/place.controller';
 import { Module } from '@nestjs/common';
@@ -43,6 +47,8 @@ import { ParcelController } from './parcel/parcel.controller';
   ],
   controllers: [
     BookingController,
+    UserBookingController,
+    PlaceBookingController,
     PlaceController,
     AppController,
     SignupController,
@@ -58,6 +64,8 @@ import { ParcelController } from './parcel/parcel.controller';
   ],
   providers: [
     BookingService,
+    UserBookingService,
+    PlaceBookingService,
     PlaceService,
     AppService,
     SignupService,

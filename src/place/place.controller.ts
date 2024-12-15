@@ -52,7 +52,7 @@ export class PlaceController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Post()
-  async create(@Body() { data }: { data: Prisma.PlaceCreateInput }) {
+  async create(@Body() data: Prisma.PlaceCreateInput) {
     try {
       return await this.placeService.create(data);
     } catch (error) {
@@ -64,7 +64,7 @@ export class PlaceController {
   @Roles(ROLE.ADMIN, ROLE.ROOT)
   @Patch('/:id')
   async update(
-    @Body() { data }: { data: Prisma.PlaceUpdateInput },
+    @Body() data: Prisma.PlaceUpdateInput,
     @Param() { id }: { id: string },
   ) {
     try {

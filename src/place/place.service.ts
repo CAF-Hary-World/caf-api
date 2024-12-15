@@ -148,7 +148,7 @@ export class PlaceService {
         await deleteImageByUrl({
           imageUrl: place.imageUrl,
           location: 'Avatar',
-          resource: 'Place',
+          resource: 'Places',
         });
 
       resetPlace();
@@ -168,7 +168,7 @@ export class PlaceService {
         await deleteImageByUrl({
           imageUrl: place.imageUrl,
           location: 'Avatar',
-          resource: 'Place',
+          resource: 'Places',
         });
       resetPlace();
     } catch (error) {
@@ -193,7 +193,7 @@ export class PlaceService {
         await deleteImagesByUrl({
           imageUrls: placesWithImages.map((place) => place.imageUrl),
           location: 'Avatar',
-          resource: 'Place',
+          resource: 'Places',
         });
       resetPlace();
     } catch (error) {

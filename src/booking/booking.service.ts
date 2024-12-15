@@ -15,17 +15,15 @@ export class BookingService {
   async list({
     page = 1,
     userName,
-    placeId,
     placeName,
     date,
   }: {
     page: number;
-    placeId: string;
     placeName?: string;
     userName?: string;
     date?: string;
   }) {
-    const reference = `booking-${userName}-${placeId}-${placeName}-${date}-${page}`;
+    const reference = `booking-${userName}-${placeName}-${date}-${page}`;
 
     const perPage =
       process.env.NODE_ENV === 'development'
@@ -33,9 +31,6 @@ export class BookingService {
         : Number(process.env.DEFAULT_PER_PAGE);
 
     const where: Prisma.BookingWhereInput = {
-      place: {
-        id: placeId,
-      },
       ...(userName && {
         user: { name: { contains: userName, mode: 'insensitive' } },
       }),
@@ -79,13 +74,13 @@ export class BookingService {
     }
   }
 
-  async get({ id, placeId }: { id: string; placeId: string }) {
+  async get({ id }: { id: string }) {
     const reference = `booking-${id}`;
 
     try {
       if (!bookingInMemory.hasItem(reference)) {
         const booking = await this.prisma.booking.findUniqueOrThrow({
-          where: { id, place: { id: placeId } },
+          where: { id },
           ...selectBooking,
         });
 
@@ -101,20 +96,9 @@ export class BookingService {
     }
   }
 
-  async update({
-    id,
-    data,
-    placeId,
-  }: {
-    id: string;
-    data: Prisma.BookingUpdateInput;
-    placeId: string;
-  }) {
+  async update({ id, data }: { id: string; data: Prisma.BookingUpdateInput }) {
     try {
-      await this.prisma.booking.update({
-        where: { id, place: { id: placeId } },
-        data,
-      });
+      await this.prisma.booking.update({ where: { id }, data });
       resetBooking();
       return;
     } catch (error) {
@@ -122,11 +106,9 @@ export class BookingService {
     }
   }
 
-  async delete({ id, placeId }: { id: string; placeId: string }) {
+  async delete({ id }: { id: string }) {
     try {
-      await this.prisma.booking.delete({
-        where: { id, place: { id: placeId } },
-      });
+      await this.prisma.booking.delete({ where: { id } });
       resetBooking();
       return;
     } catch (error) {
@@ -134,11 +116,9 @@ export class BookingService {
     }
   }
 
-  async deleteMany({ ids, placeId }: { ids: Array<string>; placeId: string }) {
+  async deleteMany({ ids }: { ids: Array<string> }) {
     try {
-      await this.prisma.booking.deleteMany({
-        where: { id: { in: ids }, place: { id: placeId } },
-      });
+      await this.prisma.booking.deleteMany({ where: { id: { in: ids } } });
       resetBooking();
       return;
     } catch (error) {

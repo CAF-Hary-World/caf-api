@@ -13,7 +13,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { handleErrors } from 'src/handles/errors';
 import { Prisma } from '@prisma/client';
 
-@Controller('places/:placeId/bookings')
+@Controller('users/:userId/bookings')
 export class BookingController {
   constructor(private bookingService: BookingService) {}
 
@@ -32,13 +32,13 @@ export class BookingController {
       placeName?: string;
       date?: string;
     },
-    @Param() { placeId }: { placeId: string },
+    @Param() { userId }: { userId: string },
   ) {
     try {
       return await this.bookingService.list({
         page,
         date,
-        placeId,
+        userId,
         placeName,
         userName,
       });
@@ -49,9 +49,9 @@ export class BookingController {
 
   @UseGuards(AuthGuard)
   @Get(':id')
-  async get(@Param() { id, placeId }: { id: string; placeId: string }) {
+  async get(@Param() { id, userId }: { id: string; userId: string }) {
     try {
-      return await this.bookingService.get({ id, placeId });
+      return await this.bookingService.get({ id, userId });
     } catch (error) {
       handleErrors(error);
     }
@@ -60,11 +60,11 @@ export class BookingController {
   @UseGuards(AuthGuard)
   @Patch(':id')
   async update(
-    @Param() { id, placeId }: { id: string; placeId: string },
+    @Param() { id, userId }: { id: string; userId: string },
     @Body() data: Prisma.BookingUpdateInput,
   ) {
     try {
-      return await this.bookingService.update({ id, data, placeId });
+      return await this.bookingService.update({ id, data, userId });
     } catch (error) {
       handleErrors(error);
     }
@@ -72,9 +72,9 @@ export class BookingController {
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  async delete(@Param() { id, placeId }: { id: string; placeId: string }) {
+  async delete(@Param() { id, userId }: { id: string; userId: string }) {
     try {
-      return await this.bookingService.delete({ id, placeId });
+      return await this.bookingService.delete({ id, userId });
     } catch (error) {
       handleErrors(error);
     }
@@ -84,10 +84,10 @@ export class BookingController {
   @Delete('delete-many')
   async deleteMany(
     @Query() { ids }: { ids: Array<string> },
-    @Param() { placeId }: { placeId: string },
+    @Param() { userId }: { userId: string },
   ) {
     try {
-      return await this.bookingService.deleteMany({ ids, placeId });
+      return await this.bookingService.deleteMany({ ids, userId });
     } catch (error) {
       handleErrors(error);
     }
