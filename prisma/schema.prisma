@@ -415,6 +415,7 @@ model Place {
   imageUrl                      String?
   status                        STATUS @default(ALLOWED)
   bookingMode                   BOOKINGMODE @default(DAILY)
+  max                           Int @default(1)
   isPaid                        Boolean @default(false)
   price                         String?
 

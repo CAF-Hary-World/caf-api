@@ -606,6 +606,7 @@ export type PlaceWithBookings = {
     isPaid: true;
     name: true;
     price: true;
+    max: true;
     status: true;
   };
 };
@@ -618,6 +619,7 @@ export type PlaceWithoutBookings = {
     isPaid: true;
     name: true;
     price: true;
+    max: true;
     status: true;
   };
 };
@@ -630,6 +632,7 @@ export const selectPlaceWithBookings = {
     bookings: true,
     isPaid: true,
     name: true,
+    max: true,
     price: true,
     status: true,
   },
@@ -642,6 +645,7 @@ export const selectPlaceWithoutBookings = {
     imageUrl: true,
     isPaid: true,
     name: true,
+    max: true,
     price: true,
     status: true,
   },
